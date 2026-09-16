@@ -43,40 +43,154 @@
       </form>
     </section>
 
-    <section id="admin-dashboard" hidden>
-      <div class="admin-dashboard-head">
+    
+<section id="admin-dashboard" hidden>
+
+  <div class="admin-tabs">
+    <button class="admin-tab active" data-admin-tab="orders">ORDERS</button>
+    <button class="admin-tab" data-admin-tab="products">PRODUCTS</button>
+  </div>
+
+  <section id="admin-orders-panel" class="admin-panel">
+    <div class="admin-dashboard-head">
+      <div>
+        <div class="eyebrow" style="color:#766b5d">DOMARO OPERATIONS</div>
+        <h1>ORDERS DASHBOARD</h1>
+      </div>
+      <button id="refresh-orders" class="admin-secondary-btn">REFRESH</button>
+    </div>
+
+    <div class="admin-stats">
+      <div class="admin-stat"><span>ALL ORDERS</span><b id="stat-all">0</b></div>
+      <div class="admin-stat"><span>NEW</span><b id="stat-new">0</b></div>
+      <div class="admin-stat"><span>CONFIRMED</span><b id="stat-confirmed">0</b></div>
+      <div class="admin-stat"><span>SHIPPED</span><b id="stat-shipped">0</b></div>
+      <div class="admin-stat"><span>DELIVERED</span><b id="stat-delivered">0</b></div>
+    </div>
+
+    <div class="admin-controls">
+      <input id="order-search" type="search" placeholder="Search order number, customer or phone">
+      <select id="status-filter">
+        <option value="all">All statuses</option>
+        <option value="new">New</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="shipped">Shipped</option>
+        <option value="delivered">Delivered</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+
+    <div id="orders-loading" class="admin-loading" hidden>Loading orders…</div>
+    <div id="orders-error" class="admin-error"></div>
+    <div id="orders-list" class="orders-list"></div>
+  </section>
+
+  <section id="admin-products-panel" class="admin-panel" hidden>
+    <div class="admin-dashboard-head">
+      <div>
+        <div class="eyebrow" style="color:#766b5d">DOMARO CATALOG</div>
+        <h1>PRODUCT MANAGEMENT</h1>
+      </div>
+      <button id="new-product-btn" class="admin-primary-btn">+ ADD PRODUCT</button>
+    </div>
+
+    <div class="admin-product-stats">
+      <div class="admin-stat"><span>ALL PRODUCTS</span><b id="product-stat-all">0</b></div>
+      <div class="admin-stat"><span>LIVE</span><b id="product-stat-live">0</b></div>
+      <div class="admin-stat"><span>IN STOCK</span><b id="product-stat-stock">0</b></div>
+      <div class="admin-stat"><span>OUT OF STOCK</span><b id="product-stat-out">0</b></div>
+    </div>
+
+    <div class="admin-controls products-controls">
+      <input id="product-search" type="search" placeholder="Search products">
+      <select id="product-filter">
+        <option value="all">All products</option>
+        <option value="live">Live only</option>
+        <option value="hidden">Hidden only</option>
+        <option value="stock">In stock</option>
+        <option value="out">Out of stock</option>
+      </select>
+    </div>
+
+    <div id="products-loading" class="admin-loading" hidden>Loading products…</div>
+    <div id="products-error" class="admin-error"></div>
+    <div id="products-list" class="admin-products-list"></div>
+  </section>
+
+</section>
+
+<section id="product-modal" class="product-modal" hidden>
+  <div class="product-modal-backdrop" data-close-product-modal></div>
+  <div class="product-modal-card">
+    <div class="product-modal-head">
+      <div>
+        <div class="eyebrow" style="color:#766b5d">CATALOG EDITOR</div>
+        <h2 id="product-form-title">ADD PRODUCT</h2>
+      </div>
+      <button class="product-modal-close" type="button" data-close-product-modal>×</button>
+    </div>
+
+    <form id="product-form">
+      <input id="product-id" type="hidden">
+
+      <div class="form-row">
         <div>
-          <div class="eyebrow" style="color:#766b5d">DOMARO OPERATIONS</div>
-          <h1>ORDERS DASHBOARD</h1>
+          <label>Product name</label>
+          <input id="product-name" required placeholder="e.g. HOOK BLACK">
         </div>
-        <button id="refresh-orders" class="admin-secondary-btn">REFRESH</button>
+        <div>
+          <label>Category</label>
+          <select id="product-category" required>
+            <option value="men">Men</option>
+            <option value="women">Women</option>
+            <option value="unisex">Unisex</option>
+          </select>
+        </div>
       </div>
 
-      <div class="admin-stats">
-        <div class="admin-stat"><span>ALL ORDERS</span><b id="stat-all">0</b></div>
-        <div class="admin-stat"><span>NEW</span><b id="stat-new">0</b></div>
-        <div class="admin-stat"><span>CONFIRMED</span><b id="stat-confirmed">0</b></div>
-        <div class="admin-stat"><span>SHIPPED</span><b id="stat-shipped">0</b></div>
-        <div class="admin-stat"><span>DELIVERED</span><b id="stat-delivered">0</b></div>
+      <div class="form-row">
+        <div>
+          <label>Size (ML)</label>
+          <input id="product-size" required type="number" min="1" step="1" placeholder="200">
+        </div>
+        <div>
+          <label>Price (EGP)</label>
+          <input id="product-price" required type="number" min="0" step="1" placeholder="2000">
+        </div>
       </div>
 
-      <div class="admin-controls">
-        <input id="order-search" type="search" placeholder="Search order number, customer or phone">
-        <select id="status-filter">
-          <option value="all">All statuses</option>
-          <option value="new">New</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="shipped">Shipped</option>
-          <option value="delivered">Delivered</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
+      <div>
+        <label>Description</label>
+        <textarea id="product-description" class="small-textarea" placeholder="Product description"></textarea>
       </div>
 
-      <div id="orders-loading" class="admin-loading" hidden>Loading orders…</div>
-      <div id="orders-error" class="admin-error"></div>
-      <div id="orders-list" class="orders-list"></div>
-    </section>
-  </main>
+      <div class="product-switch-grid">
+        <label class="product-toggle">
+          <input id="product-stock" type="checkbox" checked>
+          <span>IN STOCK</span>
+        </label>
+        <label class="product-toggle">
+          <input id="product-active" type="checkbox" checked>
+          <span>LIVE ON WEBSITE</span>
+        </label>
+      </div>
+
+      <div class="product-image-editor">
+        <div>
+          <label>Product image</label>
+          <input id="product-image" type="file" accept="image/jpeg,image/png,image/webp">
+          <small>JPG, PNG or WebP — maximum 5 MB.</small>
+        </div>
+        <img id="product-image-preview" alt="Product preview">
+      </div>
+
+      <div id="product-form-error" class="admin-error"></div>
+      <button id="save-product-btn" class="add-btn" type="submit">SAVE PRODUCT</button>
+    </form>
+  </div>
+</section>
+
+</main>
 
   <script>
     window.DOMARO_ADMIN_CONFIG = {

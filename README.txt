@@ -1,36 +1,34 @@
-DOMARO WEBSITE V6
+DOMARO WEBSITE V7 — PRODUCT MANAGEMENT
 
-NEW IN V6
-- Secure Admin Login using Supabase Authentication
-- Admin access is enforced by database RLS policies
-- Admin Dashboard at /admin.html
-- View all customer orders
-- View customer name, phone, address, notes
-- View products, quantities and totals
-- Search orders
-- Filter by status
-- Order statistics
-- Update status:
-  New / Confirmed / Shipped / Delivered / Cancelled
-- No admin link is shown on the public storefront
-- Admin page is marked noindex/nofollow
+WHAT V7 ADDS
+- Products are loaded from Supabase instead of being hard-coded in app.js.
+- Admin dashboard now has ORDERS and PRODUCTS tabs.
+- Add products from the admin dashboard.
+- Edit product name, category, size, price and description.
+- Upload product images to Supabase Storage.
+- Mark products In Stock / Out of Stock.
+- Hide products from the public store or make them live again.
+- Public Shop updates from the database automatically.
+- Hidden products cannot be ordered.
+- Out-of-stock products cannot be ordered.
+- Existing 3 products remain in the database and continue to work.
 
-SECURITY
-- Website contains only the Supabase publishable key.
-- Admin password is never stored in the website source.
-- Order data requires an authenticated user who exists in public.admins.
-- Status changes are performed through the protected update_order_status function.
-- Session token is stored in sessionStorage and is cleared when the browser tab/session closes.
+IMPORTANT — RUN SQL FIRST
+Before deploying v7:
+1. Open Supabase → SQL Editor → New query.
+2. Paste the full contents of SUPABASE-V7-MIGRATION.sql.
+3. Run it.
+4. Only after Success, deploy DOMARO v7.
 
-ADMIN PAGE
-https://YOUR-DOMAIN/admin.html
+ADMIN PRODUCT MANAGEMENT
+After deployment:
+https://domaro.vercel.app/admin.html
+Login → PRODUCTS.
 
-LOGIN
-Use the Supabase Authentication account you created and authorized as an admin.
+IMAGE RULES
+- JPG, PNG or WebP
+- Maximum 5 MB
+- Images are stored in a public Supabase Storage bucket called: products
 
-NEXT PHASE IDEAS
-- Products managed from dashboard
-- Inventory / stock
-- Notifications when a new order arrives
-- Analytics and sales reports
-- Customer email/WhatsApp notifications
+SHIPPING
+Flat shipping remains 80 EGP.

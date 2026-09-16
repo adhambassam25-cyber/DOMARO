@@ -335,3 +335,65 @@ textarea{min-height:155px;resize:vertical}
   .admin-order-actions{align-items:stretch;flex-direction:column}
   .admin-order-actions select{width:100%}
 }
+
+
+/* DOMARO v7 Product Management */
+.badge-out{background:#7c312c!important}
+.stock-dot-out{background:#9d3730!important}
+.cart-warning{font-size:10px;color:#9b3028;margin-top:7px}
+.add-btn:disabled{opacity:.52;cursor:not-allowed}
+
+.admin-tabs{display:flex;gap:8px;margin-bottom:30px;border-bottom:1px solid #d2c8bc}
+.admin-tab{border:0;background:transparent;padding:13px 18px;font-size:10px;font-weight:700;letter-spacing:1.5px;color:#7c7369;border-bottom:2px solid transparent}
+.admin-tab.active{color:#0a0a0a;border-bottom-color:#b58d55}
+.admin-primary-btn{border:0;background:#0a0a0a;color:#fff;padding:13px 18px;font-size:10px;font-weight:700;letter-spacing:1.2px}
+.admin-product-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.admin-products-list{display:grid;gap:15px}
+.admin-product-card{display:grid;grid-template-columns:170px 1fr;background:#f9f6f1;border:1px solid #d8cfc2;overflow:hidden}
+.admin-product-image{background:#fff;min-height:190px}
+.admin-product-image img{height:100%;min-height:190px;object-fit:contain;padding:10px}
+.admin-product-main{padding:22px}
+.admin-product-title-row{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+.admin-product-title-row h3{font:600 25px "Cormorant Garamond",Georgia,serif;margin:0 0 4px}
+.admin-product-title-row span{font-size:10px;color:#7d746b}
+.admin-product-badges{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.mini-status{padding:6px 8px;border:1px solid #cfc6bb;font-size:8px!important;letter-spacing:1px}
+.mini-live,.mini-stock{background:#e7f3e8;border-color:#a9c9ac;color:#2c5d31!important}
+.mini-hidden,.mini-out{background:#f6e5e2;border-color:#d3aaa3;color:#7b302a!important}
+.admin-product-price{font-weight:700;margin-top:14px}
+.admin-product-main p{color:#655d55;font-size:12px;line-height:1.65;max-width:760px}
+.admin-product-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.admin-product-actions .admin-secondary-btn{background:#fff}
+.product-modal[hidden]{display:none!important}
+.product-modal{position:fixed;inset:0;z-index:500;display:grid;place-items:center;padding:24px}
+.product-modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.67);backdrop-filter:blur(4px)}
+.product-modal-card{position:relative;width:min(760px,96vw);max-height:92vh;overflow:auto;background:#f8f4ee;border:1px solid #d4c9bb;padding:30px}
+.product-modal-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:24px}
+.product-modal-head h2{font:500 36px "Cormorant Garamond",Georgia,serif;margin:5px 0 0}
+.product-modal-close{border:0;background:transparent;font-size:30px;line-height:1}
+.product-modal-card label{display:block;font-size:10px;letter-spacing:1px;color:#625b54;margin-bottom:7px}
+.product-modal-card input,.product-modal-card textarea,.product-modal-card select{width:100%}
+.product-switch-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.product-toggle{display:flex!important;align-items:center;gap:10px;background:#fff;border:1px solid #cfc6bb;padding:14px;margin:0!important}
+.product-toggle input{width:auto!important}
+.product-toggle span{font-size:10px;font-weight:700;letter-spacing:1px}
+.product-image-editor{display:grid;grid-template-columns:1fr 170px;gap:18px;align-items:center;margin:18px 0}
+.product-image-editor small{display:block;margin-top:8px;color:#857c73;font-size:9px}
+.product-image-editor img{width:170px;height:170px;object-fit:contain;background:#fff;border:1px solid #d7cec2}
+.modal-open{overflow:hidden}
+@media(max-width:900px){
+  .admin-product-stats{grid-template-columns:repeat(2,1fr)}
+  .admin-product-card{grid-template-columns:120px 1fr}
+  .admin-product-image img{min-height:150px}
+}
+@media(max-width:640px){
+  .admin-product-card{grid-template-columns:1fr}
+  .admin-product-image{height:220px}
+  .admin-product-image img{height:220px}
+  .admin-product-title-row{flex-direction:column}
+  .admin-product-badges{justify-content:flex-start}
+  .product-switch-grid,.product-image-editor{grid-template-columns:1fr}
+  .product-image-editor img{width:100%;height:220px}
+  .product-modal{padding:10px}
+  .product-modal-card{padding:20px}
+}
