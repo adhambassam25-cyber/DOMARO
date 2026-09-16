@@ -36,6 +36,7 @@ const products = [
 ];
 
 const money = n => n.toLocaleString('en-EG') + ' EGP';
+const SHIPPING_FEE = 80;
 function getCart(){ return JSON.parse(localStorage.getItem('domaro_cart') || '[]'); }
 function setCart(cart){ localStorage.setItem('domaro_cart', JSON.stringify(cart)); updateCartCount(); }
 function updateCartCount(){
@@ -105,7 +106,7 @@ if(detail){
       <button class="add-btn" id="add">ADD TO CART</button>
       <div class="accordion">
         <details open><summary>PRODUCT INFORMATION</summary><p>Size: ${p.size}<br>Category: ${p.cat.charAt(0).toUpperCase()+p.cat.slice(1)}<br>Price: ${money(p.price)}</p></details>
-        <details><summary>DELIVERY</summary><p>Delivery timing and fees will be finalized in the checkout stage.</p></details>
+        <details><summary>DELIVERY</summary><p>Flat shipping is currently 80 EGP per order across Egypt.</p></details>
         <details><summary>RETURNS</summary><p>The final return and exchange policy will be added before checkout goes live.</p></details>
       </div>
     </div>`;
@@ -139,7 +140,9 @@ function renderCart(){
   if(summary){
     summary.style.display='block';
     document.getElementById('subtotal').textContent=money(subtotal);
-    document.getElementById('cart-total').textContent=money(subtotal);
+    const shipEl=document.getElementById('shipping-fee');
+    if(shipEl) shipEl.textContent=money(SHIPPING_FEE);
+    document.getElementById('cart-total').textContent=money(subtotal + SHIPPING_FEE);
   }
 }
 renderCart();
@@ -152,3 +155,96 @@ document.querySelectorAll('[data-demo-form]').forEach(form=>{
     form.reset();
   });
 });
+
+
+function makeOrderNumber(){
+  const now = new Date();
+  const date = now.getFullYear().toString().slice(-2) +
+               String(now.getMonth()+1).padStart(2,'0') +
+               String(now.getDate()).padStart(2,'0');
+  const rand = Math.floor(1000 + Math.random()*9000);
+  return `DOM-${date}-${rand}`;
+}
+
+function isValidEgyptPhone(value){
+  return /^01[0125][0-9]{8}$/.test((value || '').replace(/\s+/g,''));
+}
+
+function renderCheckout(){
+  const itemsBox=document.getElementById('checkout-items');
+  if(!itemsBox) return;
+
+  const cart=getCart();
+  const form=document.getElementById('checkout-form');
+  const grid=document.querySelector('.checkout-grid');
+
+  if(!cart.length){
+    if(grid) grid.innerHTML='<div class="empty" style="grid-column:1/-1">Your cart is empty.<br><br><a class="btn dark" href="shop.html">SHOP FRAGRANCES</a></div>';
+    return;
+  }
+
+  let subtotal=0;
+  itemsBox.innerHTML=cart.map(item=>{
+    const p=products.find(x=>x.id===item.id);
+    if(!p) return '';
+    subtotal += p.price*item.qty;
+    return `<div class="checkout-product">
+      <img src="${p.img}" alt="${p.name}">
+      <div><b>${p.name}</b><div class="meta">${p.size} · Qty ${item.qty}</div></div>
+      <div class="checkout-product-price">${money(p.price*item.qty)}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('checkout-subtotal').textContent=money(subtotal);
+  document.getElementById('checkout-total').textContent=money(subtotal + SHIPPING_FEE);
+
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    const error=document.getElementById('checkout-error');
+    error.textContent='';
+
+    const phone=document.getElementById('phone').value.trim();
+    if(!isValidEgyptPhone(phone)){
+      error.textContent='Please enter a valid Egyptian mobile number (11 digits starting with 010, 011, 012 or 015).';
+      document.getElementById('phone').focus();
+      return;
+    }
+
+    const order = {
+      orderNumber: makeOrderNumber(),
+      createdAt: new Date().toISOString(),
+      customer: {
+        firstName: document.getElementById('first-name').value.trim(),
+        lastName: document.getElementById('last-name').value.trim(),
+        phone,
+        governorate: document.getElementById('governorate').value,
+        area: document.getElementById('area').value.trim(),
+        building: document.getElementById('building').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        notes: document.getElementById('notes').value.trim()
+      },
+      items: cart.map(item=>{
+        const p=products.find(x=>x.id===item.id);
+        return {id:item.id,name:p?.name||item.id,qty:item.qty,price:p?.price||0,size:p?.size||''};
+      }),
+      subtotal,
+      shipping: SHIPPING_FEE,
+      total: subtotal + SHIPPING_FEE,
+      paymentMethod: 'Cash on Delivery'
+    };
+
+    const previous=JSON.parse(localStorage.getItem('domaro_orders') || '[]');
+    previous.unshift(order);
+    localStorage.setItem('domaro_orders', JSON.stringify(previous));
+
+    localStorage.removeItem('domaro_cart');
+    updateCartCount();
+
+    document.querySelector('.checkout-grid').hidden=true;
+    const success=document.getElementById('order-success');
+    document.getElementById('order-number').textContent=order.orderNumber;
+    success.hidden=false;
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+}
+renderCheckout();

@@ -1,18 +1,29 @@
-DOMARO WEBSITE V3
+DOMARO WEBSITE V4
 
-CURRENT REAL PRODUCTS
+CURRENT PRODUCTS
 - HOOK BLUE — 200 ML — 2,000 EGP — MEN
 - ARROGATE BLUE — 200 ML — 2,000 EGP — MEN
 - ARROGATE PINK — 200 ML — 2,000 EGP — WOMEN
 
-V3 CHANGES
-- Real product images added
-- Demo products removed
-- Men/Women shop filters updated
-- Product pages updated
-- Cart updated
-- Fabricated rating/review content removed
-- Checkout remains a placeholder
+V4 CHECKOUT
+- Cash on Delivery checkout page
+- Customer first/last name
+- Egyptian mobile number validation
+- Governorate
+- Area / district
+- Detailed address
+- Building / floor / apartment
+- Optional order notes
+- Fixed shipping fee: 80 EGP
+- Order summary and final total
+- Order confirmation number
+- Order is saved locally in the customer's browser for now
+- Cart clears after successful order
 
-NEXT PHASE
-Customer checkout form, Cash on Delivery, shipping fees, order storage, admin dashboard, and online payment.
+IMPORTANT
+This is a functional front-end COD checkout, but orders are NOT yet sent to a centralized admin dashboard or database.
+That requires the next backend/admin phase.
+
+TO CHANGE SHIPPING LATER
+Open app.js and change:
+const SHIPPING_FEE = 80;

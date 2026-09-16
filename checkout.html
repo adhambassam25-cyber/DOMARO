@@ -1,0 +1,112 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checkout — DOMARO</title><meta name="description" content="DOMARO checkout">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"></head><body><div class="topbar">FLAT SHIPPING 80 EGP ACROSS EGYPT</div>
+<header>
+  <div class="container nav">
+    <a class="logo" href="index.html">DOMARO<small>FRAGRANCES</small></a>
+    <nav class="navlinks">
+      <a href="index.html">HOME</a>
+      <a href="shop.html">SHOP</a>
+      <a href="shop.html">COLLECTIONS</a>
+      <a href="about.html">ABOUT</a>
+      <a href="contact.html">CONTACT</a>
+    </nav>
+    <div class="navicons">
+      <button class="icon-btn" aria-label="Search">⌕</button>
+      <button class="icon-btn" aria-label="Account">♙</button>
+      <a class="icon-btn" href="cart.html" aria-label="Cart">◱<span class="cart-pill" data-cart-count>0</span></a>
+    </div>
+  </div>
+</header>
+<section class="page-hero">
+  <div class="eyebrow">CASH ON DELIVERY</div>
+  <h1>CHECKOUT</h1>
+  <p>Enter your delivery details and review your order before placing it.</p>
+</section>
+
+<main class="container checkout-page">
+  <div class="checkout-grid">
+    <section class="checkout-panel">
+      <div class="checkout-step">01 — DELIVERY DETAILS</div>
+      <form id="checkout-form">
+        <div class="form-row">
+          <div><label>First name</label><input id="first-name" required autocomplete="given-name" placeholder="First name"></div>
+          <div><label>Last name</label><input id="last-name" required autocomplete="family-name" placeholder="Last name"></div>
+        </div>
+
+        <div class="form-row">
+          <div><label>Mobile number</label><input id="phone" required inputmode="tel" autocomplete="tel" placeholder="01XXXXXXXXX" maxlength="11"></div>
+          <div><label>Governorate</label><select id="governorate" required><option value="">Select governorate</option><option value="Cairo">Cairo</option><option value="Giza">Giza</option><option value="Alexandria">Alexandria</option><option value="Qalyubia">Qalyubia</option><option value="Sharqia">Sharqia</option><option value="Dakahlia">Dakahlia</option><option value="Gharbia">Gharbia</option><option value="Monufia">Monufia</option><option value="Beheira">Beheira</option><option value="Kafr El Sheikh">Kafr El Sheikh</option><option value="Damietta">Damietta</option><option value="Port Said">Port Said</option><option value="Ismailia">Ismailia</option><option value="Suez">Suez</option><option value="Fayoum">Fayoum</option><option value="Beni Suef">Beni Suef</option><option value="Minya">Minya</option><option value="Assiut">Assiut</option><option value="Sohag">Sohag</option><option value="Qena">Qena</option><option value="Luxor">Luxor</option><option value="Aswan">Aswan</option><option value="Red Sea">Red Sea</option><option value="New Valley">New Valley</option><option value="Matrouh">Matrouh</option><option value="North Sinai">North Sinai</option><option value="South Sinai">South Sinai</option></select></div>
+        </div>
+
+        <div class="form-row">
+          <div><label>Area / District</label><input id="area" required placeholder="Area or district"></div>
+          <div><label>Building / Floor / Apartment</label><input id="building" placeholder="Optional"></div>
+        </div>
+
+        <div><label>Detailed address</label><textarea id="address" required placeholder="Street name, landmark and full delivery address"></textarea></div>
+        <div><label>Order notes</label><textarea id="notes" class="small-textarea" placeholder="Optional notes for delivery"></textarea></div>
+
+        <div class="payment-box">
+          <div>
+            <b>Cash on Delivery</b>
+            <span>Pay when your order arrives.</span>
+          </div>
+          <div class="payment-check">✓</div>
+        </div>
+
+        <label class="terms-row">
+          <input id="confirm-order" type="checkbox" required>
+          <span>I confirm that my delivery details and order are correct.</span>
+        </label>
+
+        <button class="add-btn place-order-btn" type="submit">PLACE ORDER</button>
+        <div id="checkout-error" class="checkout-error"></div>
+      </form>
+    </section>
+
+    <aside class="checkout-panel order-panel">
+      <div class="checkout-step">02 — ORDER SUMMARY</div>
+      <div id="checkout-items"></div>
+      <div class="checkout-totals">
+        <div><span>Subtotal</span><span id="checkout-subtotal">0 EGP</span></div>
+        <div><span>Shipping</span><span>80 EGP</span></div>
+        <div class="checkout-grand"><b>Total</b><b id="checkout-total">0 EGP</b></div>
+      </div>
+      <div class="cod-note">Payment method: <b>Cash on Delivery</b></div>
+    </aside>
+  </div>
+
+  <section id="order-success" class="order-success" hidden>
+    <div class="success-mark">✓</div>
+    <div class="eyebrow" style="color:#766b5d">ORDER RECEIVED</div>
+    <h2>Thank you for your order.</h2>
+    <p>Your order number is <b id="order-number"></b>.</p>
+    <p>Keep this number for reference. We’ll connect centralized order management and notifications in the next phase.</p>
+    <a class="btn dark" href="index.html">BACK TO HOME</a>
+  </section>
+</main>
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="logo">DOMARO<small>FRAGRANCES</small></div>
+        <p style="color:#8f877f;max-width:310px;line-height:1.7;font-size:12px;margin-top:20px">Modern fragrances designed to leave a lasting impression.</p>
+      </div>
+      <div class="footer-links">
+        <a href="shop.html">SHOP</a><a href="about.html">ABOUT</a>
+        <a href="contact.html">CONTACT</a><a href="#">FAQ</a>
+        <a href="#">SHIPPING</a><a href="#">RETURNS</a>
+      </div>
+      <div>
+        <div class="news-title">JOIN OUR NEWSLETTER</div>
+        <form class="newsletter" data-demo-form><input type="email" required placeholder="Your email address"><button>→</button></form>
+        <div class="socials"><span>Instagram</span><span>TikTok</span><span>Facebook</span></div>
+      </div>
+    </div>
+    <div class="copyright"><span>© 2026 DOMARO. ALL RIGHTS RESERVED.</span><span>A SCENT THAT BECOMES YOU.</span></div>
+  </div>
+</footer>
+<script src="app.js"></script></body></html>

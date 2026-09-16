@@ -212,3 +212,47 @@ textarea{min-height:155px;resize:vertical}
 .product-gallery.real-photo img{padding:18px}
 .stock-line{font-size:10px;letter-spacing:1.4px;color:#6f675f;margin:12px 0}
 .stock-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4d7e50;margin-right:7px}
+
+
+/* DOMARO v4 checkout */
+.checkout-link{display:flex;text-decoration:none;margin-top:14px}
+.checkout-page{padding:64px 0 82px}
+.checkout-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:28px;align-items:start}
+.checkout-panel{background:#f8f4ee;border:1px solid #ddd4c8;padding:30px}
+.order-panel{position:sticky;top:136px}
+.checkout-step{font-size:10px;letter-spacing:2.2px;color:#7c7369;margin-bottom:24px}
+.checkout-panel label{display:block;font-size:10px;letter-spacing:1px;color:#625b54;margin-bottom:7px}
+.checkout-panel input,.checkout-panel textarea,.checkout-panel select{width:100%}
+.checkout-panel .form-row>div{min-width:0}
+.small-textarea{min-height:85px}
+.payment-box{display:flex;justify-content:space-between;align-items:center;border:1px solid #cfc6bb;background:#fff;padding:17px 18px;margin:7px 0 15px}
+.payment-box b{display:block;font-size:13px;margin-bottom:4px}
+.payment-box span{font-size:11px;color:#766e66}
+.payment-check{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#111;color:#fff;font-size:12px}
+.terms-row{display:flex!important;align-items:flex-start;gap:10px;margin:16px 0 18px!important;letter-spacing:0!important;line-height:1.5}
+.terms-row input{width:auto!important;margin-top:2px}
+.place-order-btn{margin-top:0}
+.checkout-error{color:#9b3028;font-size:11px;line-height:1.5;margin-top:12px;min-height:16px}
+.checkout-product{display:grid;grid-template-columns:78px 1fr auto;gap:13px;align-items:center;border-bottom:1px solid #ddd4c8;padding:13px 0}
+.checkout-product img{width:78px;height:78px;object-fit:contain;background:#fff}
+.checkout-product b{font:500 17px "Cormorant Garamond",Georgia,serif}
+.checkout-product .meta{margin-top:4px}
+.checkout-product-price{font-size:12px;font-weight:700;white-space:nowrap}
+.checkout-totals{padding-top:18px}
+.checkout-totals>div{display:flex;justify-content:space-between;padding:8px 0;font-size:12px}
+.checkout-grand{border-top:1px solid #cfc6bb;margin-top:8px;padding-top:16px!important;font-size:17px!important}
+.cod-note{margin-top:16px;padding:13px;background:#eee7dc;font-size:11px;color:#5f5851}
+.order-success{max-width:680px;margin:20px auto 0;text-align:center;background:#f8f4ee;border:1px solid #ddd4c8;padding:55px 30px}
+.order-success h2{font:500 40px "Cormorant Garamond",Georgia,serif;margin:8px 0 15px}
+.order-success p{color:#665e57;line-height:1.7}
+.success-mark{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#0b0b0b;color:#fff;margin:0 auto 20px;font-size:22px}
+@media(max-width:900px){
+ .checkout-grid{grid-template-columns:1fr}
+ .order-panel{position:static}
+}
+@media(max-width:640px){
+ .checkout-panel{padding:20px}
+ .checkout-product{grid-template-columns:64px 1fr}
+ .checkout-product img{width:64px;height:64px}
+ .checkout-product-price{grid-column:2}
+}
