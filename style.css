@@ -258,3 +258,80 @@ textarea{min-height:155px;resize:vertical}
 }
 
 .place-order-btn:disabled{opacity:.62;cursor:not-allowed}
+
+
+/* DOMARO v6 Admin Dashboard */
+.admin-body{background:#eee8df;min-height:100vh}
+.admin-topbar{background:#090909;color:#fff;border-bottom:1px solid #27221d}
+.admin-topbar-inner{height:82px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.admin-top-actions{display:flex;align-items:center;gap:14px}
+.admin-user-label{font-size:10px;color:#aaa199;letter-spacing:.8px}
+.admin-logout,.admin-secondary-btn{
+  border:1px solid #b99762;
+  background:transparent;
+  color:#111;
+  padding:10px 15px;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:1.2px
+}
+.admin-topbar .admin-logout{color:#fff}
+.admin-shell{padding:55px 0 80px}
+.admin-login-card{width:min(520px,100%);margin:35px auto;background:#f8f4ee;border:1px solid #d8cfc2;padding:38px}
+.admin-login-card h1,.admin-dashboard-head h1{font:500 43px "Cormorant Garamond",Georgia,serif;margin:5px 0 12px;letter-spacing:1px}
+.admin-login-card>p{color:#6d655d;line-height:1.7;font-size:13px}
+.admin-login-form{display:grid;gap:16px;margin-top:26px}
+.admin-login-form label{font-size:10px;letter-spacing:1px;color:#605850}
+.admin-login-form input{width:100%;margin-top:8px}
+.admin-error{color:#9b3028;font-size:11px;line-height:1.55;margin-top:9px;min-height:16px}
+.admin-dashboard-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:25px}
+.admin-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px}
+.admin-stat{background:#f8f4ee;border:1px solid #d8cfc2;padding:20px}
+.admin-stat span{display:block;font-size:9px;letter-spacing:1.5px;color:#746b62}
+.admin-stat b{display:block;font:500 34px "Cormorant Garamond",Georgia,serif;margin-top:7px}
+.admin-controls{display:grid;grid-template-columns:1fr 220px;gap:12px;margin-bottom:22px}
+.admin-controls input,.admin-controls select{background:#fff}
+.admin-loading{padding:20px 0;color:#71685f;font-size:12px}
+.orders-list{display:grid;gap:17px}
+.admin-empty{background:#f8f4ee;border:1px dashed #cfc5b8;padding:45px;text-align:center;color:#776e65}
+.admin-order-card{background:#f9f6f1;border:1px solid #d8cfc2;padding:24px}
+.admin-order-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;border-bottom:1px solid #ddd4c8;padding-bottom:16px;margin-bottom:20px}
+.admin-order-number{font:600 23px "Cormorant Garamond",Georgia,serif;letter-spacing:.8px}
+.admin-order-date{font-size:10px;color:#827a71;margin-top:3px}
+.status-badge{font-size:9px;letter-spacing:1.1px;padding:8px 10px;border:1px solid #cfc5b8;background:#eee8df}
+.status-new{background:#fff4d9;border-color:#e2c783}
+.status-confirmed{background:#e8f0ff;border-color:#a9c0ed}
+.status-shipped{background:#ece8ff;border-color:#bcb2e7}
+.status-delivered{background:#e7f3e8;border-color:#a9c9ac}
+.status-cancelled{background:#f6e5e2;border-color:#d3aaa3}
+.admin-order-grid{display:grid;grid-template-columns:1fr 1.3fr .8fr;gap:22px}
+.admin-order-section h3,.admin-items-block h3{font-size:9px;letter-spacing:1.6px;color:#82796f;margin:0 0 10px}
+.admin-order-section p{margin:5px 0;line-height:1.5;font-size:12px;color:#4c4640}
+.admin-order-section a{text-decoration:underline}
+.admin-items-block{border-top:1px solid #e0d7cb;margin-top:20px;padding-top:18px}
+.admin-order-item{display:flex;justify-content:space-between;gap:15px;padding:9px 0;border-bottom:1px solid #e8dfd4}
+.admin-order-item b{font:500 17px "Cormorant Garamond",Georgia,serif}
+.admin-order-item span{display:block;font-size:10px;color:#81786e;margin-top:2px}
+.admin-order-item strong{font-size:11px;white-space:nowrap}
+.admin-order-totals{display:flex;justify-content:flex-end;gap:22px;flex-wrap:wrap;padding-top:16px;font-size:11px}
+.admin-note{margin-top:16px;background:#eee7dc;padding:12px;font-size:11px;color:#5f5851}
+.admin-order-actions{display:flex;justify-content:flex-end;align-items:end;gap:10px;margin-top:20px;border-top:1px solid #ddd4c8;padding-top:17px}
+.admin-order-actions label{font-size:9px;letter-spacing:1.3px;color:#726960}
+.admin-order-actions select{display:block;margin-top:6px;min-width:160px}
+.admin-save-status{border:0;background:#0a0a0a;color:#fff;padding:13px 18px;font-size:10px;font-weight:700;letter-spacing:1.2px}
+.admin-save-status:disabled,.admin-secondary-btn:disabled,.admin-login-form button:disabled{opacity:.6;cursor:not-allowed}
+@media(max-width:900px){
+  .admin-stats{grid-template-columns:repeat(2,1fr)}
+  .admin-order-grid{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .admin-shell{padding-top:30px}
+  .admin-login-card{padding:25px}
+  .admin-dashboard-head{align-items:flex-start;flex-direction:column}
+  .admin-stats{grid-template-columns:1fr 1fr}
+  .admin-controls{grid-template-columns:1fr}
+  .admin-order-card{padding:18px}
+  .admin-order-head{flex-direction:column}
+  .admin-order-actions{align-items:stretch;flex-direction:column}
+  .admin-order-actions select{width:100%}
+}

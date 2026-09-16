@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>DOMARO Admin</title>
+  <meta name="description" content="DOMARO Admin Dashboard">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-body">
+  <header class="admin-topbar">
+    <div class="container admin-topbar-inner">
+      <div class="logo">DOMARO<small>ADMIN</small></div>
+      <div class="admin-top-actions">
+        <span id="admin-user-label" class="admin-user-label"></span>
+        <button id="logout-btn" class="admin-logout" hidden>LOG OUT</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container admin-shell">
+
+    <section id="admin-login" class="admin-login-card">
+      <div class="eyebrow" style="color:#766b5d">SECURE ACCESS</div>
+      <h1>ADMIN LOGIN</h1>
+      <p>Sign in with the Supabase admin account created for DOMARO.</p>
+
+      <form id="admin-login-form" class="admin-login-form">
+        <label>
+          Email
+          <input id="admin-email" type="email" autocomplete="username" required placeholder="Admin email">
+        </label>
+        <label>
+          Password
+          <input id="admin-password" type="password" autocomplete="current-password" required placeholder="Password">
+        </label>
+        <button id="login-btn" class="add-btn" type="submit">SIGN IN</button>
+        <div id="login-error" class="admin-error"></div>
+      </form>
+    </section>
+
+    <section id="admin-dashboard" hidden>
+      <div class="admin-dashboard-head">
+        <div>
+          <div class="eyebrow" style="color:#766b5d">DOMARO OPERATIONS</div>
+          <h1>ORDERS DASHBOARD</h1>
+        </div>
+        <button id="refresh-orders" class="admin-secondary-btn">REFRESH</button>
+      </div>
+
+      <div class="admin-stats">
+        <div class="admin-stat"><span>ALL ORDERS</span><b id="stat-all">0</b></div>
+        <div class="admin-stat"><span>NEW</span><b id="stat-new">0</b></div>
+        <div class="admin-stat"><span>CONFIRMED</span><b id="stat-confirmed">0</b></div>
+        <div class="admin-stat"><span>SHIPPED</span><b id="stat-shipped">0</b></div>
+        <div class="admin-stat"><span>DELIVERED</span><b id="stat-delivered">0</b></div>
+      </div>
+
+      <div class="admin-controls">
+        <input id="order-search" type="search" placeholder="Search order number, customer or phone">
+        <select id="status-filter">
+          <option value="all">All statuses</option>
+          <option value="new">New</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div id="orders-loading" class="admin-loading" hidden>Loading orders…</div>
+      <div id="orders-error" class="admin-error"></div>
+      <div id="orders-list" class="orders-list"></div>
+    </section>
+  </main>
+
+  <script>
+    window.DOMARO_ADMIN_CONFIG = {
+      SUPABASE_URL: "https://zuqjxcsjjgotwwmlvxmf.supabase.co",
+      SUPABASE_KEY: "sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c"
+    };
+  </script>
+  <script src="admin.js"></script>
+</body>
+</html>
