@@ -1,32 +1,18 @@
-DOMARO WEBSITE V2
-=================
+DOMARO WEBSITE V3
 
-WHAT'S INCLUDED
-- Premium responsive homepage
-- Shop page with Men / Women / Unisex filters
-- Individual product pages
-- Working local shopping cart
-- About page
-- Contact page
-- Mobile-friendly responsive layout
-- Four demo fragrances
+CURRENT REAL PRODUCTS
+- HOOK BLUE — 200 ML — 2,000 EGP — MEN
+- ARROGATE BLUE — 200 ML — 2,000 EGP — MEN
+- ARROGATE PINK — 200 ML — 2,000 EGP — WOMEN
 
-IMPORTANT
-This is still a storefront prototype.
-Real checkout, online payment, shipping rates, inventory, admin dashboard, emails, customer login and order database are NOT connected yet.
+V3 CHANGES
+- Real product images added
+- Demo products removed
+- Men/Women shop filters updated
+- Product pages updated
+- Cart updated
+- Fabricated rating/review content removed
+- Checkout remains a placeholder
 
-QUICK PREVIEW
-1. Unzip the folder.
-2. Open index.html in Chrome.
-
-UPLOAD
-Upload the complete DOMARO-v2 folder / ZIP to your Vercel deployment workflow.
-
-EDIT PRODUCTS LATER
-Product names, prices, descriptions and notes are inside app.js.
-
-EDIT DESIGN LATER
-Colors, spacing and responsive layout are inside style.css.
-
-DOMARO V2 LIVE
-Vercel test 2
+NEXT PHASE
+Customer checkout form, Cash on Delivery, shipping fees, order storage, admin dashboard, and online payment.

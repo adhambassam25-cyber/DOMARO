@@ -204,3 +204,11 @@ textarea{min-height:155px;resize:vertical}
  .form-row{grid-template-columns:1fr}
  .page-hero h1{font-size:42px}
 }
+
+/* DOMARO v3: real product images */
+.product-img.real-photo,.product-gallery.real-photo{background:#fff}
+.product-img.real-photo img,.product-gallery.real-photo img{object-fit:contain;background:#fff}
+.product-img.real-photo img{padding:10px}
+.product-gallery.real-photo img{padding:18px}
+.stock-line{font-size:10px;letter-spacing:1.4px;color:#6f675f;margin:12px 0}
+.stock-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4d7e50;margin-right:7px}
