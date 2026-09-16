@@ -37,6 +37,8 @@ const products = [
 
 const money = n => n.toLocaleString('en-EG') + ' EGP';
 const SHIPPING_FEE = 80;
+const SUPABASE_URL = "https://zuqjxcsjjgotwwmlvxmf.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c";
 function getCart(){ return JSON.parse(localStorage.getItem('domaro_cart') || '[]'); }
 function setCart(cart){ localStorage.setItem('domaro_cart', JSON.stringify(cart)); updateCartCount(); }
 function updateCartCount(){
@@ -198,7 +200,7 @@ function renderCheckout(){
   document.getElementById('checkout-subtotal').textContent=money(subtotal);
   document.getElementById('checkout-total').textContent=money(subtotal + SHIPPING_FEE);
 
-  form.addEventListener('submit', e=>{
+  form.addEventListener('submit', async e=>{
     e.preventDefault();
     const error=document.getElementById('checkout-error');
     error.textContent='';
@@ -210,41 +212,54 @@ function renderCheckout(){
       return;
     }
 
-    const order = {
-      orderNumber: makeOrderNumber(),
-      createdAt: new Date().toISOString(),
-      customer: {
-        firstName: document.getElementById('first-name').value.trim(),
-        lastName: document.getElementById('last-name').value.trim(),
-        phone,
-        governorate: document.getElementById('governorate').value,
-        area: document.getElementById('area').value.trim(),
-        building: document.getElementById('building').value.trim(),
-        address: document.getElementById('address').value.trim(),
-        notes: document.getElementById('notes').value.trim()
-      },
-      items: cart.map(item=>{
-        const p=products.find(x=>x.id===item.id);
-        return {id:item.id,name:p?.name||item.id,qty:item.qty,price:p?.price||0,size:p?.size||''};
-      }),
-      subtotal,
-      shipping: SHIPPING_FEE,
-      total: subtotal + SHIPPING_FEE,
-      paymentMethod: 'Cash on Delivery'
+    const submitBtn=form.querySelector('.place-order-btn');
+    const originalBtnText=submitBtn.textContent;
+    submitBtn.disabled=true;
+    submitBtn.textContent='PLACING ORDER...';
+
+    const payload = {
+      p_first_name: document.getElementById('first-name').value.trim(),
+      p_last_name: document.getElementById('last-name').value.trim(),
+      p_phone: phone,
+      p_governorate: document.getElementById('governorate').value,
+      p_area: document.getElementById('area').value.trim(),
+      p_building: document.getElementById('building').value.trim(),
+      p_address: document.getElementById('address').value.trim(),
+      p_notes: document.getElementById('notes').value.trim(),
+      p_items: cart.map(item=>({id:item.id,qty:item.qty}))
     };
 
-    const previous=JSON.parse(localStorage.getItem('domaro_orders') || '[]');
-    previous.unshift(order);
-    localStorage.setItem('domaro_orders', JSON.stringify(previous));
+    try{
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/place_order`, {
+        method:'POST',
+        headers:{
+          'apikey': SUPABASE_PUBLISHABLE_KEY,
+          'Content-Type':'application/json',
+          'Accept':'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
 
-    localStorage.removeItem('domaro_cart');
-    updateCartCount();
+      let result=null;
+      try{ result=await response.json(); }catch(_){}
 
-    document.querySelector('.checkout-grid').hidden=true;
-    const success=document.getElementById('order-success');
-    document.getElementById('order-number').textContent=order.orderNumber;
-    success.hidden=false;
-    window.scrollTo({top:0,behavior:'smooth'});
+      if(!response.ok){
+        throw new Error(result?.message || result?.error || 'Could not place order. Please try again.');
+      }
+
+      localStorage.removeItem('domaro_cart');
+      updateCartCount();
+
+      document.querySelector('.checkout-grid').hidden=true;
+      const success=document.getElementById('order-success');
+      document.getElementById('order-number').textContent=result?.orderNumber || 'Order received';
+      success.hidden=false;
+      window.scrollTo({top:0,behavior:'smooth'});
+    }catch(err){
+      error.textContent = err.message || 'Could not place order. Please try again.';
+      submitBtn.disabled=false;
+      submitBtn.textContent=originalBtnText;
+    }
   });
 }
 renderCheckout();

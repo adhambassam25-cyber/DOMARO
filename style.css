@@ -256,3 +256,5 @@ textarea{min-height:155px;resize:vertical}
  .checkout-product img{width:64px;height:64px}
  .checkout-product-price{grid-column:2}
 }
+
+.place-order-btn:disabled{opacity:.62;cursor:not-allowed}
