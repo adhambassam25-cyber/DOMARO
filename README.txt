@@ -1,34 +1,32 @@
-DOMARO WEBSITE V7 — PRODUCT MANAGEMENT
+DOMARO WEBSITE V8 — STOCK + NEW ORDER ALERTS
 
-WHAT V7 ADDS
-- Products are loaded from Supabase instead of being hard-coded in app.js.
-- Admin dashboard now has ORDERS and PRODUCTS tabs.
-- Add products from the admin dashboard.
-- Edit product name, category, size, price and description.
-- Upload product images to Supabase Storage.
-- Mark products In Stock / Out of Stock.
-- Hide products from the public store or make them live again.
-- Public Shop updates from the database automatically.
-- Hidden products cannot be ordered.
-- Out-of-stock products cannot be ordered.
-- Existing 3 products remain in the database and continue to work.
+NEW: REAL INVENTORY
+- Each product now has Stock Quantity.
+- Blank quantity = inventory not tracked yet.
+- 0 = Out of Stock.
+- Positive number = real stock.
+- Tracked stock automatically decreases after every successful order.
+- When tracked stock reaches 0, the product automatically becomes Out of Stock.
+- Stock validation is done in Supabase inside the order transaction to reduce overselling risk.
 
-IMPORTANT — RUN SQL FIRST
-Before deploying v7:
-1. Open Supabase → SQL Editor → New query.
-2. Paste the full contents of SUPABASE-V7-MIGRATION.sql.
-3. Run it.
-4. Only after Success, deploy DOMARO v7.
+NEW: BROWSER ORDER ALERTS
+- Admin has an ENABLE ALERTS button.
+- Allow browser notifications once.
+- The dashboard checks every 60 seconds while the Admin page is open.
+- New orders can trigger a browser notification and refresh the orders list automatically.
 
-ADMIN PRODUCT MANAGEMENT
-After deployment:
-https://domaro.vercel.app/admin.html
-Login → PRODUCTS.
+IMPORTANT
+Browser alerts require the Admin dashboard to remain open.
+Email / WhatsApp alerts that work while the dashboard is closed require an external notification provider and can be added next.
 
-IMAGE RULES
-- JPG, PNG or WebP
-- Maximum 5 MB
-- Images are stored in a public Supabase Storage bucket called: products
+BEFORE DEPLOYING V8
+1. Supabase → SQL Editor → New query.
+2. Open SUPABASE-V8-MIGRATION.sql.
+3. Copy all code into Supabase.
+4. Run it and confirm Success.
+5. Then deploy v8 to GitHub/Vercel.
 
-SHIPPING
-Flat shipping remains 80 EGP.
+AFTER DEPLOYING
+Admin → PRODUCTS → Edit each product → enter the REAL stock quantity.
+
+Existing products intentionally start with quantity blank so no fake inventory number is created.

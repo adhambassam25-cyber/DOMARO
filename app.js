@@ -58,7 +58,7 @@ function removeItem(id){
 async function loadCatalog(){
   try{
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/products?select=id,name,category,size_ml,price,image_path,description,in_stock,active&active=eq.true&order=created_at.asc`,
+      `${SUPABASE_URL}/rest/v1/products?select=id,name,category,size_ml,price,image_path,description,in_stock,stock_quantity,active&active=eq.true&order=created_at.asc`,
       { headers: { 'apikey': SUPABASE_PUBLISHABLE_KEY } }
     );
     const data = await response.json();
@@ -74,7 +74,8 @@ async function loadCatalog(){
       img:p.image_path || 'assets/hero.svg',
       cat:p.category,
       badge:p.in_stock ? String(p.category).toUpperCase() : 'OUT OF STOCK',
-      inStock:Boolean(p.in_stock),
+      stockQuantity:p.stock_quantity === null ? null : Number(p.stock_quantity),
+      inStock:Boolean(p.in_stock) && (p.stock_quantity === null || Number(p.stock_quantity) > 0),
       active:Boolean(p.active),
       desc:p.description || `${p.name} by DOMARO.`
     }));
@@ -134,7 +135,7 @@ function renderProductDetail(){
       <h1>${p.name}</h1>
       <div class="meta">${p.type} · ${p.size} · ${p.cat.toUpperCase()}</div>
       <div class="price" style="font-size:22px;margin:18px 0">${money(p.price)}</div>
-      <div class="stock-line"><span class="stock-dot ${p.inStock ? '' : 'stock-dot-out'}"></span>${p.inStock ? 'AVAILABLE' : 'OUT OF STOCK'}</div>
+      <div class="stock-line"><span class="stock-dot ${p.inStock ? '' : 'stock-dot-out'}"></span>${p.inStock ? (p.stockQuantity === null ? 'AVAILABLE' : `${p.stockQuantity} IN STOCK`) : 'OUT OF STOCK'}</div>
       <p class="desc">${p.desc}</p>
       <div class="qty"><button id="minus">−</button><input id="qty" type="number" min="1" max="10" value="1"><button id="plus">+</button></div>
       <button class="add-btn" id="add" ${p.inStock ? '' : 'disabled'}>${p.inStock ? 'ADD TO CART' : 'OUT OF STOCK'}</button>

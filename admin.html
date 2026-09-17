@@ -17,6 +17,7 @@
       <div class="logo">DOMARO<small>ADMIN</small></div>
       <div class="admin-top-actions">
         <span id="admin-user-label" class="admin-user-label"></span>
+        <button id="enable-notifications-btn" class="admin-logout" hidden>ENABLE ALERTS</button>
         <button id="logout-btn" class="admin-logout" hidden>LOG OUT</button>
       </div>
     </div>
@@ -162,6 +163,12 @@
       <div>
         <label>Description</label>
         <textarea id="product-description" class="small-textarea" placeholder="Product description"></textarea>
+      </div>
+
+      <div>
+        <label>Stock quantity</label>
+        <input id="product-stock-quantity" type="number" min="0" step="1" placeholder="Leave blank if stock is not tracked yet">
+        <small class="field-help">Blank = not tracked. 0 = out of stock. Positive number = real stock that decreases after orders.</small>
       </div>
 
       <div class="product-switch-grid">

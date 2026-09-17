@@ -8,6 +8,7 @@ const loginError = document.getElementById('login-error');
 const loginBtn = document.getElementById('login-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const adminUserLabel = document.getElementById('admin-user-label');
+const enableNotificationsBtn = document.getElementById('enable-notifications-btn');
 
 const ordersPanel = document.getElementById('admin-orders-panel');
 const productsPanel = document.getElementById('admin-products-panel');
@@ -40,6 +41,8 @@ let allOrders = [];
 let orderItems = [];
 let allProducts = [];
 let editingProduct = null;
+let notificationPollTimer = null;
+let lastKnownOrderCreatedAt = localStorage.getItem('domaro_last_known_order_created_at') || '';
 
 function money(n){
   return Number(n || 0).toLocaleString('en-EG') + ' EGP';
@@ -108,12 +111,16 @@ function showDashboard(){
   loginSection.hidden=true;
   dashboardSection.hidden=false;
   logoutBtn.hidden=false;
+  enableNotificationsBtn.hidden=false;
+  updateNotificationButton();
   adminUserLabel.textContent=adminEmail || 'Admin';
 }
 function showLogin(message=''){
   dashboardSection.hidden=true;
   loginSection.hidden=false;
   logoutBtn.hidden=true;
+  enableNotificationsBtn.hidden=true;
+  stopOrderNotificationPolling();
   adminUserLabel.textContent='';
   if(message) loginError.textContent=message;
 }
@@ -315,6 +322,7 @@ function renderProductsAdmin(){
           </div>
         </div>
         <div class="admin-product-price">${money(p.price)}</div>
+        <div class="admin-stock-qty">${p.stock_quantity === null ? 'STOCK: NOT TRACKED' : `STOCK: ${esc(p.stock_quantity)} UNIT${Number(p.stock_quantity)===1?'':'S'}`}</div>
         <p>${esc(p.description || 'No description yet.')}</p>
         <div class="admin-product-actions">
           <button class="admin-secondary-btn edit-product-btn" data-id="${esc(p.id)}">EDIT</button>
@@ -326,7 +334,16 @@ function renderProductsAdmin(){
   `).join('');
 
   document.querySelectorAll('.edit-product-btn').forEach(btn=>btn.addEventListener('click',()=>openProductModal(allProducts.find(p=>p.id===btn.dataset.id))));
-  document.querySelectorAll('.quick-stock-btn').forEach(btn=>btn.addEventListener('click',()=>quickUpdateProduct(btn.dataset.id,'in_stock')));
+  document.querySelectorAll('.quick-stock-btn').forEach(btn=>btn.addEventListener('click',()=>{
+    const p=allProducts.find(x=>x.id===btn.dataset.id);
+    if(!p) return;
+    if(p.stock_quantity !== null && Number(p.stock_quantity) === 0){
+      productsError.textContent='Stock is tracked at 0. Edit the product and enter a quantity first.';
+      openProductModal(p);
+      return;
+    }
+    quickUpdateProduct(btn.dataset.id,'in_stock');
+  }));
   document.querySelectorAll('.quick-live-btn').forEach(btn=>btn.addEventListener('click',()=>quickUpdateProduct(btn.dataset.id,'active')));
 }
 
@@ -364,6 +381,7 @@ function openProductModal(product=null){
   document.getElementById('product-size').value=product?.size_ml || 200;
   document.getElementById('product-price').value=product?.price || 2000;
   document.getElementById('product-description').value=product?.description || '';
+  document.getElementById('product-stock-quantity').value=product?.stock_quantity ?? '';
   document.getElementById('product-stock').checked=product ? Boolean(product.in_stock) : true;
   document.getElementById('product-active').checked=product ? Boolean(product.active) : true;
 
@@ -417,8 +435,18 @@ productForm.addEventListener('submit',async e=>{
   const size_ml=Number(document.getElementById('product-size').value);
   const price=Number(document.getElementById('product-price').value);
   const description=document.getElementById('product-description').value.trim();
-  const in_stock=document.getElementById('product-stock').checked;
+  const stockRaw=document.getElementById('product-stock-quantity').value.trim();
+  const stock_quantity=stockRaw==='' ? null : Number(stockRaw);
+  let in_stock=document.getElementById('product-stock').checked;
   const active=document.getElementById('product-active').checked;
+
+  if(stock_quantity !== null){
+    if(!Number.isInteger(stock_quantity) || stock_quantity < 0){
+      productFormError.textContent='Stock quantity must be a whole number of 0 or more.';
+      return;
+    }
+    in_stock = stock_quantity > 0;
+  }
   const file=imageInput.files?.[0];
 
   if(!name || !size_ml || price<0){
@@ -449,6 +477,7 @@ productForm.addEventListener('submit',async e=>{
       size_ml,
       price,
       description,
+      stock_quantity,
       in_stock,
       active,
       image_path,
@@ -483,6 +512,92 @@ productForm.addEventListener('submit',async e=>{
   }
 });
 
+
+function updateNotificationButton(){
+  if(!('Notification' in window)){
+    enableNotificationsBtn.textContent='ALERTS UNSUPPORTED';
+    enableNotificationsBtn.disabled=true;
+    return;
+  }
+  enableNotificationsBtn.disabled=false;
+  if(Notification.permission === 'granted'){
+    enableNotificationsBtn.textContent='ALERTS ON';
+  }else if(Notification.permission === 'denied'){
+    enableNotificationsBtn.textContent='ALERTS BLOCKED';
+  }else{
+    enableNotificationsBtn.textContent='ENABLE ALERTS';
+  }
+}
+
+enableNotificationsBtn.addEventListener('click', async ()=>{
+  if(!('Notification' in window)) return;
+  try{
+    const permission=await Notification.requestPermission();
+    updateNotificationButton();
+    if(permission === 'granted'){
+      new Notification('DOMARO alerts enabled',{
+        body:'New order alerts are active while this admin dashboard is open.'
+      });
+      startOrderNotificationPolling();
+    }
+  }catch(_){}
+});
+
+function startOrderNotificationPolling(){
+  stopOrderNotificationPolling();
+  if(!accessToken) return;
+  notificationPollTimer=setInterval(checkForNewOrders,60000);
+}
+
+function stopOrderNotificationPolling(){
+  if(notificationPollTimer){
+    clearInterval(notificationPollTimer);
+    notificationPollTimer=null;
+  }
+}
+
+async function checkForNewOrders(){
+  if(!accessToken) return;
+
+  try{
+    const response=await fetch(
+      `${SUPABASE_URL}/rest/v1/orders?select=id,order_number,first_name,last_name,total,created_at&order=created_at.desc&limit=5`,
+      {headers:authHeaders()}
+    );
+    if(!response.ok) return;
+
+    const latest=await response.json();
+    if(!Array.isArray(latest) || !latest.length) return;
+
+    const newestCreatedAt=latest[0].created_at || '';
+
+    if(!lastKnownOrderCreatedAt){
+      lastKnownOrderCreatedAt=newestCreatedAt;
+      localStorage.setItem('domaro_last_known_order_created_at',lastKnownOrderCreatedAt);
+      return;
+    }
+
+    const newOnes=latest
+      .filter(o=>new Date(o.created_at) > new Date(lastKnownOrderCreatedAt))
+      .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+
+    for(const order of newOnes){
+      if(Notification.permission === 'granted'){
+        new Notification(`New DOMARO order — ${order.order_number}`,{
+          body:`${order.first_name} ${order.last_name} · ${money(order.total)}`,
+          tag:`domaro-order-${order.id}`
+        });
+      }
+    }
+
+    if(newOnes.length){
+      lastKnownOrderCreatedAt=newestCreatedAt;
+      localStorage.setItem('domaro_last_known_order_created_at',lastKnownOrderCreatedAt);
+      await loadOrders();
+    }
+  }catch(_){}
+}
+
 loginForm.addEventListener('submit',async e=>{
   e.preventDefault();
   loginError.textContent='';
@@ -495,6 +610,7 @@ loginForm.addEventListener('submit',async e=>{
     await verifyAdminAccess();
     showDashboard();
     await loadOrders();
+    startOrderNotificationPolling();
     document.getElementById('admin-password').value='';
   }catch(err){
     clearSession();
@@ -506,6 +622,7 @@ loginForm.addEventListener('submit',async e=>{
 });
 
 logoutBtn.addEventListener('click',()=>{
+  stopOrderNotificationPolling();
   clearSession();
   allOrders=[]; orderItems=[]; allProducts=[];
   ordersList.innerHTML=''; productsList.innerHTML='';
@@ -523,6 +640,7 @@ productFilter.addEventListener('change',renderProductsAdmin);
     await verifyAdminAccess();
     showDashboard();
     await loadOrders();
+    startOrderNotificationPolling();
   }catch(err){
     clearSession();
     showLogin(err.message || 'Please sign in again.');
