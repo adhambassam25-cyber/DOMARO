@@ -30,3 +30,12 @@ AFTER DEPLOYING
 Admin → PRODUCTS → Edit each product → enter the REAL stock quantity.
 
 Existing products intentionally start with quantity blank so no fake inventory number is created.
+
+
+V10 — CUSTOMER ORDER TRACKING
+- Added track.html for customer self-service order status lookup.
+- Customers must enter both order number and matching checkout mobile number.
+- Displays status timeline: Order received → Confirmed → Shipped → Delivered, plus Cancelled state.
+- Shows order items, payment method and total, but does not expose customer name/address/notes.
+- Checkout success page links directly to Track Order with the new order number prefilled.
+- Run SUPABASE-V10-MIGRATION.sql once before deploying this version.

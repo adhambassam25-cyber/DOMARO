@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Shop — DOMARO</title><meta name="description" content="DOMARO luxury fragrances">
+<title>Track Order — DOMARO</title><meta name="description" content="Track your DOMARO order status securely using your order number and mobile number.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"></head><body>
 <div class="topbar">FLAT SHIPPING 80 EGP ACROSS EGYPT</div>
 <header>
@@ -12,7 +12,7 @@
       <a href="shop.html">COLLECTIONS</a>
       <a href="about.html">ABOUT</a>
       <a href="contact.html">CONTACT</a>
-      <a href="track.html">TRACK ORDER</a>
+      <a class="active" href="track.html">TRACK ORDER</a>
     </nav>
     <div class="navicons">
       <button class="icon-btn" aria-label="Search">⌕</button>
@@ -21,16 +21,35 @@
     </div>
   </div>
 </header>
-<section class="page-hero"><div class="eyebrow">DOMARO COLLECTION</div><h1>SHOP FRAGRANCES</h1><p>Browse the currently available DOMARO collection.</p></section>
-<section class="section"><div class="container">
-  <div class="filters">
-    <button class="filter-btn active" data-filter="all">ALL</button>
-    <button class="filter-btn" data-filter="men">MEN</button>
-    <button class="filter-btn" data-filter="women">WOMEN</button>
-    <button class="filter-btn" data-filter="unisex">UNISEX</button>
-  </div>
-  <div id="shop-products" class="products"></div>
-</div></section>
+<section class="page-hero">
+  <div class="eyebrow">ORDER STATUS</div>
+  <h1>TRACK YOUR ORDER</h1>
+  <p>Enter your order number and the same mobile number used at checkout.</p>
+</section>
+
+<main class="container track-page">
+  <section class="track-card">
+    <div class="track-form-copy">
+      <div class="checkout-step">SECURE ORDER LOOKUP</div>
+      <h2>Where is my order?</h2>
+      <p>For your privacy, both details must match the information saved with your order.</p>
+    </div>
+    <form id="track-order-form" class="track-form">
+      <div>
+        <label for="track-order-number">Order number</label>
+        <input id="track-order-number" required autocomplete="off" placeholder="DOM-260917-XXXXXX">
+      </div>
+      <div>
+        <label for="track-phone">Mobile number</label>
+        <input id="track-phone" required inputmode="tel" autocomplete="tel" maxlength="11" placeholder="01XXXXXXXXX">
+      </div>
+      <button class="add-btn" id="track-submit" type="submit">TRACK ORDER</button>
+      <div id="track-error" class="checkout-error" aria-live="polite"></div>
+    </form>
+  </section>
+
+  <section id="track-result" class="track-result" hidden aria-live="polite"></section>
+</main>
 
 <footer>
   <div class="container">
@@ -42,8 +61,7 @@
       <div class="footer-links">
         <a href="shop.html">SHOP</a><a href="about.html">ABOUT</a>
         <a href="contact.html">CONTACT</a><a href="track.html">TRACK ORDER</a>
-        <a href="#">FAQ</a>
-        <a href="#">SHIPPING</a><a href="#">RETURNS</a>
+        <a href="#">FAQ</a><a href="#">SHIPPING</a><a href="#">RETURNS</a>
       </div>
       <div>
         <div class="news-title">JOIN OUR NEWSLETTER</div>

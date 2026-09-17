@@ -289,7 +289,10 @@ function renderCheckout(){
 
       document.querySelector('.checkout-grid').hidden=true;
       const success=document.getElementById('order-success');
-      document.getElementById('order-number').textContent=result?.orderNumber || 'Order received';
+      const newOrderNumber=result?.orderNumber || 'Order received';
+      document.getElementById('order-number').textContent=newOrderNumber;
+      const trackLink=document.getElementById('track-order-link');
+      if(trackLink && result?.orderNumber) trackLink.href=`track.html?order=${encodeURIComponent(result.orderNumber)}`;
       success.hidden=false;
       window.scrollTo({top:0,behavior:'smooth'});
     }catch(err){
@@ -310,6 +313,143 @@ function initDemoForms(){
   });
 }
 
+
+// DOMARO v10 — secure customer order tracking
+function escapeTrackHtml(value){
+  return String(value ?? '')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'",'&#039;');
+}
+
+function trackingStatusLabel(status){
+  const labels={
+    new:'Order received',
+    confirmed:'Confirmed',
+    shipped:'Shipped',
+    delivered:'Delivered',
+    cancelled:'Cancelled'
+  };
+  return labels[status] || String(status || 'Unknown');
+}
+
+function renderTrackingResult(order){
+  const box=document.getElementById('track-result');
+  if(!box) return;
+
+  const status=String(order.status || '').toLowerCase();
+  const stages=['new','confirmed','shipped','delivered'];
+  const currentIndex=stages.indexOf(status);
+  const cancelled=status==='cancelled';
+  const created=order.created_at ? new Date(order.created_at) : null;
+  const dateText=created && !Number.isNaN(created.getTime())
+    ? created.toLocaleString('en-EG',{dateStyle:'medium',timeStyle:'short'})
+    : '';
+  const items=Array.isArray(order.items) ? order.items : [];
+
+  const timeline=cancelled
+    ? `<div class="track-cancelled"><span>×</span><div><b>ORDER CANCELLED</b><p>This order is marked as cancelled.</p></div></div>`
+    : `<div class="track-timeline">${stages.map((stage,index)=>{
+        const done=currentIndex>=index;
+        const active=currentIndex===index;
+        return `<div class="track-stage ${done ? 'done' : ''} ${active ? 'active' : ''}">
+          <div class="track-stage-dot">${done ? '✓' : index+1}</div>
+          <div><b>${escapeTrackHtml(trackingStatusLabel(stage))}</b><span>${active ? 'CURRENT STATUS' : done ? 'COMPLETED' : 'UP NEXT'}</span></div>
+        </div>`;
+      }).join('')}</div>`;
+
+  const itemsHtml=items.length
+    ? items.map(item=>`<div class="track-item">
+        <div><b>${escapeTrackHtml(item.product_name)}</b><span>${escapeTrackHtml(item.size_ml)} ML · Qty ${escapeTrackHtml(item.quantity)}</span></div>
+        <strong>${money(item.line_total)}</strong>
+      </div>`).join('')
+    : '<div class="track-item"><div><b>Order items unavailable</b></div></div>';
+
+  box.innerHTML=`
+    <div class="track-result-head">
+      <div>
+        <div class="eyebrow" style="color:#766b5d">ORDER FOUND</div>
+        <h2>${escapeTrackHtml(order.order_number)}</h2>
+        ${dateText ? `<p>Placed ${escapeTrackHtml(dateText)}</p>` : ''}
+      </div>
+      <span class="track-status track-status-${escapeTrackHtml(status)}">${escapeTrackHtml(trackingStatusLabel(status)).toUpperCase()}</span>
+    </div>
+    ${timeline}
+    <div class="track-order-details">
+      <div>
+        <h3>ORDER ITEMS</h3>
+        <div class="track-items">${itemsHtml}</div>
+      </div>
+      <div class="track-total-card">
+        <span>PAYMENT</span><b>${escapeTrackHtml(order.payment_method || 'Cash on Delivery')}</b>
+        <span>ORDER TOTAL</span><strong>${money(order.total)}</strong>
+      </div>
+    </div>`;
+  box.hidden=false;
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function initOrderTracking(){
+  const form=document.getElementById('track-order-form');
+  if(!form) return;
+
+  const orderInput=document.getElementById('track-order-number');
+  const phoneInput=document.getElementById('track-phone');
+  const error=document.getElementById('track-error');
+  const result=document.getElementById('track-result');
+  const button=document.getElementById('track-submit');
+
+  const preset=new URLSearchParams(location.search).get('order');
+  if(preset) orderInput.value=preset;
+
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();
+    error.textContent='';
+    result.hidden=true;
+
+    const orderNumber=orderInput.value.trim();
+    const phone=phoneInput.value.trim();
+
+    if(!isValidEgyptPhone(phone)){
+      error.textContent='Please enter the same valid Egyptian mobile number used at checkout.';
+      phoneInput.focus();
+      return;
+    }
+
+    const original=button.textContent;
+    button.disabled=true;
+    button.textContent='CHECKING...';
+
+    try{
+      const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/track_order`,{
+        method:'POST',
+        headers:{
+          'apikey':SUPABASE_PUBLISHABLE_KEY,
+          'Content-Type':'application/json',
+          'Accept':'application/json'
+        },
+        body:JSON.stringify({p_order_number:orderNumber,p_phone:phone})
+      });
+
+      let data=null;
+      try{ data=await response.json(); }catch(_){}
+      if(!response.ok) throw new Error('Tracking is temporarily unavailable. Please try again.');
+      if(!data){
+        error.textContent='No matching order was found. Check the order number and mobile number and try again.';
+        return;
+      }
+      renderTrackingResult(data);
+    }catch(err){
+      error.textContent=err.message || 'Tracking is temporarily unavailable. Please try again.';
+    }finally{
+      button.disabled=false;
+      button.textContent=original;
+    }
+  });
+}
+
 async function initStore(){
   updateCartCount();
   await loadCatalog();
@@ -319,6 +459,7 @@ async function initStore(){
   renderProductDetail();
   renderCart();
   renderCheckout();
+  initOrderTracking();
   initDemoForms();
 }
 

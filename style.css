@@ -403,3 +403,59 @@ textarea{min-height:155px;resize:vertical}
 .field-help{display:block;margin-top:7px;color:#857c73;font-size:9px;line-height:1.5}
 .admin-stock-qty{display:inline-block;margin-top:9px;padding:6px 8px;background:#eee7dc;border:1px solid #d7cec2;font-size:9px;letter-spacing:1px;color:#5d554d}
 #enable-notifications-btn:disabled{opacity:.5;cursor:not-allowed}
+
+
+/* DOMARO v10 — customer order tracking */
+.track-page{padding:64px 0 86px;max-width:980px}
+.track-card{display:grid;grid-template-columns:.85fr 1.15fr;gap:46px;background:#f8f4ee;border:1px solid #ddd4c8;padding:38px}
+.track-form-copy h2,.track-result h2{font:500 38px "Cormorant Garamond",Georgia,serif;margin:3px 0 12px;letter-spacing:.8px}
+.track-form-copy p{color:#6c645c;font-size:13px;line-height:1.75;margin:0}
+.track-form{align-content:start}
+.track-form label{display:block;font-size:10px;letter-spacing:1px;color:#625b54;margin-bottom:7px}
+.track-form input{width:100%;text-transform:none}
+.track-form button:disabled{opacity:.62;cursor:not-allowed}
+.track-result{margin-top:25px;background:#f8f4ee;border:1px solid #d8cfc2;padding:32px;scroll-margin-top:125px}
+.track-result-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding-bottom:23px;border-bottom:1px solid #ddd4c8}
+.track-result-head p{margin:0;color:#81786f;font-size:11px}
+.track-status{font-size:9px;letter-spacing:1.3px;padding:9px 11px;border:1px solid #cfc5b8;background:#eee8df;white-space:nowrap}
+.track-status-new{background:#fff4d9;border-color:#e2c783}
+.track-status-confirmed{background:#e8f0ff;border-color:#a9c0ed}
+.track-status-shipped{background:#ece8ff;border-color:#bcb2e7}
+.track-status-delivered{background:#e7f3e8;border-color:#a9c9ac}
+.track-status-cancelled{background:#f6e5e2;border-color:#d3aaa3}
+.track-timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding:32px 0}
+.track-stage{position:relative;display:flex;gap:10px;align-items:flex-start;color:#989087;padding-right:12px}
+.track-stage:not(:last-child):after{content:"";position:absolute;top:15px;left:31px;right:0;height:1px;background:#d5cdc2;z-index:0}
+.track-stage.done:not(:last-child):after{background:#b58d55}
+.track-stage-dot{position:relative;z-index:1;flex:0 0 31px;width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:#f8f4ee;border:1px solid #cfc6bb;font-size:10px;font-weight:700}
+.track-stage.done .track-stage-dot{background:#111;color:#fff;border-color:#111}
+.track-stage.active .track-stage-dot{outline:3px solid rgba(181,141,85,.18)}
+.track-stage b{display:block;color:#4f4841;font-size:10px;letter-spacing:.5px;margin-top:2px}
+.track-stage span{display:block;font-size:8px;letter-spacing:1px;margin-top:5px}
+.track-stage.active b{color:#111}
+.track-cancelled{display:flex;align-items:center;gap:15px;margin:28px 0;padding:18px;background:#f6e5e2;border:1px solid #d3aaa3}
+.track-cancelled>span{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#7b302a;color:#fff;font-size:20px}
+.track-cancelled b{font-size:11px;letter-spacing:1.2px}
+.track-cancelled p{margin:4px 0 0;color:#73544f;font-size:11px}
+.track-order-details{display:grid;grid-template-columns:1.35fr .65fr;gap:24px;border-top:1px solid #ddd4c8;padding-top:24px}
+.track-order-details h3{font-size:9px;letter-spacing:1.6px;color:#82796f;margin:0 0 10px}
+.track-item{display:flex;justify-content:space-between;gap:20px;padding:11px 0;border-bottom:1px solid #e3dbd0}
+.track-item b{font:500 17px "Cormorant Garamond",Georgia,serif}
+.track-item span{display:block;color:#82796f;font-size:9px;margin-top:3px}
+.track-item strong{font-size:11px;white-space:nowrap}
+.track-total-card{background:#eee7dc;border:1px solid #d7cec2;padding:20px;align-self:start}
+.track-total-card span{display:block;font-size:8px;letter-spacing:1.3px;color:#7d746b;margin-top:14px}
+.track-total-card span:first-child{margin-top:0}
+.track-total-card b{display:block;font-size:11px;margin-top:5px}
+.track-total-card strong{display:block;font:600 24px "Cormorant Garamond",Georgia,serif;margin-top:5px}
+.success-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:24px}
+.btn.track-secondary{background:transparent;border-color:#b9afa2;color:#111}
+@media(max-width:760px){
+  .track-card,.track-order-details{grid-template-columns:1fr}
+  .track-card{gap:28px;padding:24px}
+  .track-result{padding:22px}
+  .track-result-head{flex-direction:column}
+  .track-timeline{grid-template-columns:1fr;gap:12px}
+  .track-stage{padding:0 0 10px}
+  .track-stage:not(:last-child):after{top:31px;bottom:-12px;left:15px;right:auto;width:1px;height:auto}
+}
