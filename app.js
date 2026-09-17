@@ -215,6 +215,7 @@ function renderCheckout(){
 
   let subtotal=0;
   let hasUnavailable=false;
+  let appliedCoupon=null;
 
   itemsBox.innerHTML=cart.map(item=>{
     const p=products.find(x=>x.id===item.id);
@@ -228,8 +229,100 @@ function renderCheckout(){
     </div>`;
   }).join('');
 
-  document.getElementById('checkout-subtotal').textContent=money(subtotal);
-  document.getElementById('checkout-total').textContent=money(subtotal + SHIPPING_FEE);
+  const subtotalEl=document.getElementById('checkout-subtotal');
+  const totalEl=document.getElementById('checkout-total');
+  const discountRow=document.getElementById('checkout-discount-row');
+  const discountEl=document.getElementById('checkout-discount');
+  const couponLabel=document.getElementById('checkout-coupon-label');
+  const couponInput=document.getElementById('coupon-code');
+  const couponButton=document.getElementById('apply-coupon-btn');
+  const couponMessage=document.getElementById('coupon-message');
+
+  function renderCheckoutTotals(){
+    const discount=Number(appliedCoupon?.discount || 0);
+    subtotalEl.textContent=money(subtotal);
+    totalEl.textContent=money(Math.max(0, subtotal-discount) + SHIPPING_FEE);
+    if(appliedCoupon && discount>0){
+      discountRow.hidden=false;
+      discountEl.textContent=`− ${money(discount)}`;
+      couponLabel.textContent=`(${appliedCoupon.code})`;
+    }else{
+      discountRow.hidden=true;
+      discountEl.textContent='− 0 EGP';
+      couponLabel.textContent='';
+    }
+  }
+  renderCheckoutTotals();
+
+  async function applyCoupon(){
+    const code=(couponInput?.value || '').trim().toUpperCase();
+    couponMessage.textContent='';
+    couponMessage.className='coupon-message';
+    appliedCoupon=null;
+    renderCheckoutTotals();
+
+    if(!code){
+      couponMessage.textContent='Enter a discount code first.';
+      couponMessage.classList.add('coupon-message-error');
+      return;
+    }
+
+    couponButton.disabled=true;
+    const originalText=couponButton.textContent;
+    couponButton.textContent='CHECKING…';
+    try{
+      const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/validate_coupon`,{
+        method:'POST',
+        headers:{
+          'apikey':SUPABASE_PUBLISHABLE_KEY,
+          'Content-Type':'application/json',
+          'Accept':'application/json'
+        },
+        body:JSON.stringify({p_code:code,p_subtotal:subtotal})
+      });
+      const result=await response.json().catch(()=>null);
+      if(!response.ok) throw new Error(result?.message || 'Could not validate this code.');
+      if(!result?.valid){
+        couponMessage.textContent=result?.message || 'Invalid coupon code.';
+        couponMessage.classList.add('coupon-message-error');
+        return;
+      }
+      appliedCoupon={
+        code:String(result.code || code).toUpperCase(),
+        discount:Number(result.discount || 0)
+      };
+      couponInput.value=appliedCoupon.code;
+      couponMessage.textContent=`${appliedCoupon.code} applied — you save ${money(appliedCoupon.discount)}.`;
+      couponMessage.classList.add('coupon-message-success');
+      renderCheckoutTotals();
+    }catch(err){
+      couponMessage.textContent=err.message || 'Could not validate this code.';
+      couponMessage.classList.add('coupon-message-error');
+    }finally{
+      couponButton.disabled=false;
+      couponButton.textContent=originalText;
+    }
+  }
+
+  if(couponButton) couponButton.addEventListener('click',applyCoupon);
+  if(couponInput){
+    couponInput.addEventListener('input',()=>{
+      const current=couponInput.value.trim().toUpperCase();
+      couponInput.value=current;
+      if(appliedCoupon && current!==appliedCoupon.code){
+        appliedCoupon=null;
+        couponMessage.textContent='Code changed — press APPLY again.';
+        couponMessage.className='coupon-message';
+        renderCheckoutTotals();
+      }
+    });
+    couponInput.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){
+        e.preventDefault();
+        applyCoupon();
+      }
+    });
+  }
 
   const placeBtn=form.querySelector('.place-order-btn');
   if(hasUnavailable){
@@ -263,7 +356,8 @@ function renderCheckout(){
       p_building: document.getElementById('building').value.trim(),
       p_address: document.getElementById('address').value.trim(),
       p_notes: document.getElementById('notes').value.trim(),
-      p_items: cart.map(item=>({id:item.id,qty:item.qty}))
+      p_items: cart.map(item=>({id:item.id,qty:item.qty})),
+      p_coupon_code: appliedCoupon?.code || null
     };
 
     try{

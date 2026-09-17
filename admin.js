@@ -12,6 +12,7 @@ const enableNotificationsBtn = document.getElementById('enable-notifications-btn
 
 const ordersPanel = document.getElementById('admin-orders-panel');
 const productsPanel = document.getElementById('admin-products-panel');
+const couponsPanel = document.getElementById('admin-coupons-panel');
 
 const ordersList = document.getElementById('orders-list');
 const ordersError = document.getElementById('orders-error');
@@ -27,6 +28,18 @@ const productSearch = document.getElementById('product-search');
 const productFilter = document.getElementById('product-filter');
 const newProductBtn = document.getElementById('new-product-btn');
 
+const couponsList = document.getElementById('coupons-list');
+const couponsError = document.getElementById('coupons-error');
+const couponsLoading = document.getElementById('coupons-loading');
+const couponSearch = document.getElementById('coupon-search');
+const couponFilter = document.getElementById('coupon-filter');
+const newCouponBtn = document.getElementById('new-coupon-btn');
+const couponModal = document.getElementById('coupon-modal');
+const couponForm = document.getElementById('coupon-form');
+const couponFormTitle = document.getElementById('coupon-form-title');
+const couponFormError = document.getElementById('coupon-form-error');
+const saveCouponBtn = document.getElementById('save-coupon-btn');
+
 const productModal = document.getElementById('product-modal');
 const productForm = document.getElementById('product-form');
 const productFormTitle = document.getElementById('product-form-title');
@@ -40,7 +53,9 @@ let adminEmail = sessionStorage.getItem('domaro_admin_email') || '';
 let allOrders = [];
 let orderItems = [];
 let allProducts = [];
+let allCoupons = [];
 let editingProduct = null;
+let editingCoupon = null;
 let notificationPollTimer = null;
 let lastKnownOrderCreatedAt = localStorage.getItem('domaro_last_known_order_created_at') || '';
 
@@ -135,7 +150,9 @@ function setTab(tab){
   document.querySelectorAll('.admin-tab').forEach(btn=>btn.classList.toggle('active',btn.dataset.adminTab===tab));
   ordersPanel.hidden = tab!=='orders';
   productsPanel.hidden = tab!=='products';
+  couponsPanel.hidden = tab!=='coupons';
   if(tab==='products' && !allProducts.length) loadProducts();
+  if(tab==='coupons' && !allCoupons.length) loadCoupons();
 }
 
 document.querySelectorAll('.admin-tab').forEach(btn=>{
@@ -214,7 +231,7 @@ function renderOrders(){
         <div class="admin-order-section"><h3>PAYMENT</h3><p>${esc(order.payment_method)}</p><p><b>${money(order.total)}</b></p></div>
       </div>
       <div class="admin-items-block"><h3>ITEMS</h3>${productsHtml || '<div class="meta">No items found.</div>'}</div>
-      <div class="admin-order-totals"><span>Subtotal: <b>${money(order.subtotal)}</b></span><span>Shipping: <b>${money(order.shipping)}</b></span><span>Total: <b>${money(order.total)}</b></span></div>
+      <div class="admin-order-totals"><span>Subtotal: <b>${money(order.subtotal)}</b></span>${Number(order.discount||0)>0?`<span>Discount${order.coupon_code?` (${esc(order.coupon_code)})`:''}: <b>− ${money(order.discount)}</b></span>`:''}<span>Shipping: <b>${money(order.shipping)}</b></span><span>Total: <b>${money(order.total)}</b></span></div>
       ${order.notes?`<div class="admin-note"><b>Customer note:</b> ${esc(order.notes)}</div>`:''}
       <div class="admin-order-actions">
         <label>STATUS
@@ -513,6 +530,214 @@ productForm.addEventListener('submit',async e=>{
 });
 
 
+
+// DOMARO v11 — coupon management
+function couponIsExpired(coupon){
+  return Boolean(coupon.expires_at) && new Date(coupon.expires_at).getTime() < Date.now();
+}
+function couponDiscountLabel(coupon){
+  return coupon.discount_type==='percent'
+    ? `${Number(coupon.discount_value)}% OFF`
+    : `${money(coupon.discount_value)} OFF`;
+}
+function couponExpiryLabel(value){
+  if(!value) return 'NO EXPIRY';
+  return fmtDate(value);
+}
+
+async function loadCoupons(){
+  couponsError.textContent='';
+  couponsLoading.hidden=false;
+  try{
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/coupons?select=*&order=created_at.desc`,{headers:authHeaders()});
+    const data=await response.json().catch(()=>[]);
+    if(response.status===401){clearSession();showLogin('Your session expired. Please sign in again.');return;}
+    if(response.status===403) throw new Error('This account does not have permission to view coupons.');
+    if(!response.ok) throw new Error(data?.message || 'Could not load coupons.');
+    allCoupons=Array.isArray(data)?data:[];
+    renderCouponStats();
+    renderCouponsAdmin();
+  }catch(err){
+    couponsError.textContent=err.message || 'Could not load coupons.';
+  }finally{
+    couponsLoading.hidden=true;
+  }
+}
+
+function renderCouponStats(){
+  document.getElementById('coupon-stat-all').textContent=allCoupons.length;
+  document.getElementById('coupon-stat-active').textContent=allCoupons.filter(c=>c.active && !couponIsExpired(c)).length;
+  document.getElementById('coupon-stat-expired').textContent=allCoupons.filter(c=>couponIsExpired(c)).length;
+  document.getElementById('coupon-stat-used').textContent=allCoupons.reduce((sum,c)=>sum+Number(c.used_count||0),0);
+}
+
+function filteredCoupons(){
+  const q=(couponSearch?.value || '').trim().toLowerCase();
+  const filter=couponFilter?.value || 'all';
+  return allCoupons.filter(c=>{
+    const expired=couponIsExpired(c);
+    let matches=true;
+    if(filter==='active') matches=Boolean(c.active) && !expired;
+    if(filter==='inactive') matches=!c.active;
+    if(filter==='expired') matches=expired;
+    return matches && (!q || String(c.code||'').toLowerCase().includes(q));
+  });
+}
+
+function renderCouponsAdmin(){
+  const list=filteredCoupons();
+  if(!list.length){
+    couponsList.innerHTML='<div class="admin-empty">No matching coupons.</div>';
+    return;
+  }
+  couponsList.innerHTML=list.map(c=>{
+    const expired=couponIsExpired(c);
+    const status=expired ? 'EXPIRED' : (c.active ? 'ACTIVE' : 'INACTIVE');
+    const statusClass=expired || !c.active ? 'mini-out' : 'mini-live';
+    const usage=c.usage_limit===null ? `${Number(c.used_count||0)} uses` : `${Number(c.used_count||0)} / ${Number(c.usage_limit)} uses`;
+    return `<article class="admin-coupon-card">
+      <div class="admin-coupon-code">${esc(c.code)}</div>
+      <div class="admin-coupon-main">
+        <div class="admin-coupon-title-row">
+          <div><strong>${esc(couponDiscountLabel(c))}</strong><span>MINIMUM ORDER: ${money(c.min_order_amount)}</span></div>
+          <span class="mini-status ${statusClass}">${status}</span>
+        </div>
+        <div class="admin-coupon-meta">
+          <span>${esc(usage)}</span>
+          <span>EXPIRES: ${esc(couponExpiryLabel(c.expires_at))}</span>
+        </div>
+        <div class="admin-product-actions">
+          <button class="admin-secondary-btn edit-coupon-btn" data-id="${esc(c.id)}">EDIT</button>
+          <button class="admin-secondary-btn toggle-coupon-btn" data-id="${esc(c.id)}">${c.active?'DEACTIVATE':'ACTIVATE'}</button>
+          <button class="admin-secondary-btn delete-coupon-btn" data-id="${esc(c.id)}">DELETE</button>
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+
+  document.querySelectorAll('.edit-coupon-btn').forEach(btn=>btn.addEventListener('click',()=>openCouponModal(allCoupons.find(c=>c.id===btn.dataset.id))));
+  document.querySelectorAll('.toggle-coupon-btn').forEach(btn=>btn.addEventListener('click',()=>toggleCoupon(btn.dataset.id,btn)));
+  document.querySelectorAll('.delete-coupon-btn').forEach(btn=>btn.addEventListener('click',()=>deleteCoupon(btn.dataset.id,btn)));
+}
+
+function toDatetimeLocal(value){
+  if(!value) return '';
+  const d=new Date(value);
+  if(Number.isNaN(d.getTime())) return '';
+  const pad=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function openCouponModal(coupon=null){
+  editingCoupon=coupon || null;
+  couponForm.reset();
+  couponFormError.textContent='';
+  document.getElementById('coupon-id').value=coupon?.id || '';
+  document.getElementById('admin-coupon-code').value=coupon?.code || '';
+  document.getElementById('coupon-type').value=coupon?.discount_type || 'percent';
+  document.getElementById('coupon-value').value=coupon?.discount_value ?? '';
+  document.getElementById('coupon-min-order').value=coupon?.min_order_amount ?? 0;
+  document.getElementById('coupon-usage-limit').value=coupon?.usage_limit ?? '';
+  document.getElementById('coupon-expiry').value=toDatetimeLocal(coupon?.expires_at);
+  document.getElementById('coupon-active').checked=coupon ? Boolean(coupon.active) : true;
+  couponFormTitle.textContent=coupon ? 'EDIT COUPON' : 'ADD COUPON';
+  couponModal.hidden=false;
+  document.body.classList.add('modal-open');
+}
+function closeCouponModal(){
+  couponModal.hidden=true;
+  document.body.classList.remove('modal-open');
+  editingCoupon=null;
+}
+
+async function saveCoupon(event){
+  event.preventDefault();
+  couponFormError.textContent='';
+  const code=document.getElementById('admin-coupon-code').value.trim().toUpperCase();
+  const type=document.getElementById('coupon-type').value;
+  const value=Number(document.getElementById('coupon-value').value);
+  const minOrder=Number(document.getElementById('coupon-min-order').value || 0);
+  const usageRaw=document.getElementById('coupon-usage-limit').value.trim();
+  const expiryRaw=document.getElementById('coupon-expiry').value;
+  const active=document.getElementById('coupon-active').checked;
+
+  if(!code){couponFormError.textContent='Coupon code is required.';return;}
+  if(!(value>0)){couponFormError.textContent='Discount value must be greater than zero.';return;}
+  if(type==='percent' && value>100){couponFormError.textContent='Percentage discount cannot exceed 100%.';return;}
+
+  const payload={
+    code,
+    discount_type:type,
+    discount_value:value,
+    min_order_amount:Math.max(0,minOrder),
+    usage_limit:usageRaw ? Number(usageRaw) : null,
+    expires_at:expiryRaw ? new Date(expiryRaw).toISOString() : null,
+    active,
+    updated_at:new Date().toISOString()
+  };
+
+  saveCouponBtn.disabled=true;
+  saveCouponBtn.textContent='SAVING…';
+  try{
+    const editingId=editingCoupon?.id;
+    const url=editingId
+      ? `${SUPABASE_URL}/rest/v1/coupons?id=eq.${encodeURIComponent(editingId)}`
+      : `${SUPABASE_URL}/rest/v1/coupons`;
+    const response=await fetch(url,{
+      method:editingId?'PATCH':'POST',
+      headers:authHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),
+      body:JSON.stringify(payload)
+    });
+    const data=await response.json().catch(()=>null);
+    if(response.status===401){clearSession();showLogin('Your session expired. Please sign in again.');closeCouponModal();return;}
+    if(!response.ok) throw new Error(data?.message || data?.details || 'Could not save coupon.');
+    closeCouponModal();
+    await loadCoupons();
+  }catch(err){
+    couponFormError.textContent=err.message || 'Could not save coupon.';
+  }finally{
+    saveCouponBtn.disabled=false;
+    saveCouponBtn.textContent='SAVE COUPON';
+  }
+}
+
+async function toggleCoupon(id,button){
+  const coupon=allCoupons.find(c=>c.id===id);
+  if(!coupon) return;
+  button.disabled=true;
+  try{
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/coupons?id=eq.${encodeURIComponent(id)}`,{
+      method:'PATCH',
+      headers:authHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),
+      body:JSON.stringify({active:!coupon.active,updated_at:new Date().toISOString()})
+    });
+    if(!response.ok){const data=await response.json().catch(()=>({}));throw new Error(data?.message || 'Could not update coupon.');}
+    coupon.active=!coupon.active;
+    renderCouponStats();renderCouponsAdmin();
+  }catch(err){couponsError.textContent=err.message || 'Could not update coupon.';}
+  finally{button.disabled=false;}
+}
+
+async function deleteCoupon(id,button){
+  const coupon=allCoupons.find(c=>c.id===id);
+  if(!coupon) return;
+  if(!confirm(`Delete coupon ${coupon.code}?`)) return;
+  button.disabled=true;
+  try{
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/coupons?id=eq.${encodeURIComponent(id)}`,{method:'DELETE',headers:authHeaders({'Prefer':'return=minimal'})});
+    if(!response.ok){const data=await response.json().catch(()=>({}));throw new Error(data?.message || 'Could not delete coupon.');}
+    allCoupons=allCoupons.filter(c=>c.id!==id);
+    renderCouponStats();renderCouponsAdmin();
+  }catch(err){couponsError.textContent=err.message || 'Could not delete coupon.';}
+  finally{button.disabled=false;}
+}
+
+if(newCouponBtn) newCouponBtn.addEventListener('click',()=>openCouponModal());
+if(couponForm) couponForm.addEventListener('submit',saveCoupon);
+document.querySelectorAll('[data-close-coupon-modal]').forEach(el=>el.addEventListener('click',closeCouponModal));
+if(couponSearch) couponSearch.addEventListener('input',renderCouponsAdmin);
+if(couponFilter) couponFilter.addEventListener('change',renderCouponsAdmin);
+
 function updateNotificationButton(){
   if(!('Notification' in window)){
     enableNotificationsBtn.textContent='ALERTS UNSUPPORTED';
@@ -624,7 +849,7 @@ loginForm.addEventListener('submit',async e=>{
 logoutBtn.addEventListener('click',()=>{
   stopOrderNotificationPolling();
   clearSession();
-  allOrders=[]; orderItems=[]; allProducts=[];
+  allOrders=[]; orderItems=[]; allProducts=[]; allCoupons=[];
   ordersList.innerHTML=''; productsList.innerHTML='';
   showLogin();
 });

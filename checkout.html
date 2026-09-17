@@ -71,8 +71,17 @@
     <aside class="checkout-panel order-panel">
       <div class="checkout-step">02 — ORDER SUMMARY</div>
       <div id="checkout-items"></div>
+      <div class="coupon-box">
+        <label for="coupon-code">DISCOUNT CODE</label>
+        <div class="coupon-entry">
+          <input id="coupon-code" type="text" autocomplete="off" maxlength="40" placeholder="Enter coupon code">
+          <button id="apply-coupon-btn" type="button">APPLY</button>
+        </div>
+        <div id="coupon-message" class="coupon-message" aria-live="polite"></div>
+      </div>
       <div class="checkout-totals">
         <div><span>Subtotal</span><span id="checkout-subtotal">0 EGP</span></div>
+        <div id="checkout-discount-row" class="checkout-discount-row" hidden><span>Discount <b id="checkout-coupon-label"></b></span><span id="checkout-discount">− 0 EGP</span></div>
         <div><span>Shipping</span><span>80 EGP</span></div>
         <div class="checkout-grand"><b>Total</b><b id="checkout-total">0 EGP</b></div>
       </div>

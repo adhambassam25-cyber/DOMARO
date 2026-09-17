@@ -459,3 +459,33 @@ textarea{min-height:155px;resize:vertical}
   .track-stage{padding:0 0 10px}
   .track-stage:not(:last-child):after{top:31px;bottom:-12px;left:15px;right:auto;width:1px;height:auto}
 }
+
+
+/* DOMARO v11 — coupons */
+.coupon-box{margin:22px 0 5px;padding:18px;background:#f3eee6;border:1px solid #d8cfc2}
+.coupon-box>label{display:block;font-size:9px;letter-spacing:1.4px;color:#6f675f;margin-bottom:9px}
+.coupon-entry{display:grid;grid-template-columns:1fr auto;gap:8px}
+.coupon-entry input{min-width:0;text-transform:uppercase;letter-spacing:1.2px}
+.coupon-entry button{border:0;background:#111;color:#fff;padding:0 18px;font-size:9px;font-weight:700;letter-spacing:1.2px}
+.coupon-entry button:disabled{opacity:.55;cursor:not-allowed}
+.coupon-message{min-height:16px;margin-top:8px;font-size:9px;line-height:1.5;color:#716960}
+.coupon-message-success{color:#2c6a35}
+.coupon-message-error{color:#8b312b}
+.checkout-discount-row{color:#2c6a35}
+.checkout-discount-row b{font-size:8px;letter-spacing:.7px}
+.admin-coupons-list{display:grid;gap:12px}
+.admin-coupon-card{display:grid;grid-template-columns:180px 1fr;background:#f9f6f1;border:1px solid #d8cfc2;overflow:hidden}
+.admin-coupon-code{display:grid;place-items:center;background:#111;color:#fff;font:600 26px "Cormorant Garamond",Georgia,serif;letter-spacing:2px;padding:24px;text-align:center;word-break:break-word}
+.admin-coupon-main{padding:22px}
+.admin-coupon-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.admin-coupon-title-row strong{display:block;font:600 23px "Cormorant Garamond",Georgia,serif}
+.admin-coupon-title-row>div>span{display:block;margin-top:5px;font-size:8px;letter-spacing:1.1px;color:#81786f}
+.admin-coupon-meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px;padding-top:14px;border-top:1px solid #e1d9ce;color:#6f675f;font-size:9px;letter-spacing:.8px}
+.coupon-active-toggle{margin:14px 0 18px!important}
+@media(max-width:640px){
+  .coupon-entry{grid-template-columns:1fr}
+  .coupon-entry button{padding:13px 18px}
+  .admin-coupon-card{grid-template-columns:1fr}
+  .admin-coupon-code{min-height:90px}
+  .admin-coupon-title-row{flex-direction:column}
+}

@@ -1,3 +1,14 @@
+DOMARO WEBSITE V11
+==================
+
+NEW IN V11
+- Secure discount codes / coupons
+- Percentage or fixed-EGP discounts
+- Minimum order amount, usage limit and expiry support
+- Coupon revalidated server-side when an order is placed
+- COUPONS tab in Admin to add/edit/activate/deactivate/delete codes
+- Coupon and discount displayed in admin order cards
+
 DOMARO WEBSITE V8 — STOCK + NEW ORDER ALERTS
 
 NEW: REAL INVENTORY

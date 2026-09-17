@@ -1,0 +1,4 @@
+-- DOMARO V11 — Coupons / Discount Codes
+-- Database setup was applied interactively in Supabase SQL Editor.
+-- Includes: public.coupons table + admin RLS, validate_coupon RPC,
+-- coupon_code/discount columns on orders, and secure coupon-aware place_order RPC.

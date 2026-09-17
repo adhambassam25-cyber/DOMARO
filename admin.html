@@ -50,6 +50,7 @@
   <div class="admin-tabs">
     <button class="admin-tab active" data-admin-tab="orders">ORDERS</button>
     <button class="admin-tab" data-admin-tab="products">PRODUCTS</button>
+    <button class="admin-tab" data-admin-tab="coupons">COUPONS</button>
   </div>
 
   <section id="admin-orders-panel" class="admin-panel">
@@ -118,6 +119,93 @@
     <div id="products-list" class="admin-products-list"></div>
   </section>
 
+  <section id="admin-coupons-panel" class="admin-panel" hidden>
+    <div class="admin-dashboard-head">
+      <div>
+        <div class="eyebrow" style="color:#766b5d">DOMARO PROMOTIONS</div>
+        <h1>COUPON MANAGEMENT</h1>
+      </div>
+      <button id="new-coupon-btn" class="admin-primary-btn">+ ADD COUPON</button>
+    </div>
+
+    <div class="admin-product-stats">
+      <div class="admin-stat"><span>ALL COUPONS</span><b id="coupon-stat-all">0</b></div>
+      <div class="admin-stat"><span>ACTIVE</span><b id="coupon-stat-active">0</b></div>
+      <div class="admin-stat"><span>EXPIRED</span><b id="coupon-stat-expired">0</b></div>
+      <div class="admin-stat"><span>TOTAL USES</span><b id="coupon-stat-used">0</b></div>
+    </div>
+
+    <div class="admin-controls products-controls">
+      <input id="coupon-search" type="search" placeholder="Search coupon code">
+      <select id="coupon-filter">
+        <option value="all">All coupons</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+        <option value="expired">Expired</option>
+      </select>
+    </div>
+
+    <div id="coupons-loading" class="admin-loading" hidden>Loading coupons…</div>
+    <div id="coupons-error" class="admin-error"></div>
+    <div id="coupons-list" class="admin-coupons-list"></div>
+  </section>
+
+</section>
+
+<section id="coupon-modal" class="product-modal" hidden>
+  <div class="product-modal-backdrop" data-close-coupon-modal></div>
+  <div class="product-modal-card coupon-modal-card">
+    <div class="product-modal-head">
+      <div>
+        <div class="eyebrow" style="color:#766b5d">PROMOTION EDITOR</div>
+        <h2 id="coupon-form-title">ADD COUPON</h2>
+      </div>
+      <button class="product-modal-close" type="button" data-close-coupon-modal>×</button>
+    </div>
+
+    <form id="coupon-form">
+      <input id="coupon-id" type="hidden">
+      <div class="form-row">
+        <div>
+          <label>Coupon code</label>
+          <input id="admin-coupon-code" required maxlength="40" placeholder="e.g. DOMARO10">
+        </div>
+        <div>
+          <label>Discount type</label>
+          <select id="coupon-type" required>
+            <option value="percent">Percentage (%)</option>
+            <option value="fixed">Fixed amount (EGP)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label>Discount value</label>
+          <input id="coupon-value" required type="number" min="0.01" step="0.01" placeholder="10">
+        </div>
+        <div>
+          <label>Minimum order (EGP)</label>
+          <input id="coupon-min-order" required type="number" min="0" step="1" value="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label>Usage limit</label>
+          <input id="coupon-usage-limit" type="number" min="1" step="1" placeholder="Blank = unlimited">
+        </div>
+        <div>
+          <label>Expiry date</label>
+          <input id="coupon-expiry" type="datetime-local">
+        </div>
+      </div>
+      <label class="product-toggle coupon-active-toggle">
+        <input id="coupon-active" type="checkbox" checked>
+        <span>ACTIVE</span>
+      </label>
+      <div id="coupon-form-error" class="admin-error"></div>
+      <button id="save-coupon-btn" class="add-btn" type="submit">SAVE COUPON</button>
+    </form>
+  </div>
 </section>
 
 <section id="product-modal" class="product-modal" hidden>
