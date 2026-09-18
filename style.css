@@ -246,6 +246,12 @@ textarea{min-height:155px;resize:vertical}
 .order-success h2{font:500 40px "Cormorant Garamond",Georgia,serif;margin:8px 0 15px}
 .order-success p{color:#665e57;line-height:1.7}
 .success-mark{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#0b0b0b;color:#fff;margin:0 auto 20px;font-size:22px}
+
+.order-success-only{margin-top:0}
+.success-label{margin:24px 0 7px;font-size:10px!important;letter-spacing:2px;color:#8b8178!important;font-weight:700}
+.success-order-number{font:600 30px "Cormorant Garamond",Georgia,serif;letter-spacing:2px;color:#0b0b0b;margin-bottom:14px;word-break:break-word}
+.success-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+@media(max-width:640px){.success-order-number{font-size:25px}.order-success{padding:42px 20px}}
 @media(max-width:900px){
  .checkout-grid{grid-template-columns:1fr}
  .order-panel{position:static}

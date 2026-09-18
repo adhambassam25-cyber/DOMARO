@@ -493,13 +493,28 @@ function renderCheckout(){
         updateCartCount();
         closeReview();
 
-        document.querySelector('.checkout-grid').hidden=true;
-        const success=document.getElementById('order-success');
         const newOrderNumber=result?.orderNumber || 'Order received';
-        document.getElementById('order-number').textContent=newOrderNumber;
-        const trackLink=document.getElementById('track-order-link');
-        if(trackLink && result?.orderNumber) trackLink.href=`track.html?order=${encodeURIComponent(result.orderNumber)}`;
-        success.hidden=false;
+        const checkoutPage=document.querySelector('.checkout-page');
+        const pageHero=document.querySelector('.page-hero');
+
+        if(pageHero) pageHero.hidden=true;
+
+        if(checkoutPage){
+          checkoutPage.innerHTML=`
+            <section class="order-success order-success-only">
+              <div class="success-mark">✓</div>
+              <div class="eyebrow" style="color:#766b5d">ORDER CONFIRMED</div>
+              <h2>Thank you for your order.</h2>
+              <p class="success-label">YOUR ORDER NUMBER</p>
+              <div class="success-order-number">${escapeTrackHtml(newOrderNumber)}</div>
+              <p>Keep this number to track your order.</p>
+              <div class="success-actions">
+                <a class="btn dark" href="track.html?order=${encodeURIComponent(newOrderNumber)}">TRACK YOUR ORDER</a>
+                <a class="btn track-secondary" href="shop.html">CONTINUE SHOPPING</a>
+              </div>
+            </section>`;
+        }
+
         window.scrollTo({top:0,behavior:'smooth'});
       }catch(err){
         if(reviewError) reviewError.textContent=err.message || 'Could not place order. Please try again.';
