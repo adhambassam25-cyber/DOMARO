@@ -489,3 +489,47 @@ textarea{min-height:155px;resize:vertical}
   .admin-coupon-code{min-height:90px}
   .admin-coupon-title-row{flex-direction:column}
 }
+
+/* DOMARO v12 — sales dashboard */
+.sales-kpis{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:12px;margin-bottom:14px}
+.sales-kpi{min-height:132px;background:#f8f4ee;border:1px solid #d8cfc2;padding:22px;display:flex;flex-direction:column;justify-content:center}
+.sales-kpi-featured{background:#111;color:#fff;border-color:#111}
+.sales-kpi span{display:block;font-size:9px;letter-spacing:1.5px;color:#746b62}
+.sales-kpi-featured span{color:#c9bcaa}
+.sales-kpi b{display:block;font:500 36px "Cormorant Garamond",Georgia,serif;margin-top:8px}
+.sales-kpi-featured b{font-size:42px}
+.sales-kpi small{display:block;margin-top:7px;color:#9f9384;font-size:9px;letter-spacing:.4px}
+.sales-status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.sales-status-grid>div{background:#eee7dc;border:1px solid #d7cec2;padding:14px 17px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sales-status-grid span{font-size:8px;letter-spacing:1.3px;color:#736a61}
+.sales-status-grid b{font:600 22px "Cormorant Garamond",Georgia,serif}
+.sales-dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.sales-dashboard-card{background:#f9f6f1;border:1px solid #d8cfc2;padding:24px;min-width:0}
+.sales-card-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;padding-bottom:17px;border-bottom:1px solid #ddd4c8}
+.sales-card-head span{display:block;font-size:8px;letter-spacing:1.5px;color:#81786f}
+.sales-card-head h2{font:500 26px "Cormorant Garamond",Georgia,serif;margin:4px 0 0}
+.sales-card-head small{font-size:8px;color:#8a8178;text-align:right}
+.sales-rank-row,.sales-recent-row{display:grid;align-items:center;gap:12px;border-bottom:1px solid #e2dacf;padding:15px 0}
+.sales-rank-row{grid-template-columns:32px minmax(0,1fr) auto}
+.sales-rank-row:last-child,.sales-recent-row:last-child{border-bottom:0}
+.sales-rank-number{width:28px;height:28px;display:grid;place-items:center;background:#111;color:#fff;font-size:9px}
+.sales-rank-product{min-width:0}
+.sales-rank-product b,.sales-recent-row b{display:block;font:600 17px "Cormorant Garamond",Georgia,serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sales-rank-product span,.sales-recent-row>div>span{display:block;margin-top:3px;color:#7e756c;font-size:8px;line-height:1.5}
+.sales-rank-row strong{font-size:10px;white-space:nowrap}
+.sales-recent-row{grid-template-columns:minmax(0,1fr) auto}
+.sales-recent-value{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+.sales-recent-value strong{font-size:10px;white-space:nowrap}
+.sales-recent-value .status-badge{font-size:7px;padding:5px 7px}
+.admin-empty.compact{padding:24px 0;border:0;background:transparent}
+@media(max-width:1000px){
+  .sales-kpis{grid-template-columns:1fr 1fr}
+  .sales-dashboard-grid{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .sales-kpis,.sales-status-grid{grid-template-columns:1fr 1fr}
+  .sales-kpi{min-height:110px;padding:17px}
+  .sales-kpi b,.sales-kpi-featured b{font-size:29px}
+  .sales-recent-row{grid-template-columns:1fr}
+  .sales-recent-value{align-items:flex-start;text-align:left}
+}

@@ -1,3 +1,19 @@
+DOMARO WEBSITE V12
+==================
+
+NEW IN V12
+- New SALES DASHBOARD tab in Admin
+- Delivered revenue total
+- Total / New / Confirmed / Shipped / Delivered / Cancelled order counts
+- Top 5 best-selling products
+- Recent 5 orders with status and value
+- Dashboard statistics are returned by an Admin-only Supabase RPC
+
+IMPORTANT
+- Run SUPABASE-V12-MIGRATION.sql once before deploying V12.
+- Delivered Revenue only counts orders whose status is Delivered.
+- Best-selling products exclude cancelled orders.
+
 DOMARO WEBSITE V11
 ==================
 

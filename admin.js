@@ -10,9 +10,16 @@ const logoutBtn = document.getElementById('logout-btn');
 const adminUserLabel = document.getElementById('admin-user-label');
 const enableNotificationsBtn = document.getElementById('enable-notifications-btn');
 
+const dashboardPanel = document.getElementById('admin-sales-panel');
 const ordersPanel = document.getElementById('admin-orders-panel');
 const productsPanel = document.getElementById('admin-products-panel');
 const couponsPanel = document.getElementById('admin-coupons-panel');
+
+const dashboardLoading = document.getElementById('dashboard-loading');
+const dashboardError = document.getElementById('dashboard-error');
+const refreshDashboardBtn = document.getElementById('refresh-dashboard');
+const dashboardBestProducts = document.getElementById('dashboard-best-products');
+const dashboardRecentOrders = document.getElementById('dashboard-recent-orders');
 
 const ordersList = document.getElementById('orders-list');
 const ordersError = document.getElementById('orders-error');
@@ -54,6 +61,7 @@ let allOrders = [];
 let orderItems = [];
 let allProducts = [];
 let allCoupons = [];
+let dashboardStats = null;
 let editingProduct = null;
 let editingCoupon = null;
 let notificationPollTimer = null;
@@ -129,6 +137,7 @@ function showDashboard(){
   enableNotificationsBtn.hidden=false;
   updateNotificationButton();
   adminUserLabel.textContent=adminEmail || 'Admin';
+  setTab('dashboard');
 }
 function showLogin(message=''){
   dashboardSection.hidden=true;
@@ -148,9 +157,11 @@ function clearSession(){
 
 function setTab(tab){
   document.querySelectorAll('.admin-tab').forEach(btn=>btn.classList.toggle('active',btn.dataset.adminTab===tab));
+  dashboardPanel.hidden = tab!=='dashboard';
   ordersPanel.hidden = tab!=='orders';
   productsPanel.hidden = tab!=='products';
   couponsPanel.hidden = tab!=='coupons';
+  if(tab==='dashboard' && !dashboardStats) loadDashboardStats();
   if(tab==='products' && !allProducts.length) loadProducts();
   if(tab==='coupons' && !allCoupons.length) loadCoupons();
 }
@@ -158,6 +169,66 @@ function setTab(tab){
 document.querySelectorAll('.admin-tab').forEach(btn=>{
   btn.addEventListener('click',()=>setTab(btn.dataset.adminTab));
 });
+
+async function loadDashboardStats(){
+  dashboardError.textContent='';
+  dashboardLoading.hidden=false;
+  refreshDashboardBtn.disabled=true;
+  try{
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/admin_dashboard_stats`,{
+      method:'POST',
+      headers:authHeaders({'Content-Type':'application/json'}),
+      body:'{}'
+    });
+    const data=await response.json().catch(()=>null);
+    if(response.status===401){clearSession();showLogin('Your session expired. Please sign in again.');return;}
+    if(response.status===403) throw new Error('This account does not have permission to view dashboard statistics.');
+    if(!response.ok) throw new Error(data?.message || 'Could not load dashboard statistics.');
+    dashboardStats=data || {};
+    renderDashboardStats();
+  }catch(err){
+    dashboardError.textContent=err.message || 'Could not load dashboard statistics.';
+  }finally{
+    dashboardLoading.hidden=true;
+    refreshDashboardBtn.disabled=false;
+  }
+}
+
+function renderDashboardStats(){
+  const d=dashboardStats || {};
+  document.getElementById('dashboard-total-sales').textContent=money(d.total_sales);
+  document.getElementById('dashboard-total-orders').textContent=Number(d.total_orders || 0).toLocaleString('en-EG');
+  document.getElementById('dashboard-delivered-orders').textContent=Number(d.delivered_orders || 0).toLocaleString('en-EG');
+  document.getElementById('dashboard-cancelled-orders').textContent=Number(d.cancelled_orders || 0).toLocaleString('en-EG');
+  document.getElementById('dashboard-new-orders').textContent=Number(d.new_orders || 0).toLocaleString('en-EG');
+  document.getElementById('dashboard-confirmed-orders').textContent=Number(d.confirmed_orders || 0).toLocaleString('en-EG');
+  document.getElementById('dashboard-shipped-orders').textContent=Number(d.shipped_orders || 0).toLocaleString('en-EG');
+  document.getElementById('dashboard-status-delivered').textContent=Number(d.delivered_orders || 0).toLocaleString('en-EG');
+
+  const products=Array.isArray(d.best_selling_products)?d.best_selling_products:[];
+  dashboardBestProducts.innerHTML=products.length?products.map((p,index)=>`
+    <div class="sales-rank-row">
+      <span class="sales-rank-number">${index+1}</span>
+      <div class="sales-rank-product">
+        <b>${esc(p.product_name)}</b>
+        <span>${esc(p.size_ml)} ML · ${Number(p.quantity_sold || 0).toLocaleString('en-EG')} sold</span>
+      </div>
+      <strong>${money(p.sales)}</strong>
+    </div>`).join(''):'<div class="admin-empty compact">No sales data yet.</div>';
+
+  const recent=Array.isArray(d.recent_orders)?d.recent_orders:[];
+  dashboardRecentOrders.innerHTML=recent.length?recent.map(o=>`
+    <div class="sales-recent-row">
+      <div>
+        <b>${esc(o.order_number)}</b>
+        <span>${esc(o.customer_name)} · ${esc(fmtDate(o.created_at))}</span>
+      </div>
+      <div class="sales-recent-value">
+        <strong>${money(o.total)}</strong>
+        <span class="status-badge status-${esc(o.status)}">${esc(prettyStatus(o.status))}</span>
+      </div>
+    </div>`).join(''):'<div class="admin-empty compact">No orders yet.</div>';
+}
 
 async function loadOrders(){
   ordersError.textContent='';
@@ -270,6 +341,7 @@ async function updateOrderStatus(orderId,status,button){
     const target=allOrders.find(o=>o.id===orderId);
     if(target) target.status=status;
     renderStats(); renderOrders();
+    loadDashboardStats();
   }catch(err){
     ordersError.textContent=err.message || 'Could not update order status.';
     button.disabled=false; button.textContent=original;
@@ -819,6 +891,7 @@ async function checkForNewOrders(){
       lastKnownOrderCreatedAt=newestCreatedAt;
       localStorage.setItem('domaro_last_known_order_created_at',lastKnownOrderCreatedAt);
       await loadOrders();
+      await loadDashboardStats();
     }
   }catch(_){}
 }
@@ -849,10 +922,11 @@ loginForm.addEventListener('submit',async e=>{
 logoutBtn.addEventListener('click',()=>{
   stopOrderNotificationPolling();
   clearSession();
-  allOrders=[]; orderItems=[]; allProducts=[]; allCoupons=[];
+  allOrders=[]; orderItems=[]; allProducts=[]; allCoupons=[]; dashboardStats=null;
   ordersList.innerHTML=''; productsList.innerHTML='';
   showLogin();
 });
+refreshDashboardBtn.addEventListener('click',loadDashboardStats);
 refreshBtn.addEventListener('click',loadOrders);
 searchInput.addEventListener('input',renderOrders);
 statusFilter.addEventListener('change',renderOrders);

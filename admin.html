@@ -48,12 +48,77 @@
 <section id="admin-dashboard" hidden>
 
   <div class="admin-tabs">
-    <button class="admin-tab active" data-admin-tab="orders">ORDERS</button>
+    <button class="admin-tab active" data-admin-tab="dashboard">DASHBOARD</button>
+    <button class="admin-tab" data-admin-tab="orders">ORDERS</button>
     <button class="admin-tab" data-admin-tab="products">PRODUCTS</button>
     <button class="admin-tab" data-admin-tab="coupons">COUPONS</button>
   </div>
 
-  <section id="admin-orders-panel" class="admin-panel">
+  <section id="admin-sales-panel" class="admin-panel">
+    <div class="admin-dashboard-head">
+      <div>
+        <div class="eyebrow" style="color:#766b5d">DOMARO PERFORMANCE</div>
+        <h1>SALES DASHBOARD</h1>
+      </div>
+      <button id="refresh-dashboard" class="admin-secondary-btn">REFRESH</button>
+    </div>
+
+    <div id="dashboard-loading" class="admin-loading" hidden>Loading dashboard…</div>
+    <div id="dashboard-error" class="admin-error"></div>
+
+    <div class="sales-kpis">
+      <div class="sales-kpi sales-kpi-featured">
+        <span>DELIVERED REVENUE</span>
+        <b id="dashboard-total-sales">0 EGP</b>
+        <small>Sales from delivered orders</small>
+      </div>
+      <div class="sales-kpi">
+        <span>TOTAL ORDERS</span>
+        <b id="dashboard-total-orders">0</b>
+      </div>
+      <div class="sales-kpi">
+        <span>DELIVERED</span>
+        <b id="dashboard-delivered-orders">0</b>
+      </div>
+      <div class="sales-kpi">
+        <span>CANCELLED</span>
+        <b id="dashboard-cancelled-orders">0</b>
+      </div>
+    </div>
+
+    <div class="sales-status-grid">
+      <div><span>NEW</span><b id="dashboard-new-orders">0</b></div>
+      <div><span>CONFIRMED</span><b id="dashboard-confirmed-orders">0</b></div>
+      <div><span>SHIPPED</span><b id="dashboard-shipped-orders">0</b></div>
+      <div><span>DELIVERED</span><b id="dashboard-status-delivered">0</b></div>
+    </div>
+
+    <div class="sales-dashboard-grid">
+      <section class="sales-dashboard-card">
+        <div class="sales-card-head">
+          <div>
+            <span>TOP PRODUCTS</span>
+            <h2>BEST SELLING</h2>
+          </div>
+          <small>Excludes cancelled orders</small>
+        </div>
+        <div id="dashboard-best-products" class="sales-ranking"></div>
+      </section>
+
+      <section class="sales-dashboard-card">
+        <div class="sales-card-head">
+          <div>
+            <span>LATEST ACTIVITY</span>
+            <h2>RECENT ORDERS</h2>
+          </div>
+          <small>Latest 5 orders</small>
+        </div>
+        <div id="dashboard-recent-orders" class="sales-recent-orders"></div>
+      </section>
+    </div>
+  </section>
+
+  <section id="admin-orders-panel" class="admin-panel" hidden>
     <div class="admin-dashboard-head">
       <div>
         <div class="eyebrow" style="color:#766b5d">DOMARO OPERATIONS</div>
