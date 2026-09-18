@@ -1,0 +1,16 @@
+DOMARO V15 — SEO + BRANDING POLISH
+
+Included:
+- Page-specific titles and meta descriptions.
+- Canonical URLs for the current Vercel domain.
+- Open Graph + Twitter social preview metadata.
+- DOMARO favicon.
+- robots.txt and sitemap.xml.
+- noindex rules for admin, checkout, cart and order tracking where appropriate.
+- Homepage WebSite structured data.
+- Improved 404 actions.
+- No Supabase migration required.
+
+Note:
+The current social preview uses the existing HOOK BLUE product image.
+A dedicated DOMARO social-share artwork can replace it later without changing the SEO structure.

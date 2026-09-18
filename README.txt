@@ -80,3 +80,7 @@ DOMARO V14
 - Copy Order Number button on the final confirmation screen.
 - Mobile confirmation actions stacked for easier tapping.
 - No database migration required.
+
+
+DOMARO V15
+SEO, favicon, social metadata, robots.txt, sitemap.xml and 404 polish. No database changes required.

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /checkout.html
+Disallow: /track.html
+
+Sitemap: https://domaro.vercel.app/sitemap.xml
