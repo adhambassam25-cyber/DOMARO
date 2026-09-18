@@ -73,3 +73,10 @@ V13 additions:
 - Clearer checkout validation
 - Unique checkout token for idempotent order placement
 - Duplicate-click / retry protection at database level
+
+
+DOMARO V14
+- Mobile hamburger navigation across public pages.
+- Copy Order Number button on the final confirmation screen.
+- Mobile confirmation actions stacked for easier tapping.
+- No database migration required.

@@ -1,0 +1,6 @@
+DOMARO V14 — UX POLISH
+
+1. Mobile navigation menu added across customer-facing pages.
+2. Final order confirmation now includes COPY ORDER NUMBER.
+3. Confirmation buttons are optimized for mobile.
+4. No Supabase SQL changes are required for V14.

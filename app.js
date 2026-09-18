@@ -507,12 +507,32 @@ function renderCheckout(){
               <h2>Thank you for your order.</h2>
               <p class="success-label">YOUR ORDER NUMBER</p>
               <div class="success-order-number">${escapeTrackHtml(newOrderNumber)}</div>
+              <button class="copy-order-btn" id="copy-order-number" type="button" data-order-number="${escapeTrackHtml(newOrderNumber)}">COPY ORDER NUMBER</button>
               <p>Keep this number to track your order.</p>
               <div class="success-actions">
                 <a class="btn dark" href="track.html?order=${encodeURIComponent(newOrderNumber)}">TRACK YOUR ORDER</a>
                 <a class="btn track-secondary" href="shop.html">CONTINUE SHOPPING</a>
               </div>
             </section>`;
+        }
+
+        const copyOrderBtn=document.getElementById('copy-order-number');
+        if(copyOrderBtn){
+          copyOrderBtn.addEventListener('click',async()=>{
+            const value=copyOrderBtn.dataset.orderNumber || newOrderNumber;
+            try{
+              await navigator.clipboard.writeText(value);
+              const oldText=copyOrderBtn.textContent;
+              copyOrderBtn.textContent='COPIED ✓';
+              copyOrderBtn.classList.add('copied');
+              setTimeout(()=>{
+                copyOrderBtn.textContent=oldText;
+                copyOrderBtn.classList.remove('copied');
+              },1600);
+            }catch(_){
+              copyOrderBtn.textContent='ORDER: '+value;
+            }
+          });
         }
 
         window.scrollTo({top:0,behavior:'smooth'});
@@ -674,7 +694,51 @@ function initOrderTracking(){
   });
 }
 
+
+// DOMARO V14 — mobile navigation
+function initMobileNavigation(){
+  const nav=document.querySelector('.nav');
+  const links=document.querySelector('.navlinks');
+  const icons=document.querySelector('.navicons');
+  if(!nav || !links || !icons || nav.querySelector('.mobile-menu-toggle')) return;
+
+  const button=document.createElement('button');
+  button.type='button';
+  button.className='mobile-menu-toggle';
+  button.setAttribute('aria-label','Open menu');
+  button.setAttribute('aria-expanded','false');
+  button.innerHTML='<span></span><span></span><span></span>';
+
+  nav.insertBefore(button, icons);
+
+  const closeMenu=()=>{
+    nav.classList.remove('mobile-nav-open');
+    button.setAttribute('aria-expanded','false');
+    button.setAttribute('aria-label','Open menu');
+  };
+
+  button.addEventListener('click',()=>{
+    const opening=!nav.classList.contains('mobile-nav-open');
+    nav.classList.toggle('mobile-nav-open',opening);
+    button.setAttribute('aria-expanded',opening ? 'true' : 'false');
+    button.setAttribute('aria-label',opening ? 'Close menu' : 'Open menu');
+  });
+
+  links.querySelectorAll('a').forEach(link=>link.addEventListener('click',closeMenu));
+
+  document.addEventListener('click',e=>{
+    if(window.innerWidth<=980 && nav.classList.contains('mobile-nav-open') && !nav.contains(e.target)){
+      closeMenu();
+    }
+  });
+
+  window.addEventListener('resize',()=>{
+    if(window.innerWidth>980) closeMenu();
+  });
+}
+
 async function initStore(){
+  initMobileNavigation();
   updateCartCount();
   await loadCatalog();
   renderProducts('best-products','all',4);
