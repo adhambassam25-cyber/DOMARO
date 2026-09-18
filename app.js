@@ -207,6 +207,11 @@ function renderCheckout(){
   const cart=getCart();
   const form=document.getElementById('checkout-form');
   const grid=document.querySelector('.checkout-grid');
+  const reviewModal=document.getElementById('review-modal');
+  const reviewContent=document.getElementById('review-content');
+  const reviewError=document.getElementById('review-error');
+  const confirmBtn=document.getElementById('confirm-place-order-btn');
+  const editBtn=document.getElementById('edit-order-btn');
 
   if(!cart.length){
     if(grid) grid.innerHTML='<div class="empty" style="grid-column:1/-1">Your cart is empty.<br><br><a class="btn dark" href="shop.html">SHOP FRAGRANCES</a></div>';
@@ -216,6 +221,8 @@ function renderCheckout(){
   let subtotal=0;
   let hasUnavailable=false;
   let appliedCoupon=null;
+  let pendingPayload=null;
+  let checkoutToken=sessionStorage.getItem('domaro_checkout_token') || '';
 
   itemsBox.innerHTML=cart.map(item=>{
     const p=products.find(x=>x.id===item.id);
@@ -223,8 +230,8 @@ function renderCheckout(){
     if(!p.inStock) hasUnavailable=true;
     subtotal += p.price*item.qty;
     return `<div class="checkout-product">
-      <img src="${p.img}" alt="${p.name}">
-      <div><b>${p.name}</b><div class="meta">${p.size} · Qty ${item.qty}</div>${p.inStock ? '' : '<div class="cart-warning">Out of stock</div>'}</div>
+      <img src="${p.img}" alt="${escapeTrackHtml(p.name)}">
+      <div><b>${escapeTrackHtml(p.name)}</b><div class="meta">${escapeTrackHtml(p.size)} · Qty ${item.qty}</div>${p.inStock ? '' : '<div class="cart-warning">Out of stock</div>'}</div>
       <div class="checkout-product-price">${money(p.price*item.qty)}</div>
     </div>`;
   }).join('');
@@ -237,11 +244,16 @@ function renderCheckout(){
   const couponInput=document.getElementById('coupon-code');
   const couponButton=document.getElementById('apply-coupon-btn');
   const couponMessage=document.getElementById('coupon-message');
+  const placeBtn=form.querySelector('.place-order-btn');
+  const checkoutError=document.getElementById('checkout-error');
+
+  function currentDiscount(){ return Number(appliedCoupon?.discount || 0); }
+  function currentTotal(){ return Math.max(0, subtotal-currentDiscount()) + SHIPPING_FEE; }
 
   function renderCheckoutTotals(){
-    const discount=Number(appliedCoupon?.discount || 0);
+    const discount=currentDiscount();
     subtotalEl.textContent=money(subtotal);
-    totalEl.textContent=money(Math.max(0, subtotal-discount) + SHIPPING_FEE);
+    totalEl.textContent=money(currentTotal());
     if(appliedCoupon && discount>0){
       discountRow.hidden=false;
       discountEl.textContent=`− ${money(discount)}`;
@@ -324,77 +336,180 @@ function renderCheckout(){
     });
   }
 
-  const placeBtn=form.querySelector('.place-order-btn');
   if(hasUnavailable){
-    document.getElementById('checkout-error').textContent='One or more items are out of stock. Please return to your cart and remove them.';
+    checkoutError.textContent='One or more items are out of stock. Please return to your cart and remove them.';
     placeBtn.disabled=true;
   }
 
-  form.addEventListener('submit', async e=>{
-    e.preventDefault();
-    const error=document.getElementById('checkout-error');
-    error.textContent='';
+  function fieldValue(id){ return document.getElementById(id)?.value.trim() || ''; }
 
-    const phone=document.getElementById('phone').value.trim();
-    if(!isValidEgyptPhone(phone)){
-      error.textContent='Please enter a valid Egyptian mobile number (11 digits starting with 010, 011, 012 or 015).';
-      document.getElementById('phone').focus();
-      return;
-    }
+  function validateCheckout(){
+    checkoutError.textContent='';
+    const fields=[
+      ['first-name','Please enter your first name.'],
+      ['last-name','Please enter your last name.'],
+      ['phone','Please enter your mobile number.'],
+      ['governorate','Please select your governorate.'],
+      ['area','Please enter your area or district.'],
+      ['address','Please enter your detailed delivery address.']
+    ];
 
-    const submitBtn=form.querySelector('.place-order-btn');
-    const originalBtnText=submitBtn.textContent;
-    submitBtn.disabled=true;
-    submitBtn.textContent='PLACING ORDER...';
-
-    const payload = {
-      p_first_name: document.getElementById('first-name').value.trim(),
-      p_last_name: document.getElementById('last-name').value.trim(),
-      p_phone: phone,
-      p_governorate: document.getElementById('governorate').value,
-      p_area: document.getElementById('area').value.trim(),
-      p_building: document.getElementById('building').value.trim(),
-      p_address: document.getElementById('address').value.trim(),
-      p_notes: document.getElementById('notes').value.trim(),
-      p_items: cart.map(item=>({id:item.id,qty:item.qty})),
-      p_coupon_code: appliedCoupon?.code || null
-    };
-
-    try{
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/place_order`, {
-        method:'POST',
-        headers:{
-          'apikey': SUPABASE_PUBLISHABLE_KEY,
-          'Content-Type':'application/json',
-          'Accept':'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      let result=null;
-      try{ result=await response.json(); }catch(_){}
-
-      if(!response.ok){
-        throw new Error(result?.message || result?.error || 'Could not place order. Please try again.');
+    for(const [id,message] of fields){
+      const el=document.getElementById(id);
+      if(!el || !String(el.value || '').trim()){
+        checkoutError.textContent=message;
+        el?.focus();
+        return false;
       }
-
-      localStorage.removeItem('domaro_cart');
-      updateCartCount();
-
-      document.querySelector('.checkout-grid').hidden=true;
-      const success=document.getElementById('order-success');
-      const newOrderNumber=result?.orderNumber || 'Order received';
-      document.getElementById('order-number').textContent=newOrderNumber;
-      const trackLink=document.getElementById('track-order-link');
-      if(trackLink && result?.orderNumber) trackLink.href=`track.html?order=${encodeURIComponent(result.orderNumber)}`;
-      success.hidden=false;
-      window.scrollTo({top:0,behavior:'smooth'});
-    }catch(err){
-      error.textContent = err.message || 'Could not place order. Please try again.';
-      submitBtn.disabled=false;
-      submitBtn.textContent=originalBtnText;
     }
+
+    if(!isValidEgyptPhone(fieldValue('phone'))){
+      checkoutError.textContent='Please enter a valid Egyptian mobile number (11 digits starting with 010, 011, 012 or 015).';
+      document.getElementById('phone').focus();
+      return false;
+    }
+
+    if(hasUnavailable){
+      checkoutError.textContent='One or more items are out of stock. Please return to your cart and remove them.';
+      return false;
+    }
+
+    return true;
+  }
+
+  function buildPayload(){
+    if(!checkoutToken){
+      checkoutToken=(window.crypto && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : `domaro-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      sessionStorage.setItem('domaro_checkout_token',checkoutToken);
+    }
+
+    return {
+      p_first_name: fieldValue('first-name'),
+      p_last_name: fieldValue('last-name'),
+      p_phone: fieldValue('phone').replace(/\s+/g,''),
+      p_governorate: document.getElementById('governorate').value,
+      p_area: fieldValue('area'),
+      p_building: fieldValue('building'),
+      p_address: fieldValue('address'),
+      p_notes: fieldValue('notes'),
+      p_items: cart.map(item=>({id:item.id,qty:item.qty})),
+      p_coupon_code: appliedCoupon?.code || null,
+      p_checkout_token: checkoutToken
+    };
+  }
+
+  function openReview(payload){
+    pendingPayload=payload;
+    if(reviewError) reviewError.textContent='';
+
+    const itemRows=cart.map(item=>{
+      const p=products.find(x=>x.id===item.id);
+      if(!p) return '';
+      return `<div class="review-item"><div><b>${escapeTrackHtml(p.name)}</b><span>${escapeTrackHtml(p.size)} · Qty ${item.qty}</span></div><strong>${money(p.price*item.qty)}</strong></div>`;
+    }).join('');
+
+    reviewContent.innerHTML=`
+      <div class="review-section">
+        <h3>DELIVERY</h3>
+        <div class="review-detail-grid">
+          <div><span>Customer</span><b>${escapeTrackHtml(payload.p_first_name)} ${escapeTrackHtml(payload.p_last_name)}</b></div>
+          <div><span>Mobile</span><b>${escapeTrackHtml(payload.p_phone)}</b></div>
+          <div><span>Governorate</span><b>${escapeTrackHtml(payload.p_governorate)}</b></div>
+          <div><span>Area</span><b>${escapeTrackHtml(payload.p_area)}</b></div>
+        </div>
+        <div class="review-address"><span>Address</span><b>${escapeTrackHtml(payload.p_address)}${payload.p_building ? `<br>${escapeTrackHtml(payload.p_building)}` : ''}</b></div>
+        ${payload.p_notes ? `<div class="review-address"><span>Notes</span><b>${escapeTrackHtml(payload.p_notes)}</b></div>` : ''}
+      </div>
+      <div class="review-section">
+        <h3>ORDER</h3>
+        <div class="review-items">${itemRows}</div>
+        <div class="review-totals">
+          <div><span>Subtotal</span><b>${money(subtotal)}</b></div>
+          ${currentDiscount()>0 ? `<div class="review-discount"><span>Discount ${appliedCoupon ? `(${escapeTrackHtml(appliedCoupon.code)})` : ''}</span><b>− ${money(currentDiscount())}</b></div>` : ''}
+          <div><span>Shipping</span><b>${money(SHIPPING_FEE)}</b></div>
+          <div class="review-grand"><span>Total</span><b>${money(currentTotal())}</b></div>
+        </div>
+      </div>
+      <div class="review-payment">PAYMENT METHOD <b>Cash on Delivery</b></div>`;
+
+    reviewModal.hidden=false;
+    reviewModal.setAttribute('aria-hidden','false');
+    document.body.classList.add('review-open');
+    setTimeout(()=>confirmBtn?.focus(),20);
+  }
+
+  function closeReview(){
+    if(!reviewModal) return;
+    reviewModal.hidden=true;
+    reviewModal.setAttribute('aria-hidden','true');
+    document.body.classList.remove('review-open');
+    placeBtn?.focus();
+  }
+
+  document.querySelectorAll('[data-close-review]').forEach(el=>el.addEventListener('click',closeReview));
+  if(editBtn) editBtn.addEventListener('click',closeReview);
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && reviewModal && !reviewModal.hidden) closeReview();
   });
+
+  form.addEventListener('submit',e=>{
+    e.preventDefault();
+    if(!validateCheckout()) return;
+    openReview(buildPayload());
+  });
+
+  if(confirmBtn){
+    confirmBtn.addEventListener('click',async()=>{
+      if(!pendingPayload || confirmBtn.disabled) return;
+      if(reviewError) reviewError.textContent='';
+
+      const originalText=confirmBtn.textContent;
+      confirmBtn.disabled=true;
+      if(editBtn) editBtn.disabled=true;
+      confirmBtn.textContent='PLACING ORDER...';
+
+      try{
+        const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/place_order`,{
+          method:'POST',
+          headers:{
+            'apikey':SUPABASE_PUBLISHABLE_KEY,
+            'Content-Type':'application/json',
+            'Accept':'application/json'
+          },
+          body:JSON.stringify(pendingPayload)
+        });
+
+        let result=null;
+        try{ result=await response.json(); }catch(_){}
+
+        if(!response.ok){
+          throw new Error(result?.message || result?.error || 'Could not place order. Please try again.');
+        }
+
+        localStorage.removeItem('domaro_cart');
+        sessionStorage.removeItem('domaro_checkout_token');
+        updateCartCount();
+        closeReview();
+
+        document.querySelector('.checkout-grid').hidden=true;
+        const success=document.getElementById('order-success');
+        const newOrderNumber=result?.orderNumber || 'Order received';
+        document.getElementById('order-number').textContent=newOrderNumber;
+        const trackLink=document.getElementById('track-order-link');
+        if(trackLink && result?.orderNumber) trackLink.href=`track.html?order=${encodeURIComponent(result.orderNumber)}`;
+        success.hidden=false;
+        window.scrollTo({top:0,behavior:'smooth'});
+      }catch(err){
+        if(reviewError) reviewError.textContent=err.message || 'Could not place order. Please try again.';
+      }finally{
+        confirmBtn.disabled=false;
+        if(editBtn) editBtn.disabled=false;
+        confirmBtn.textContent=originalText;
+      }
+    });
+  }
 }
 
 function initDemoForms(){

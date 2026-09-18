@@ -31,7 +31,7 @@
   <div class="checkout-grid">
     <section class="checkout-panel">
       <div class="checkout-step">01 — DELIVERY DETAILS</div>
-      <form id="checkout-form">
+      <form id="checkout-form" novalidate>
         <div class="form-row">
           <div><label>First name</label><input id="first-name" required autocomplete="given-name" placeholder="First name"></div>
           <div><label>Last name</label><input id="last-name" required autocomplete="family-name" placeholder="Last name"></div>
@@ -58,12 +58,9 @@
           <div class="payment-check">✓</div>
         </div>
 
-        <label class="terms-row">
-          <input id="confirm-order" type="checkbox" required>
-          <span>I confirm that my delivery details and order are correct.</span>
-        </label>
+        <div class="checkout-review-note">You will review your delivery details and final total before the order is placed.</div>
 
-        <button class="add-btn place-order-btn" type="submit">PLACE ORDER</button>
+        <button class="add-btn place-order-btn" type="submit">REVIEW ORDER</button>
         <div id="checkout-error" class="checkout-error"></div>
       </form>
     </section>
@@ -87,6 +84,22 @@
       </div>
       <div class="cod-note">Payment method: <b>Cash on Delivery</b></div>
     </aside>
+  </div>
+
+  <div id="review-modal" class="review-modal" hidden aria-hidden="true">
+    <div class="review-modal-backdrop" data-close-review></div>
+    <section class="review-modal-card" role="dialog" aria-modal="true" aria-labelledby="review-title">
+      <button class="review-close" type="button" data-close-review aria-label="Close review">×</button>
+      <div class="eyebrow" style="color:#766b5d">FINAL CHECK</div>
+      <h2 id="review-title">REVIEW YOUR ORDER</h2>
+      <p class="review-intro">Please check your delivery details and order before confirming.</p>
+      <div id="review-content"></div>
+      <div id="review-error" class="checkout-error"></div>
+      <div class="review-actions">
+        <button id="edit-order-btn" class="btn track-secondary" type="button">EDIT DETAILS</button>
+        <button id="confirm-place-order-btn" class="btn dark" type="button">CONFIRM &amp; PLACE ORDER</button>
+      </div>
+    </section>
   </div>
 
   <section id="order-success" class="order-success" hidden>

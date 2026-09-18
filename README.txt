@@ -66,3 +66,10 @@ V10 — CUSTOMER ORDER TRACKING
 - Shows order items, payment method and total, but does not expose customer name/address/notes.
 - Checkout success page links directly to Track Order with the new order number prefilled.
 - Run SUPABASE-V10-MIGRATION.sql once before deploying this version.
+
+
+V13 additions:
+- Review Order step before final confirmation
+- Clearer checkout validation
+- Unique checkout token for idempotent order placement
+- Duplicate-click / retry protection at database level
