@@ -1,0 +1,7 @@
+DOMARO Category Fix
+
+- FOR MEN opens the Men collection only.
+- FOR WOMEN opens the Women collection only.
+- UNISEX opens the Unisex collection only.
+- Shop filters update the URL as well.
+- No Supabase or SQL changes required.

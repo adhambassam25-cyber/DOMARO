@@ -107,13 +107,29 @@ function renderProducts(targetId, filter='all', limit=null){
 }
 
 function initFilters(){
+  const allowedFilters=['all','men','women','unisex'];
+  const urlFilter=(new URLSearchParams(location.search).get('category') || 'all').toLowerCase();
+  const initialFilter=allowedFilters.includes(urlFilter) ? urlFilter : 'all';
+
   document.querySelectorAll('.filter-btn').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.filter===initialFilter);
+
     btn.addEventListener('click',()=>{
       document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
       renderProducts('shop-products', btn.dataset.filter);
+
+      const url=new URL(location.href);
+      if(btn.dataset.filter==='all'){
+        url.searchParams.delete('category');
+      }else{
+        url.searchParams.set('category', btn.dataset.filter);
+      }
+      history.replaceState({},'',url);
     });
   });
+
+  renderProducts('shop-products', initialFilter);
 }
 
 function renderProductDetail(){
@@ -742,7 +758,6 @@ async function initStore(){
   updateCartCount();
   await loadCatalog();
   renderProducts('best-products','all',4);
-  renderProducts('shop-products');
   initFilters();
   renderProductDetail();
   renderCart();
