@@ -1,7 +1,7 @@
 
 const SUPABASE_URL = "https://zuqjxcsjjgotwwmlvxmf.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c";
-const SHIPPING_FEE = 80;
+let SHIPPING_FEE = 80;
 
 let products = [];
 let productVariants = [];
@@ -83,6 +83,9 @@ async function loadCatalog(){
     productVariants=variantsRes.ok ? await variantsRes.json().catch(()=>[]) : [];
     productImages=imagesRes.ok ? await imagesRes.json().catch(()=>[]) : [];
     storeSettings=settingsRes.ok ? (await settingsRes.json().catch(()=>({})) || {}) : {};
+    const configuredShipping=Number(storeSettings?.shipping_fee);
+    SHIPPING_FEE=Number.isFinite(configuredShipping) && configuredShipping>=0 ? configuredShipping : 80;
+    window.DOMARO_SHIPPING_FEE=SHIPPING_FEE;
 
     products=data.map(p=>{
       const variants=(Array.isArray(productVariants)?productVariants:[]).filter(v=>v.product_id===p.id).map(v=>({
@@ -369,7 +372,7 @@ function renderProductDetail(){
         <div class="qty"><button id="minus">−</button><input id="qty" type="number" min="1" max="10" value="1"><button id="plus">+</button></div>
         <div class="product-buy-row"><button class="add-btn" id="add" ${variantAvailable(initialVariant) ? '' : 'disabled'}>${variantAvailable(initialVariant) ? 'ADD TO CART' : 'OUT OF STOCK'}</button><button class="wishlist-product-btn" id="wishlist-product-btn" type="button" aria-label="Add to wishlist">♡</button></div>
         <div class="product-service-row">
-          <span>80 EGP FLAT SHIPPING</span>
+          <span>DELIVERY ACROSS EGYPT</span>
           <span>CASH ON DELIVERY</span>
         </div>
       </div>
@@ -386,7 +389,7 @@ function renderProductDetail(){
 
     <div class="product-accordion-wide accordion">
       <details open><summary>PRODUCT INFORMATION</summary><p>${p.brand ? `Brand: ${escapeTrackHtml(p.brand)}<br>` : ''}Size: <span id="product-info-size">${escapeTrackHtml(initialVariant?.size || p.size)}</span><br>Category: ${escapeTrackHtml(String(p.cat || '').charAt(0).toUpperCase()+String(p.cat || '').slice(1))}<br>Price: <span id="product-info-price">${money(initialVariant?.price ?? p.price)}</span></p></details>
-      <details><summary>DELIVERY</summary><p>Flat shipping is currently 80 EGP per order across Egypt.</p></details>
+      <details><summary>DELIVERY</summary><p>Delivery is available across Egypt. Current shipping fee: ${money(SHIPPING_FEE)} per order.</p></details>
     </div>
     <section id="product-recommendations" class="product-recommendations-v30"></section>`;
 
@@ -522,6 +525,7 @@ function renderCheckout(){
   const totalEl=document.getElementById('checkout-total');
   const discountRow=document.getElementById('checkout-discount-row');
   const discountEl=document.getElementById('checkout-discount');
+  const shippingEl=document.getElementById('checkout-shipping');
   const couponLabel=document.getElementById('checkout-coupon-label');
   const couponInput=document.getElementById('coupon-code');
   const couponButton=document.getElementById('apply-coupon-btn');
@@ -535,6 +539,7 @@ function renderCheckout(){
   function renderCheckoutTotals(){
     const discount=currentDiscount();
     subtotalEl.textContent=money(subtotal);
+    if(shippingEl) shippingEl.textContent=money(SHIPPING_FEE);
     totalEl.textContent=money(currentTotal());
     if(appliedCoupon && discount>0){
       discountRow.hidden=false;
