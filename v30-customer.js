@@ -129,6 +129,7 @@ function injectV30Nav(){
 
 // ---------- Bilingual UI ----------
 const V30_TRANSLATIONS={
+  'DELIVERY ACROSS EGYPT':'التوصيل متاح في جميع أنحاء مصر',
   'FLAT SHIPPING 80 EGP ACROSS EGYPT':'شحن ثابت 80 جنيه داخل مصر',
   'SEARCH':'بحث','TRACK':'تتبع','CART':'السلة','ACCOUNT':'حسابي','WISHLIST':'المفضلة',
   'MEN':'رجالي','WOMEN':'حريمي','UNISEX':'للجنسين','BRANDS':'الماركات','SHOP ALL':'تسوق الكل','ABOUT':'عن دومارو','CONTACT':'تواصل معنا','HOME':'الرئيسية','SHOP':'المتجر','COLLECTIONS':'المجموعات','TRACK ORDER':'تتبع الطلب',

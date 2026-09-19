@@ -1,0 +1,8 @@
+DOMARO V30.4.1 — AREA DROPDOWN
+
+- Checkout Area / District is now a real dropdown after Governorate selection.
+- Common Egyptian delivery areas/cities are preloaded in Supabase.
+- Owner shipping-zone overrides are automatically included in the same dropdown.
+- Exact area override fee is used when configured; otherwise governorate default fee is used.
+- "Other / Not listed" remains available so checkout never blocks a valid customer location.
+- No Google Maps, API key or billing is required.

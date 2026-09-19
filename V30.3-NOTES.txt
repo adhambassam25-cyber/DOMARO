@@ -1,0 +1,8 @@
+DOMARO V30.3 — DELIVERY CONTROLS
+
+- Announcement fallback changed to DELIVERY ACROSS EGYPT (no price in top banner).
+- Owner can edit shipping fee from Admin > STORE > BUSINESS.
+- Shipping fee is loaded dynamically in Cart, Checkout and Product delivery info.
+- Server-side order placement reads the current store shipping fee, so customers cannot override it.
+- Existing orders keep their original shipping amount; changes apply to new orders.
+- Shipping fee is included in owner Backup/Restore settings.

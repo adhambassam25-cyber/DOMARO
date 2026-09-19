@@ -1993,3 +1993,24 @@ body.entry-gate-open{
   letter-spacing:.02em;
 }
 .v30-variant-managed-note b{letter-spacing:.08em}
+
+/* V30.4 — Smart Delivery Zones */
+.delivery-fee-hint{display:block;margin-top:7px;font-size:9px;line-height:1.45;letter-spacing:.7px;color:#766e65}
+.v304-delivery-zones{margin-top:20px}
+.v304-zone-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}
+.v304-zone-head h3{margin:4px 0 7px}
+.v304-delivery-zones-list{display:grid;gap:9px;max-height:620px;overflow:auto;padding-right:3px}
+.v304-zone-row{display:grid;grid-template-columns:minmax(190px,1fr) 150px 105px auto;gap:12px;align-items:end;border:1px solid #ded5ca;background:#fff;padding:13px}
+.v304-zone-location span{display:block;font-size:8px;letter-spacing:1.6px;color:#8a8178;margin-bottom:4px}
+.v304-zone-location b{display:block;font-size:13px;letter-spacing:.4px}.v304-zone-location small{display:block;margin-top:3px;color:#746c64;font-size:10px}
+.v304-zone-row label,.v304-add-zone-form label{display:grid;gap:6px;font-size:9px;letter-spacing:1px;margin:0}
+.v304-zone-row input[type="number"],.v304-add-zone-form input,.v304-add-zone-form select,.v30-form-section select{width:100%;border:1px solid #d4c9bb;background:#fff;padding:10px}
+.v304-zone-active{display:flex!important;align-items:center;gap:8px!important;padding-bottom:10px}.v304-zone-active input{width:auto}.v304-zone-active span{font-size:9px;letter-spacing:1px}
+.v304-add-zone-form{margin-top:18px}.v304-zone-add-action{display:flex;align-items:end}.v304-zone-add-action button{width:100%}
+@media(max-width:900px){.v304-zone-row{grid-template-columns:1fr 1fr}.v304-zone-head{display:grid}.v304-zone-active{padding-bottom:0}.v304-zone-row .v30-row-actions{grid-column:1/-1}}
+@media(max-width:560px){.v304-zone-row{grid-template-columns:1fr}.v304-zone-row .v30-row-actions{grid-column:auto}}
+
+/* DOMARO V30.4.1 — delivery area dropdown */
+.delivery-other-area{margin-top:8px}
+.delivery-other-area[hidden]{display:none!important}
+#area:disabled{opacity:.65;cursor:not-allowed}
