@@ -87,3 +87,7 @@ SEO, favicon, social metadata, robots.txt, sitemap.xml and 404 polish. No databa
 
 V26: Advanced Business Dashboard
 Run SUPABASE-V26-MIGRATION.sql before deploying V26. Adds period-based reporting, comparisons, customer KPIs, trend reporting, top locations and CSV report export.
+
+
+V27: Customer Communication Tools
+No SQL migration required. Adds manual call/WhatsApp actions, status-aware editable message templates, copy-message support, and customer profile contact shortcuts.

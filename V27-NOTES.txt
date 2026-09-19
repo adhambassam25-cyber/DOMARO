@@ -1,0 +1,15 @@
+DOMARO V27 — Customer Communication Tools
+
+What's new
+- Order Workspace contact panel with customer phone, CALL and WHATSAPP actions.
+- Status-aware customer message templates for received, confirmed, shipped, delivered and cancelled orders.
+- Editable message preview before copying or opening WhatsApp.
+- Copy message button with browser clipboard fallback.
+- WhatsApp opens with the prepared message; DOMARO does not auto-send messages.
+- Tracking link includes the order number only. The customer still enters the matching phone number on the secure tracking page.
+- Customer Profile now includes CALL and WHATSAPP quick actions.
+
+Security / privacy
+- No new database table, secret, permission or SQL migration is required.
+- No customer phone number is placed inside the tracking URL.
+- Messages are manual admin actions and are not marked as sent by DOMARO.

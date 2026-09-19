@@ -137,6 +137,74 @@ function fmtDate(value){
     return new Intl.DateTimeFormat('en-EG',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
   }catch(_){ return value || ''; }
 }
+
+// ---------- V27 CUSTOMER COMMUNICATION ----------
+function egyptWhatsAppNumber(phone){
+  let digits=String(phone || '').replace(/\D/g,'');
+  if(!digits) return '';
+  if(digits.startsWith('0020')) digits=digits.slice(4);
+  else if(digits.startsWith('20') && digits.length>=12) return digits;
+  if(digits.startsWith('0')) digits=digits.slice(1);
+  if(digits.startsWith('1') && digits.length===10) return `20${digits}`;
+  return digits.startsWith('20') ? digits : `20${digits}`;
+}
+
+function orderTrackUrl(order){
+  const number=String(order?.order_number || '').trim();
+  return `https://domaro.vercel.app/track.html?order=${encodeURIComponent(number)}`;
+}
+
+function defaultMessageTemplateForStatus(status){
+  return ({
+    new:'received',
+    confirmed:'confirmed',
+    shipped:'shipped',
+    delivered:'delivered',
+    cancelled:'cancelled'
+  })[String(status || '').toLowerCase()] || 'received';
+}
+
+function buildOrderCustomerMessage(order,templateKey){
+  const name=String(order?.first_name || '').trim() || 'there';
+  const orderNumber=String(order?.order_number || '').trim();
+  const total=money(order?.total);
+  const tracking=orderTrackUrl(order);
+  const payment=String(order?.payment_method || 'Cash on Delivery').trim();
+
+  const messages={
+    received:`Hello ${name}, your DOMARO order ${orderNumber} has been received. Total: ${total}. Payment: ${payment}. You can track your order here: ${tracking}`,
+    confirmed:`Hello ${name}, your DOMARO order ${orderNumber} has been confirmed and is being prepared. Total: ${total}. Track your order here: ${tracking}`,
+    shipped:`Hello ${name}, your DOMARO order ${orderNumber} is on the way. You can follow its current status here: ${tracking}`,
+    delivered:`Hello ${name}, your DOMARO order ${orderNumber} has been marked as delivered. Thank you for choosing DOMARO.`,
+    cancelled:`Hello ${name}, your DOMARO order ${orderNumber} has been cancelled. If you need any help, please contact DOMARO.`
+  };
+  return messages[templateKey] || messages.received;
+}
+
+async function copyTextToClipboard(text){
+  const value=String(text || '');
+  if(navigator.clipboard && window.isSecureContext){
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+  const textarea=document.createElement('textarea');
+  textarea.value=value;
+  textarea.setAttribute('readonly','');
+  textarea.style.position='fixed';
+  textarea.style.opacity='0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  const ok=document.execCommand('copy');
+  textarea.remove();
+  if(!ok) throw new Error('Copy is not supported in this browser.');
+}
+
+function openWhatsApp(phone,message=''){
+  const number=egyptWhatsAppNumber(phone);
+  if(!number) throw new Error('Customer phone number is unavailable.');
+  const url=`https://wa.me/${encodeURIComponent(number)}${message?`?text=${encodeURIComponent(message)}`:''}`;
+  window.open(url,'_blank','noopener,noreferrer');
+}
 function authHeaders(extra={}){
   return {
     'apikey': SUPABASE_KEY,
@@ -772,6 +840,12 @@ function openCustomerProfile(customerKey){
       <div><span>DELIVERED SPEND</span><b>${money(customer.delivered_spend)}</b></div>
     </div>
 
+    <div class="customer-profile-contact-actions">
+      <a class="admin-secondary-btn" href="tel:${esc(customer.phone || '')}">CALL CUSTOMER</a>
+      <button id="customer-profile-whatsapp" class="admin-primary-btn" type="button">OPEN WHATSAPP</button>
+      <span>WhatsApp opens manually. DOMARO does not send a message automatically.</span>
+    </div>
+
     <div class="customer-profile-grid">
       <section class="customer-profile-card">
         <div class="customer-profile-card-head"><span>DELIVERY AREAS</span><h3>LOCATIONS</h3></div>
@@ -796,6 +870,14 @@ function openCustomerProfile(customerKey){
 
   customerDetailsModal.hidden=false;
   document.body.style.overflow='hidden';
+  const profileWhatsAppBtn=document.getElementById('customer-profile-whatsapp');
+  profileWhatsAppBtn?.addEventListener('click',()=>{
+    try{
+      openWhatsApp(customer.phone);
+    }catch(err){
+      customersError.textContent=err.message || 'Could not open WhatsApp.';
+    }
+  });
   document.querySelectorAll('.customer-open-order').forEach(btn=>{
     btn.addEventListener('click',()=>{
       const orderId=btn.dataset.orderId;
@@ -1183,6 +1265,32 @@ async function openOrderDetails(orderId){
     <div class="admin-order-totals order-modal-totals"><span>Subtotal: <b>${money(order.subtotal)}</b></span>${Number(order.discount||0)>0?`<span>Discount${order.coupon_code?` (${esc(order.coupon_code)})`:''}: <b>− ${money(order.discount)}</b></span>`:''}<span>Shipping: <b>${money(order.shipping)}</b></span><span>Total: <b>${money(order.total)}</b></span></div>
     ${order.notes?`<div class="admin-note"><b>Customer note:</b> ${esc(order.notes)}</div>`:''}
 
+    <section class="order-contact-workspace">
+      <div class="order-contact-head">
+        <div><span>CUSTOMER COMMUNICATION</span><h3>CONTACT CUSTOMER</h3></div>
+        <small>Prepare the message here, then copy it or open WhatsApp. Nothing is auto-sent.</small>
+      </div>
+      <div class="order-contact-meta">
+        <div><span>PHONE</span><b>${esc(order.phone || '—')}</b></div>
+        <div><span>CURRENT STATUS</span><b>${esc(prettyStatus(order.status))}</b></div>
+      </div>
+      <label class="order-message-template-label" for="order-message-template">MESSAGE TEMPLATE</label>
+      <select id="order-message-template" class="order-message-template">
+        <option value="received">ORDER RECEIVED</option>
+        <option value="confirmed">ORDER CONFIRMED</option>
+        <option value="shipped">ORDER SHIPPED</option>
+        <option value="delivered">ORDER DELIVERED</option>
+        <option value="cancelled">ORDER CANCELLED</option>
+      </select>
+      <textarea id="order-customer-message" class="order-customer-message" rows="5" maxlength="1500"></textarea>
+      <div class="order-contact-actions">
+        <a class="admin-secondary-btn" href="tel:${esc(order.phone || '')}">CALL</a>
+        <button id="copy-customer-message" class="admin-secondary-btn" type="button">COPY MESSAGE</button>
+        <button id="open-order-whatsapp" class="admin-primary-btn" type="button">OPEN WHATSAPP</button>
+      </div>
+      <div id="order-contact-feedback" class="order-contact-feedback" aria-live="polite"></div>
+    </section>
+
     <section class="order-history-workspace">
       <div class="order-history-head">
         <div><span>INTERNAL WORKSPACE</span><h3>ORDER TIMELINE</h3></div>
@@ -1210,6 +1318,39 @@ async function openOrderDetails(orderId){
   noteForm?.addEventListener('submit',e=>{
     e.preventDefault();
     addOrderAdminNote(orderId,noteForm);
+  });
+
+  const messageTemplate=document.getElementById('order-message-template');
+  const messageBox=document.getElementById('order-customer-message');
+  const contactFeedback=document.getElementById('order-contact-feedback');
+  const copyMessageBtn=document.getElementById('copy-customer-message');
+  const openOrderWhatsAppBtn=document.getElementById('open-order-whatsapp');
+  const defaultTemplate=defaultMessageTemplateForStatus(order.status);
+  if(messageTemplate) messageTemplate.value=defaultTemplate;
+  if(messageBox) messageBox.value=buildOrderCustomerMessage(order,defaultTemplate);
+
+  messageTemplate?.addEventListener('change',()=>{
+    if(messageBox) messageBox.value=buildOrderCustomerMessage(order,messageTemplate.value);
+    if(contactFeedback) contactFeedback.textContent='';
+  });
+
+  copyMessageBtn?.addEventListener('click',async()=>{
+    if(contactFeedback) contactFeedback.textContent='';
+    try{
+      await copyTextToClipboard(messageBox?.value || '');
+      if(contactFeedback) contactFeedback.textContent='Message copied.';
+    }catch(err){
+      if(contactFeedback) contactFeedback.textContent=err.message || 'Could not copy message.';
+    }
+  });
+
+  openOrderWhatsAppBtn?.addEventListener('click',()=>{
+    if(contactFeedback) contactFeedback.textContent='';
+    try{
+      openWhatsApp(order.phone,messageBox?.value || '');
+    }catch(err){
+      if(contactFeedback) contactFeedback.textContent=err.message || 'Could not open WhatsApp.';
+    }
   });
 
   await refreshOrderTimeline(orderId);

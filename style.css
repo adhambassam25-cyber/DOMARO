@@ -1839,3 +1839,32 @@ body.entry-gate-open{
   .dashboard-v26-actions{display:grid;grid-template-columns:1fr 1fr}
   .dashboard-period-select{grid-column:1/-1;width:100%}
 }
+
+/* DOMARO V27 — customer communication tools */
+.order-contact-workspace{margin-top:22px;padding:22px;border:1px solid #ded8ce;background:#fbfaf7}
+.order-contact-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:16px}
+.order-contact-head span,.order-message-template-label{display:block;font-size:11px;letter-spacing:.14em;color:#766b5d;font-weight:700}
+.order-contact-head h3{margin:4px 0 0;font-size:20px;letter-spacing:.04em}
+.order-contact-head small{max-width:390px;color:#766b5d;line-height:1.55;text-align:right}
+.order-contact-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.order-contact-meta>div{border:1px solid #e6e0d6;background:#fff;padding:12px 14px}
+.order-contact-meta span{display:block;font-size:10px;letter-spacing:.12em;color:#867b6d;margin-bottom:5px}
+.order-contact-meta b{font-size:14px}
+.order-message-template{width:100%;margin:7px 0 10px;min-height:42px;border:1px solid #cbc2b5;background:#fff;padding:0 12px;color:#181613}
+.order-customer-message{width:100%;resize:vertical;min-height:122px;border:1px solid #cbc2b5;background:#fff;padding:13px 14px;line-height:1.6;color:#181613;font:inherit}
+.order-customer-message:focus,.order-message-template:focus{outline:1px solid #181613;outline-offset:1px}
+.order-contact-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.order-contact-actions a{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.order-contact-feedback{min-height:20px;margin-top:8px;font-size:12px;color:#5d564c}
+.customer-profile-contact-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:14px 0 18px;padding:13px;border:1px solid #e0d9cf;background:#fbfaf7}
+.customer-profile-contact-actions a{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.customer-profile-contact-actions span{font-size:11px;color:#766b5d;margin-left:auto}
+@media(max-width:720px){
+  .order-contact-head{display:block}
+  .order-contact-head small{display:block;text-align:left;margin-top:8px}
+  .order-contact-meta{grid-template-columns:1fr}
+  .order-contact-actions{display:grid;grid-template-columns:1fr 1fr}
+  .order-contact-actions .admin-primary-btn{grid-column:1/-1}
+  .customer-profile-contact-actions{display:grid;grid-template-columns:1fr 1fr}
+  .customer-profile-contact-actions span{grid-column:1/-1;margin-left:0}
+}
