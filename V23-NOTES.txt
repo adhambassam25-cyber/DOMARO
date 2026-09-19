@@ -1,0 +1,9 @@
+DOMARO V23 — Inventory Center
+
+- Adds LOW STOCK stat and filter to Product Management.
+- Low-stock threshold is adjustable in Admin (default 5 units) and remembered on that browser.
+- Adds LOW STOCK badges/warnings for tracked inventory.
+- Adds quick −1 / +1 stock controls.
+- Quick adjustments use a database RPC with row locking so multiple admins cannot overwrite each other with stale stock values.
+- Stock automatically switches OUT OF STOCK at 0 and back IN STOCK above 0.
+- Requires running SUPABASE-V23-MIGRATION.sql before using the quick stock buttons.

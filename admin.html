@@ -193,22 +193,32 @@
       <button id="new-product-btn" class="admin-primary-btn">+ ADD PRODUCT</button>
     </div>
 
-    <div class="admin-product-stats">
+    <div class="admin-product-stats inventory-stats">
       <div class="admin-stat"><span>ALL PRODUCTS</span><b id="product-stat-all">0</b></div>
       <div class="admin-stat"><span>LIVE</span><b id="product-stat-live">0</b></div>
       <div class="admin-stat"><span>IN STOCK</span><b id="product-stat-stock">0</b></div>
+      <div class="admin-stat"><span>LOW STOCK</span><b id="product-stat-low">0</b></div>
       <div class="admin-stat"><span>OUT OF STOCK</span><b id="product-stat-out">0</b></div>
     </div>
 
-    <div class="admin-controls products-controls">
-      <input id="product-search" type="search" placeholder="Search products">
-      <select id="product-filter">
-        <option value="all">All products</option>
-        <option value="live">Live only</option>
-        <option value="hidden">Hidden only</option>
-        <option value="stock">In stock</option>
-        <option value="out">Out of stock</option>
-      </select>
+    <div class="inventory-toolbar">
+      <div class="admin-controls products-controls inventory-filter-grid">
+        <input id="product-search" type="search" placeholder="Search products">
+        <select id="product-filter">
+          <option value="all">All products</option>
+          <option value="live">Live only</option>
+          <option value="hidden">Hidden only</option>
+          <option value="stock">In stock</option>
+          <option value="low">Low stock</option>
+          <option value="out">Out of stock</option>
+          <option value="tracked">Tracked stock only</option>
+        </select>
+      </div>
+      <label class="low-stock-setting" for="product-low-threshold">
+        <span>LOW STOCK ≤</span>
+        <input id="product-low-threshold" type="number" min="1" max="999" step="1" value="5" inputmode="numeric">
+        <small>units</small>
+      </label>
     </div>
 
     <div id="products-loading" class="admin-loading" hidden>Loading products…</div>

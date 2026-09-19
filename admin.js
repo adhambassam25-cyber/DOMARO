@@ -50,6 +50,7 @@ const productsLoading = document.getElementById('products-loading');
 const productSearch = document.getElementById('product-search');
 const productFilter = document.getElementById('product-filter');
 const newProductBtn = document.getElementById('new-product-btn');
+const productLowThreshold = document.getElementById('product-low-threshold');
 
 const couponsList = document.getElementById('coupons-list');
 const couponsError = document.getElementById('coupons-error');
@@ -671,6 +672,22 @@ async function updateOrderStatus(orderId,status,button){
 }
 
 // ---------- PRODUCT MANAGEMENT ----------
+function getLowStockThreshold(){
+  const raw=Number(productLowThreshold?.value || localStorage.getItem('domaro_low_stock_threshold') || 5);
+  if(!Number.isFinite(raw)) return 5;
+  return Math.max(1,Math.min(999,Math.floor(raw)));
+}
+
+function isTrackedStock(product){
+  return product?.stock_quantity !== null && product?.stock_quantity !== undefined;
+}
+
+function isLowStock(product){
+  if(!isTrackedStock(product)) return false;
+  const qty=Number(product.stock_quantity);
+  return qty > 0 && qty <= getLowStockThreshold();
+}
+
 async function loadProducts(){
   productsError.textContent='';
   productsLoading.hidden=false;
@@ -696,6 +713,8 @@ function renderProductStats(){
   document.getElementById('product-stat-all').textContent=allProducts.length;
   document.getElementById('product-stat-live').textContent=allProducts.filter(p=>p.active).length;
   document.getElementById('product-stat-stock').textContent=allProducts.filter(p=>p.in_stock).length;
+  const lowEl=document.getElementById('product-stat-low');
+  if(lowEl) lowEl.textContent=allProducts.filter(isLowStock).length;
   document.getElementById('product-stat-out').textContent=allProducts.filter(p=>!p.in_stock).length;
 }
 
@@ -709,7 +728,9 @@ function filteredProducts(){
       (filter==='live' && p.active) ||
       (filter==='hidden' && !p.active) ||
       (filter==='stock' && p.in_stock) ||
-      (filter==='out' && !p.in_stock);
+      (filter==='low' && isLowStock(p)) ||
+      (filter==='out' && !p.in_stock) ||
+      (filter==='tracked' && isTrackedStock(p));
     return matchesSearch && matchesFilter;
   });
 }
@@ -721,19 +742,36 @@ function renderProductsAdmin(){
     return;
   }
 
-  productsList.innerHTML=list.map(p=>`
-    <article class="admin-product-card">
+  productsList.innerHTML=list.map(p=>{
+    const tracked=isTrackedStock(p);
+    const low=isLowStock(p);
+    const qty=tracked ? Number(p.stock_quantity) : null;
+    const stockState=!p.in_stock || qty===0 ? 'OUT OF STOCK' : (low ? 'LOW STOCK' : 'IN STOCK');
+    const stockClass=!p.in_stock || qty===0 ? 'mini-out' : (low ? 'mini-low' : 'mini-stock');
+    const adjustControls=tracked ? `
+      <div class="quick-stock-adjuster" aria-label="Quick stock adjustment for ${esc(p.name)}">
+        <button class="admin-secondary-btn stock-adjust-btn" type="button" data-id="${esc(p.id)}" data-delta="-1" ${qty<=0?'disabled':''}>−1</button>
+        <span>${esc(qty)}</span>
+        <button class="admin-secondary-btn stock-adjust-btn" type="button" data-id="${esc(p.id)}" data-delta="1">+1</button>
+      </div>` : '';
+
+    return `
+    <article class="admin-product-card ${low?'low-stock-card':''}">
       <div class="admin-product-image"><img src="${esc(p.image_path || 'assets/hero.svg')}" alt="${esc(p.name)}"></div>
       <div class="admin-product-main">
         <div class="admin-product-title-row">
           <div><h3>${esc(p.name)}</h3><span>${p.brand?`${esc(String(p.brand).toUpperCase())} · `:''}${esc(String(p.category).toUpperCase())} · ${esc(p.size_ml)} ML</span></div>
           <div class="admin-product-badges">
             <span class="mini-status ${p.active?'mini-live':'mini-hidden'}">${p.active?'LIVE':'HIDDEN'}</span>
-            <span class="mini-status ${p.in_stock?'mini-stock':'mini-out'}">${p.in_stock?'IN STOCK':'OUT OF STOCK'}</span>
+            <span class="mini-status ${stockClass}">${stockState}</span>
           </div>
         </div>
         <div class="admin-product-price">${money(p.price)}</div>
-        <div class="admin-stock-qty">${p.stock_quantity === null ? 'STOCK: NOT TRACKED' : `STOCK: ${esc(p.stock_quantity)} UNIT${Number(p.stock_quantity)===1?'':'S'}`}</div>
+        <div class="inventory-stock-row">
+          <div class="admin-stock-qty">${tracked ? `STOCK: ${esc(qty)} UNIT${qty===1?'':'S'}` : 'STOCK: NOT TRACKED'}</div>
+          ${adjustControls}
+        </div>
+        ${low?`<div class="low-stock-warning">LOW STOCK ALERT · ${esc(qty)} UNIT${qty===1?'':'S'} LEFT</div>`:''}
         <p>${esc(p.description || 'No description yet.')}</p>
         <div class="admin-product-actions">
           <button class="admin-secondary-btn edit-product-btn" data-id="${esc(p.id)}">EDIT</button>
@@ -741,21 +779,51 @@ function renderProductsAdmin(){
           <button class="admin-secondary-btn quick-live-btn" data-id="${esc(p.id)}">${p.active?'HIDE':'MAKE LIVE'}</button>
         </div>
       </div>
-    </article>
-  `).join('');
+    </article>`;
+  }).join('');
 
   document.querySelectorAll('.edit-product-btn').forEach(btn=>btn.addEventListener('click',()=>openProductModal(allProducts.find(p=>p.id===btn.dataset.id))));
   document.querySelectorAll('.quick-stock-btn').forEach(btn=>btn.addEventListener('click',()=>{
     const p=allProducts.find(x=>x.id===btn.dataset.id);
     if(!p) return;
     if(p.stock_quantity !== null && Number(p.stock_quantity) === 0){
-      productsError.textContent='Stock is tracked at 0. Edit the product and enter a quantity first.';
-      openProductModal(p);
+      productsError.textContent='Stock is tracked at 0. Use +1 or edit the product before marking it in stock.';
       return;
     }
     quickUpdateProduct(btn.dataset.id,'in_stock');
   }));
   document.querySelectorAll('.quick-live-btn').forEach(btn=>btn.addEventListener('click',()=>quickUpdateProduct(btn.dataset.id,'active')));
+  document.querySelectorAll('.stock-adjust-btn').forEach(btn=>btn.addEventListener('click',()=>adjustProductStock(btn)));
+}
+
+async function adjustProductStock(button){
+  const productId=button.dataset.id;
+  const delta=Number(button.dataset.delta);
+  if(!productId || !Number.isInteger(delta) || delta===0) return;
+  productsError.textContent='';
+  const original=button.textContent;
+  button.disabled=true;
+  button.textContent='…';
+  try{
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/adjust_product_stock`,{
+      method:'POST',
+      headers:authHeaders({'Content-Type':'application/json'}),
+      body:JSON.stringify({p_product_id:productId,p_delta:delta})
+    });
+    const data=await response.json().catch(()=>null);
+    if(response.status===401){clearSession();showLogin('Your session expired. Please sign in again.');return;}
+    if(!response.ok) throw new Error(data?.message || data?.details || 'Could not adjust stock.');
+    const updated=data && typeof data==='object' ? data : null;
+    const product=allProducts.find(p=>p.id===productId);
+    if(product && updated) Object.assign(product,updated);
+    else await loadProducts();
+    renderProductStats();
+    renderProductsAdmin();
+  }catch(err){
+    productsError.textContent=err.message || 'Could not adjust stock.';
+    button.disabled=false;
+    button.textContent=original;
+  }
 }
 
 async function quickUpdateProduct(id,field){
@@ -1521,6 +1589,17 @@ document.querySelectorAll('[data-close-order-modal]').forEach(el=>el.addEventLis
 document.addEventListener('keydown',e=>{if(e.key==='Escape' && orderDetailsModal && !orderDetailsModal.hidden) closeOrderDetails();});
 productSearch.addEventListener('input',renderProductsAdmin);
 productFilter.addEventListener('change',renderProductsAdmin);
+if(productLowThreshold){
+  const savedThreshold=Number(localStorage.getItem('domaro_low_stock_threshold') || 5);
+  if(Number.isFinite(savedThreshold) && savedThreshold>=1) productLowThreshold.value=String(Math.min(999,Math.floor(savedThreshold)));
+  productLowThreshold.addEventListener('change',()=>{
+    const value=getLowStockThreshold();
+    productLowThreshold.value=String(value);
+    localStorage.setItem('domaro_low_stock_threshold',String(value));
+    renderProductStats();
+    renderProductsAdmin();
+  });
+}
 
 (async function restoreSession(){
   if(!accessToken) return;
