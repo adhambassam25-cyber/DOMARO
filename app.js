@@ -872,6 +872,38 @@ function initOrderTracking(){
 }
 
 
+
+// DOMARO V19 — audience entry gate
+function initEntryGate(){
+  const gate=document.getElementById('entry-gate');
+  if(!gate) return;
+
+  let alreadyChosen=false;
+  try{
+    alreadyChosen=sessionStorage.getItem('domaroAudienceChosen')==='1';
+  }catch(_){}
+
+  if(alreadyChosen){
+    gate.remove();
+    return;
+  }
+
+  document.documentElement.classList.add('entry-gate-open');
+  document.body.classList.add('entry-gate-open');
+  gate.setAttribute('aria-hidden','false');
+
+  gate.querySelectorAll('[data-entry-category]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const category=btn.dataset.entryCategory;
+      try{
+        sessionStorage.setItem('domaroAudienceChosen','1');
+        sessionStorage.setItem('domaroAudienceCategory',category);
+      }catch(_){}
+      window.location.href=`shop.html?category=${encodeURIComponent(category)}`;
+    });
+  });
+}
+
 // DOMARO V14 — mobile navigation
 function initMobileNavigation(){
   const nav=document.querySelector('.nav');
@@ -915,6 +947,7 @@ function initMobileNavigation(){
 }
 
 async function initStore(){
+  initEntryGate();
   initMobileNavigation();
   updateCartCount();
   await loadCatalog();

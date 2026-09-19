@@ -1,0 +1,7 @@
+DOMARO V19 — ENTRY COLLECTION SELECTOR
+
+- When the homepage is first opened in a browsing session, customers see a full-screen selector.
+- Choices: MEN / WOMEN / UNISEX.
+- Choosing a collection sends the customer directly to the matching filtered Shop page.
+- The selector appears once per browser session, so it does not interrupt normal browsing afterward.
+- No Supabase or SQL changes required.
