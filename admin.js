@@ -14,6 +14,8 @@ const dashboardPanel = document.getElementById('admin-sales-panel');
 const ordersPanel = document.getElementById('admin-orders-panel');
 const productsPanel = document.getElementById('admin-products-panel');
 const couponsPanel = document.getElementById('admin-coupons-panel');
+const adminsPanel = document.getElementById('admin-admins-panel');
+const adminsTabBtn = document.getElementById('admins-tab-btn');
 
 const dashboardLoading = document.getElementById('dashboard-loading');
 const dashboardError = document.getElementById('dashboard-error');
@@ -47,6 +49,16 @@ const couponFormTitle = document.getElementById('coupon-form-title');
 const couponFormError = document.getElementById('coupon-form-error');
 const saveCouponBtn = document.getElementById('save-coupon-btn');
 
+const adminsList = document.getElementById('admins-list');
+const adminsError = document.getElementById('admins-error');
+const adminsLoading = document.getElementById('admins-loading');
+const newAdminBtn = document.getElementById('new-admin-btn');
+const adminUserModal = document.getElementById('admin-user-modal');
+const adminUserForm = document.getElementById('admin-user-form');
+const adminUserFormTitle = document.getElementById('admin-user-form-title');
+const adminUserFormError = document.getElementById('admin-user-form-error');
+const saveAdminUserBtn = document.getElementById('save-admin-user-btn');
+
 const productModal = document.getElementById('product-modal');
 const productForm = document.getElementById('product-form');
 const productFormTitle = document.getElementById('product-form-title');
@@ -61,9 +73,12 @@ let allOrders = [];
 let orderItems = [];
 let allProducts = [];
 let allCoupons = [];
+let allAdmins = [];
 let dashboardStats = null;
+let adminProfile = null;
 let editingProduct = null;
 let editingCoupon = null;
+let editingManagedAdmin = null;
 let notificationPollTimer = null;
 let lastKnownOrderCreatedAt = localStorage.getItem('domaro_last_known_order_created_at') || '';
 
@@ -120,25 +135,79 @@ async function login(email, password){
 }
 
 async function verifyAdminAccess(){
-  const response=await fetch(`${SUPABASE_URL}/rest/v1/orders?select=id&limit=1`,{headers:authHeaders()});
+  const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_my_admin_profile`,{
+    method:'POST',
+    headers:authHeaders({'Content-Type':'application/json'}),
+    body:'{}'
+  });
+
+  const data=await response.json().catch(()=>null);
+
   if(response.status===401) throw new Error('Your session has expired. Please sign in again.');
-  if(response.status===403) throw new Error('This account does not have DOMARO admin access.');
-  if(!response.ok){
-    const data=await response.json().catch(()=>({}));
-    throw new Error(data?.message || 'Could not verify admin access.');
-  }
-  return true;
+  if(!response.ok) throw new Error(data?.message || 'Could not verify admin access.');
+  if(!data || data.active===false) throw new Error('This account does not have active DOMARO admin access.');
+
+  adminProfile=data;
+  return data;
+}
+
+function hasPermission(permission){
+  if(!adminProfile || adminProfile.active===false) return false;
+  if(adminProfile.role==='owner') return true;
+
+  const key={
+    dashboard:'can_dashboard',
+    orders:'can_orders',
+    products:'can_products',
+    coupons:'can_coupons',
+    admins:'can_manage_admins'
+  }[permission];
+
+  return key ? Boolean(adminProfile[key]) : false;
+}
+
+function allowedTabs(){
+  return ['dashboard','orders','products','coupons','admins']
+    .filter(tab=>hasPermission(tab));
+}
+
+function applyAdminPermissions(){
+  const map={
+    dashboard:'dashboard',
+    orders:'orders',
+    products:'products',
+    coupons:'coupons',
+    admins:'admins'
+  };
+
+  document.querySelectorAll('.admin-tab').forEach(btn=>{
+    const permission=map[btn.dataset.adminTab];
+    btn.hidden=!hasPermission(permission);
+  });
+
+  if(adminsTabBtn) adminsTabBtn.hidden=adminProfile?.role!=='owner';
+  enableNotificationsBtn.hidden=!hasPermission('orders');
+
+  const roleText=adminProfile?.role==='owner' ? 'OWNER' : 'ADMIN';
+  adminUserLabel.textContent=`${adminProfile?.email || adminEmail || 'Admin'} · ${roleText}`;
 }
 
 function showDashboard(){
   loginSection.hidden=true;
   dashboardSection.hidden=false;
   logoutBtn.hidden=false;
-  enableNotificationsBtn.hidden=false;
+  applyAdminPermissions();
   updateNotificationButton();
-  adminUserLabel.textContent=adminEmail || 'Admin';
-  setTab('dashboard');
+
+  const tabs=allowedTabs();
+  if(!tabs.length){
+    document.querySelectorAll('.admin-panel').forEach(panel=>panel.hidden=true);
+    return;
+  }
+
+  setTab(tabs[0]);
 }
+
 function showLogin(message=''){
   dashboardSection.hidden=true;
   loginSection.hidden=false;
@@ -146,24 +215,33 @@ function showLogin(message=''){
   enableNotificationsBtn.hidden=true;
   stopOrderNotificationPolling();
   adminUserLabel.textContent='';
+  adminProfile=null;
   if(message) loginError.textContent=message;
 }
+
 function clearSession(){
   accessToken='';
   adminEmail='';
+  adminProfile=null;
   sessionStorage.removeItem('domaro_admin_access_token');
   sessionStorage.removeItem('domaro_admin_email');
 }
 
 function setTab(tab){
+  if(!hasPermission(tab)) return;
+
   document.querySelectorAll('.admin-tab').forEach(btn=>btn.classList.toggle('active',btn.dataset.adminTab===tab));
   dashboardPanel.hidden = tab!=='dashboard';
   ordersPanel.hidden = tab!=='orders';
   productsPanel.hidden = tab!=='products';
   couponsPanel.hidden = tab!=='coupons';
+  if(adminsPanel) adminsPanel.hidden = tab!=='admins';
+
   if(tab==='dashboard' && !dashboardStats) loadDashboardStats();
+  if(tab==='orders' && !allOrders.length) loadOrders();
   if(tab==='products' && !allProducts.length) loadProducts();
   if(tab==='coupons' && !allCoupons.length) loadCoupons();
+  if(tab==='admins' && !allAdmins.length) loadAdmins();
 }
 
 document.querySelectorAll('.admin-tab').forEach(btn=>{
@@ -825,7 +903,245 @@ document.querySelectorAll('[data-close-coupon-modal]').forEach(el=>el.addEventLi
 if(couponSearch) couponSearch.addEventListener('input',renderCouponsAdmin);
 if(couponFilter) couponFilter.addEventListener('change',renderCouponsAdmin);
 
+
+function adminPermissionPayloadFromForm(){
+  return {
+    dashboard:Boolean(document.getElementById('perm-dashboard').checked),
+    orders:Boolean(document.getElementById('perm-orders').checked),
+    products:Boolean(document.getElementById('perm-products').checked),
+    coupons:Boolean(document.getElementById('perm-coupons').checked)
+  };
+}
+
+function permissionLabels(admin){
+  const labels=[];
+  if(admin.role==='owner') return ['OWNER · FULL ACCESS'];
+  if(admin.can_dashboard) labels.push('DASHBOARD');
+  if(admin.can_orders) labels.push('ORDERS');
+  if(admin.can_products) labels.push('PRODUCTS');
+  if(admin.can_coupons) labels.push('COUPONS');
+  return labels;
+}
+
+async function callManageAdmins(payload){
+  const response=await fetch(`${SUPABASE_URL}/functions/v1/manage-admins`,{
+    method:'POST',
+    headers:authHeaders({'Content-Type':'application/json'}),
+    body:JSON.stringify(payload)
+  });
+
+  const data=await response.json().catch(()=>({}));
+
+  if(response.status===401){
+    clearSession();
+    showLogin('Your session expired. Please sign in again.');
+    throw new Error('Session expired.');
+  }
+
+  if(response.status===403){
+    throw new Error(data?.error || 'Owner access required.');
+  }
+
+  if(!response.ok){
+    throw new Error(data?.error || data?.message || 'Admin management request failed.');
+  }
+
+  return data;
+}
+
+async function loadAdmins(){
+  if(adminProfile?.role!=='owner') return;
+
+  adminsError.textContent='';
+  adminsLoading.hidden=false;
+
+  try{
+    const data=await callManageAdmins({action:'list'});
+    allAdmins=Array.isArray(data.admins) ? data.admins : [];
+    renderAdmins();
+  }catch(err){
+    adminsError.textContent=err.message || 'Could not load admins.';
+  }finally{
+    adminsLoading.hidden=true;
+  }
+}
+
+function renderAdmins(){
+  if(!adminsList) return;
+
+  if(!allAdmins.length){
+    adminsList.innerHTML='<div class="admin-empty">No admin accounts found.</div>';
+    return;
+  }
+
+  adminsList.innerHTML=allAdmins.map(admin=>{
+    const owner=admin.role==='owner';
+    const active=admin.active!==false;
+    const permissions=permissionLabels(admin);
+
+    return `<article class="admin-user-card">
+      <div class="admin-user-main">
+        <div class="admin-user-title-row">
+          <div>
+            <div class="admin-user-email">${esc(admin.email)}</div>
+            <div class="admin-user-role">${owner?'OWNER':'ADMIN'}${String(admin.user_id)===String(adminProfile?.user_id)?' · YOU':''}</div>
+          </div>
+          <span class="mini-status ${active?'mini-live':'mini-out'}">${active?'ACTIVE':'DISABLED'}</span>
+        </div>
+
+        <div class="admin-permission-pills">
+          ${permissions.length
+            ? permissions.map(label=>`<span>${esc(label)}</span>`).join('')
+            : '<span class="muted-permission">NO SECTION ACCESS</span>'}
+        </div>
+
+        ${owner
+          ? '<div class="admin-owner-note">Owner access is protected and cannot be edited or removed from this dashboard.</div>'
+          : `<div class="admin-product-actions">
+              <button class="admin-secondary-btn edit-managed-admin-btn" data-id="${esc(admin.user_id)}">EDIT ACCESS</button>
+              <button class="admin-secondary-btn remove-managed-admin-btn danger-outline" data-id="${esc(admin.user_id)}">REMOVE ADMIN</button>
+            </div>`}
+      </div>
+    </article>`;
+  }).join('');
+
+  document.querySelectorAll('.edit-managed-admin-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const admin=allAdmins.find(a=>String(a.user_id)===String(btn.dataset.id));
+      if(admin) openAdminModal(admin);
+    });
+  });
+
+  document.querySelectorAll('.remove-managed-admin-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>removeManagedAdmin(btn.dataset.id,btn));
+  });
+}
+
+function openAdminModal(admin=null){
+  editingManagedAdmin=admin || null;
+  adminUserForm.reset();
+  adminUserFormError.textContent='';
+
+  const editing=Boolean(admin);
+  document.getElementById('managed-admin-user-id').value=admin?.user_id || '';
+  document.getElementById('managed-admin-email').value=admin?.email || '';
+  document.getElementById('managed-admin-email').disabled=editing;
+
+  const passwordWrap=document.getElementById('managed-admin-password-wrap');
+  const passwordInput=document.getElementById('managed-admin-password');
+  passwordWrap.hidden=editing;
+  passwordInput.required=!editing;
+  passwordInput.value='';
+
+  document.getElementById('perm-dashboard').checked=editing ? Boolean(admin.can_dashboard) : true;
+  document.getElementById('perm-orders').checked=editing ? Boolean(admin.can_orders) : true;
+  document.getElementById('perm-products').checked=editing ? Boolean(admin.can_products) : false;
+  document.getElementById('perm-coupons').checked=editing ? Boolean(admin.can_coupons) : false;
+
+  const activeWrap=document.getElementById('managed-admin-active-wrap');
+  activeWrap.hidden=!editing;
+  document.getElementById('managed-admin-active').checked=editing ? admin.active!==false : true;
+
+  adminUserFormTitle.textContent=editing ? 'EDIT ADMIN ACCESS' : 'ADD ADMIN';
+  saveAdminUserBtn.textContent=editing ? 'SAVE ACCESS' : 'CREATE ADMIN';
+
+  adminUserModal.hidden=false;
+  document.body.classList.add('modal-open');
+}
+
+function closeAdminModal(){
+  adminUserModal.hidden=true;
+  document.body.classList.remove('modal-open');
+  editingManagedAdmin=null;
+}
+
+async function saveManagedAdmin(event){
+  event.preventDefault();
+  adminUserFormError.textContent='';
+
+  const permissions=adminPermissionPayloadFromForm();
+
+  if(!Object.values(permissions).some(Boolean)){
+    adminUserFormError.textContent='Choose at least one permission.';
+    return;
+  }
+
+  saveAdminUserBtn.disabled=true;
+  const oldText=saveAdminUserBtn.textContent;
+  saveAdminUserBtn.textContent='SAVING…';
+
+  try{
+    if(editingManagedAdmin){
+      await callManageAdmins({
+        action:'update',
+        user_id:editingManagedAdmin.user_id,
+        active:Boolean(document.getElementById('managed-admin-active').checked),
+        permissions
+      });
+    }else{
+      const email=document.getElementById('managed-admin-email').value.trim().toLowerCase();
+      const password=document.getElementById('managed-admin-password').value;
+
+      if(!email || !email.includes('@')){
+        throw new Error('Enter a valid email address.');
+      }
+      if(password.length<8){
+        throw new Error('Temporary password must be at least 8 characters.');
+      }
+
+      await callManageAdmins({
+        action:'create',
+        email,
+        password,
+        permissions
+      });
+    }
+
+    closeAdminModal();
+    allAdmins=[];
+    await loadAdmins();
+  }catch(err){
+    adminUserFormError.textContent=err.message || 'Could not save admin.';
+  }finally{
+    saveAdminUserBtn.disabled=false;
+    saveAdminUserBtn.textContent=editingManagedAdmin ? 'SAVE ACCESS' : oldText;
+  }
+}
+
+async function removeManagedAdmin(userId,button){
+  const admin=allAdmins.find(a=>String(a.user_id)===String(userId));
+  if(!admin) return;
+
+  if(!confirm(`Remove DOMARO admin access for ${admin.email}?`)) return;
+
+  button.disabled=true;
+
+  try{
+    await callManageAdmins({
+      action:'remove',
+      user_id:userId
+    });
+
+    allAdmins=allAdmins.filter(a=>String(a.user_id)!==String(userId));
+    renderAdmins();
+  }catch(err){
+    adminsError.textContent=err.message || 'Could not remove admin access.';
+  }finally{
+    button.disabled=false;
+  }
+}
+
+if(newAdminBtn) newAdminBtn.addEventListener('click',()=>openAdminModal());
+if(adminUserForm) adminUserForm.addEventListener('submit',saveManagedAdmin);
+document.querySelectorAll('[data-close-admin-modal]').forEach(el=>el.addEventListener('click',closeAdminModal));
+
 function updateNotificationButton(){
+  if(!hasPermission('orders')){
+    enableNotificationsBtn.hidden=true;
+    stopOrderNotificationPolling();
+    return;
+  }
+  enableNotificationsBtn.hidden=false;
   if(!('Notification' in window)){
     enableNotificationsBtn.textContent='ALERTS UNSUPPORTED';
     enableNotificationsBtn.disabled=true;
@@ -857,7 +1173,7 @@ enableNotificationsBtn.addEventListener('click', async ()=>{
 
 function startOrderNotificationPolling(){
   stopOrderNotificationPolling();
-  if(!accessToken) return;
+  if(!accessToken || !hasPermission('orders')) return;
   notificationPollTimer=setInterval(checkForNewOrders,60000);
 }
 
@@ -869,7 +1185,7 @@ function stopOrderNotificationPolling(){
 }
 
 async function checkForNewOrders(){
-  if(!accessToken) return;
+  if(!accessToken || !hasPermission('orders')) return;
 
   try{
     const response=await fetch(
@@ -922,7 +1238,6 @@ loginForm.addEventListener('submit',async e=>{
     await login(email,password);
     await verifyAdminAccess();
     showDashboard();
-    await loadOrders();
     startOrderNotificationPolling();
     document.getElementById('admin-password').value='';
   }catch(err){
@@ -937,8 +1252,8 @@ loginForm.addEventListener('submit',async e=>{
 logoutBtn.addEventListener('click',()=>{
   stopOrderNotificationPolling();
   clearSession();
-  allOrders=[]; orderItems=[]; allProducts=[]; allCoupons=[]; dashboardStats=null;
-  ordersList.innerHTML=''; productsList.innerHTML='';
+  allOrders=[]; orderItems=[]; allProducts=[]; allCoupons=[]; allAdmins=[]; dashboardStats=null; adminProfile=null;
+  ordersList.innerHTML=''; productsList.innerHTML=''; if(adminsList) adminsList.innerHTML='';
   showLogin();
 });
 refreshDashboardBtn.addEventListener('click',loadDashboardStats);
@@ -953,7 +1268,6 @@ productFilter.addEventListener('change',renderProductsAdmin);
   try{
     await verifyAdminAccess();
     showDashboard();
-    await loadOrders();
     startOrderNotificationPolling();
   }catch(err){
     clearSession();

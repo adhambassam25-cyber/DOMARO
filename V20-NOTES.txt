@@ -1,0 +1,25 @@
+DOMARO V20 — ADMIN MANAGEMENT & PERMISSIONS
+
+Owner-only Admin Management:
+- ADMINS tab appears only for the OWNER account.
+- Create an Admin directly from the DOMARO Admin Dashboard.
+- Set permissions for Dashboard, Orders, Products and Coupons.
+- Edit permissions later.
+- Disable/enable an admin account.
+- Remove admin access without deleting store data.
+- OWNER account cannot be edited or removed from the dashboard.
+
+Security:
+- Admin creation runs through the Supabase manage-admins Edge Function.
+- Service role / secret keys are never included in frontend files.
+- Login access is verified with get_my_admin_profile().
+- Tabs are hidden according to permissions.
+- Backend RLS/RPC checks created during V20 enforce the important permissions server-side.
+
+Required backend setup completed before this package:
+- public.admins role/permission columns
+- is_admin(), is_owner(), has_admin_permission()
+- permission-aware product/coupon/order policies
+- permission-aware order-status and dashboard functions
+- get_my_admin_profile()
+- manage-admins Edge Function

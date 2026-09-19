@@ -69,6 +69,7 @@
     <button class="admin-tab" data-admin-tab="orders">ORDERS</button>
     <button class="admin-tab" data-admin-tab="products">PRODUCTS</button>
     <button class="admin-tab" data-admin-tab="coupons">COUPONS</button>
+    <button id="admins-tab-btn" class="admin-tab" data-admin-tab="admins" hidden>ADMINS</button>
   </div>
 
   <section id="admin-sales-panel" class="admin-panel">
@@ -232,6 +233,92 @@
     <div id="coupons-list" class="admin-coupons-list"></div>
   </section>
 
+  <section id="admin-admins-panel" class="admin-panel" hidden>
+    <div class="admin-dashboard-head">
+      <div>
+        <div class="eyebrow" style="color:#766b5d">OWNER CONTROL</div>
+        <h1>ADMIN MANAGEMENT</h1>
+        <p class="admin-panel-intro">Create separate admin accounts and control exactly which parts of DOMARO they can access.</p>
+      </div>
+      <button id="new-admin-btn" class="admin-primary-btn">+ ADD ADMIN</button>
+    </div>
+
+    <div class="admin-permission-guide">
+      <div><b>DASHBOARD</b><span>Sales figures, best sellers and recent orders</span></div>
+      <div><b>ORDERS</b><span>Customer orders and status updates</span></div>
+      <div><b>PRODUCTS</b><span>Products, stock, images and catalog editing</span></div>
+      <div><b>COUPONS</b><span>Discount codes and promotions</span></div>
+    </div>
+
+    <div id="admins-loading" class="admin-loading" hidden>Loading admins…</div>
+    <div id="admins-error" class="admin-error"></div>
+    <div id="admins-list" class="admin-users-list"></div>
+  </section>
+
+</section>
+
+<section id="admin-user-modal" class="product-modal" hidden>
+  <div class="product-modal-backdrop" data-close-admin-modal></div>
+  <div class="product-modal-card admin-user-modal-card">
+    <div class="product-modal-head">
+      <div>
+        <div class="eyebrow" style="color:#766b5d">OWNER CONTROL</div>
+        <h2 id="admin-user-form-title">ADD ADMIN</h2>
+      </div>
+      <button class="product-modal-close" type="button" data-close-admin-modal>×</button>
+    </div>
+
+    <form id="admin-user-form">
+      <input id="managed-admin-user-id" type="hidden">
+
+      <div class="form-row">
+        <div>
+          <label>Admin email</label>
+          <input id="managed-admin-email" type="email" required autocomplete="off" placeholder="name@example.com">
+        </div>
+        <div id="managed-admin-password-wrap">
+          <label>Temporary password</label>
+          <input id="managed-admin-password" type="password" minlength="8" autocomplete="new-password" placeholder="Minimum 8 characters">
+        </div>
+      </div>
+
+      <div class="admin-permissions-editor">
+        <div class="admin-permissions-title">PERMISSIONS</div>
+
+        <label class="admin-permission-check">
+          <input id="perm-dashboard" type="checkbox">
+          <span><b>Dashboard</b><small>View sales KPIs, best sellers and recent orders</small></span>
+        </label>
+
+        <label class="admin-permission-check">
+          <input id="perm-orders" type="checkbox">
+          <span><b>Orders</b><small>View customer orders and change order status</small></span>
+        </label>
+
+        <label class="admin-permission-check">
+          <input id="perm-products" type="checkbox">
+          <span><b>Products</b><small>Add and edit products, stock, images and availability</small></span>
+        </label>
+
+        <label class="admin-permission-check">
+          <input id="perm-coupons" type="checkbox">
+          <span><b>Coupons</b><small>Create and manage discount codes</small></span>
+        </label>
+      </div>
+
+      <label id="managed-admin-active-wrap" class="product-toggle admin-active-toggle" hidden>
+        <input id="managed-admin-active" type="checkbox" checked>
+        <span>ACCOUNT ACTIVE</span>
+      </label>
+
+      <div class="admin-security-note">
+        Only the OWNER can create, edit or remove admin access. Passwords are sent directly to the secure backend and are never stored in this page.
+      </div>
+
+      <div id="admin-user-form-error" class="admin-error"></div>
+      <button id="save-admin-user-btn" class="add-btn" type="submit">CREATE ADMIN</button>
+    </form>
+  </div>
 </section>
 
 <section id="coupon-modal" class="product-modal" hidden>

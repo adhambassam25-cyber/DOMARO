@@ -1262,3 +1262,177 @@ body.entry-gate-open{
     font-size:31px;
   }
 }
+
+
+/* DOMARO V20 — owner admin management + permissions */
+.admin-panel-intro{
+  max-width:650px;
+  margin:8px 0 0;
+  color:#746a60;
+  font-size:12px;
+  line-height:1.65;
+}
+.admin-permission-guide{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin:0 0 24px;
+}
+.admin-permission-guide>div{
+  padding:16px;
+  border:1px solid #ddd3c7;
+  background:#f8f4ed;
+}
+.admin-permission-guide b{
+  display:block;
+  margin-bottom:7px;
+  font-size:9px;
+  letter-spacing:1.4px;
+}
+.admin-permission-guide span{
+  color:#766d64;
+  font-size:10px;
+  line-height:1.5;
+}
+.admin-users-list{
+  display:grid;
+  gap:12px;
+}
+.admin-user-card{
+  border:1px solid #ded5ca;
+  background:#fff;
+}
+.admin-user-main{
+  padding:22px;
+}
+.admin-user-title-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+}
+.admin-user-email{
+  font-size:14px;
+  font-weight:700;
+  color:#17130f;
+}
+.admin-user-role{
+  margin-top:5px;
+  color:#8a7c6e;
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:1.8px;
+}
+.admin-permission-pills{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin:18px 0 2px;
+}
+.admin-permission-pills span{
+  display:inline-flex;
+  align-items:center;
+  padding:7px 9px;
+  background:#f4eee6;
+  color:#675d53;
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:1.1px;
+}
+.admin-permission-pills .muted-permission{
+  background:#f5f5f5;
+  color:#999;
+}
+.admin-owner-note{
+  margin-top:16px;
+  padding:11px 12px;
+  border-left:2px solid #b18a58;
+  background:#faf6f0;
+  color:#756a60;
+  font-size:10px;
+  line-height:1.55;
+}
+.danger-outline{
+  border-color:#c9a8a1 !important;
+  color:#8c4036 !important;
+}
+.danger-outline:hover{
+  background:#8c4036 !important;
+  color:#fff !important;
+}
+.admin-user-modal-card{
+  max-width:690px;
+}
+.admin-permissions-editor{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin:17px 0;
+}
+.admin-permissions-title{
+  grid-column:1/-1;
+  margin-bottom:2px;
+  color:#8d7f70;
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:2px;
+}
+.admin-permission-check{
+  display:flex;
+  gap:11px;
+  align-items:flex-start;
+  padding:14px;
+  border:1px solid #ded6cc;
+  background:#faf7f2;
+  cursor:pointer;
+}
+.admin-permission-check input{
+  width:16px;
+  height:16px;
+  margin-top:2px;
+  accent-color:#111;
+}
+.admin-permission-check span{
+  display:block;
+}
+.admin-permission-check b{
+  display:block;
+  color:#17130f;
+  font-size:10px;
+  letter-spacing:.7px;
+}
+.admin-permission-check small{
+  display:block;
+  margin-top:5px;
+  color:#82776d;
+  font-size:9px;
+  line-height:1.45;
+}
+.admin-active-toggle{
+  margin:5px 0 14px;
+}
+.admin-security-note{
+  margin:14px 0;
+  padding:12px 14px;
+  background:#f3efe9;
+  color:#756b61;
+  font-size:9px;
+  line-height:1.6;
+}
+@media(max-width:900px){
+  .admin-permission-guide{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+@media(max-width:640px){
+  .admin-permission-guide,
+  .admin-permissions-editor{
+    grid-template-columns:1fr;
+  }
+  .admin-permissions-title{
+    grid-column:auto;
+  }
+  .admin-user-title-row{
+    flex-direction:column;
+  }
+}
