@@ -167,12 +167,25 @@ function hasPermission(permission){
 }
 
 function allowedTabs(){
-  return ['dashboard','orders','products','coupons','admins']
+  const tabs=['dashboard','orders','products','coupons']
     .filter(tab=>hasPermission(tab));
+
+  if(String(adminProfile?.role || '').toLowerCase()==='owner'){
+    tabs.push('admins');
+  }
+
+  return tabs;
+}
+
+function setElementPermissionVisibility(el,visible){
+  if(!el) return;
+  el.hidden=!visible;
+  el.style.display=visible ? '' : 'none';
+  el.setAttribute('aria-hidden',visible ? 'false' : 'true');
 }
 
 function applyAdminPermissions(){
-  const map={
+  const permissionMap={
     dashboard:'dashboard',
     orders:'orders',
     products:'products',
@@ -180,15 +193,26 @@ function applyAdminPermissions(){
     admins:'admins'
   };
 
+  const isOwner=String(adminProfile?.role || '').toLowerCase()==='owner';
+
   document.querySelectorAll('.admin-tab').forEach(btn=>{
-    const permission=map[btn.dataset.adminTab];
-    btn.hidden=!hasPermission(permission);
+    const tab=btn.dataset.adminTab;
+    const permission=permissionMap[tab];
+    const visible=tab==='admins' ? isOwner : hasPermission(permission);
+    setElementPermissionVisibility(btn,visible);
   });
 
-  if(adminsTabBtn) adminsTabBtn.hidden=adminProfile?.role!=='owner';
-  enableNotificationsBtn.hidden=!hasPermission('orders');
+  setElementPermissionVisibility(adminsTabBtn,isOwner);
+  setElementPermissionVisibility(enableNotificationsBtn,hasPermission('orders'));
 
-  const roleText=adminProfile?.role==='owner' ? 'OWNER' : 'ADMIN';
+  // Always keep the owner-only panel inaccessible in the UI for non-owners.
+  if(adminsPanel && !isOwner){
+    adminsPanel.hidden=true;
+    adminsPanel.style.display='none';
+    adminsPanel.setAttribute('aria-hidden','true');
+  }
+
+  const roleText=isOwner ? 'OWNER' : 'ADMIN';
   adminUserLabel.textContent=`${adminProfile?.email || adminEmail || 'Admin'} · ${roleText}`;
 }
 
@@ -196,14 +220,19 @@ function showDashboard(){
   loginSection.hidden=true;
   dashboardSection.hidden=false;
   logoutBtn.hidden=false;
+
+  // Hide every panel first so no previous/stale view can flash.
+  document.querySelectorAll('.admin-panel').forEach(panel=>{
+    panel.hidden=true;
+    panel.style.display='none';
+    panel.setAttribute('aria-hidden','true');
+  });
+
   applyAdminPermissions();
   updateNotificationButton();
 
   const tabs=allowedTabs();
-  if(!tabs.length){
-    document.querySelectorAll('.admin-panel').forEach(panel=>panel.hidden=true);
-    return;
-  }
+  if(!tabs.length) return;
 
   setTab(tabs[0]);
 }
@@ -228,20 +257,38 @@ function clearSession(){
 }
 
 function setTab(tab){
-  if(!hasPermission(tab)) return;
+  const isOwner=String(adminProfile?.role || '').toLowerCase()==='owner';
+  if(tab==='admins'){
+    if(!isOwner) return;
+  }else if(!hasPermission(tab)){
+    return;
+  }
 
-  document.querySelectorAll('.admin-tab').forEach(btn=>btn.classList.toggle('active',btn.dataset.adminTab===tab));
-  dashboardPanel.hidden = tab!=='dashboard';
-  ordersPanel.hidden = tab!=='orders';
-  productsPanel.hidden = tab!=='products';
-  couponsPanel.hidden = tab!=='coupons';
-  if(adminsPanel) adminsPanel.hidden = tab!=='admins';
+  document.querySelectorAll('.admin-tab').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.adminTab===tab);
+  });
+
+  const panels={
+    dashboard:dashboardPanel,
+    orders:ordersPanel,
+    products:productsPanel,
+    coupons:couponsPanel,
+    admins:adminsPanel
+  };
+
+  Object.entries(panels).forEach(([name,panel])=>{
+    if(!panel) return;
+    const visible=name===tab && (name!=='admins' || isOwner);
+    panel.hidden=!visible;
+    panel.style.display=visible ? '' : 'none';
+    panel.setAttribute('aria-hidden',visible ? 'false' : 'true');
+  });
 
   if(tab==='dashboard' && !dashboardStats) loadDashboardStats();
   if(tab==='orders' && !allOrders.length) loadOrders();
   if(tab==='products' && !allProducts.length) loadProducts();
   if(tab==='coupons' && !allCoupons.length) loadCoupons();
-  if(tab==='admins' && !allAdmins.length) loadAdmins();
+  if(tab==='admins' && isOwner && !allAdmins.length) loadAdmins();
 }
 
 document.querySelectorAll('.admin-tab').forEach(btn=>{

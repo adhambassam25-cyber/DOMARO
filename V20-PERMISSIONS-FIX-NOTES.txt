@@ -1,0 +1,10 @@
+DOMARO V20 PERMISSIONS HOTFIX
+
+Fixes:
+- Owner-only ADMINS tab/panel is forcibly hidden for non-owner accounts.
+- Every admin panel is hidden before permissions are applied.
+- Orders-only admins land directly on ORDERS.
+- Hidden tabs/panels use both HTML hidden state and CSS display:none as a hard UI guard.
+- Backend owner protection remains unchanged; the previous "Owner access required" message showed the backend was already blocking unauthorized admin-management access.
+
+No SQL or Supabase changes required.

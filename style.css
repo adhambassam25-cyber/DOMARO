@@ -1436,3 +1436,13 @@ body.entry-gate-open{
     flex-direction:column;
   }
 }
+
+
+/* DOMARO V20 permission visibility hotfix */
+.admin-tab[hidden],
+.admin-panel[hidden],
+#admins-tab-btn[hidden],
+#admin-admins-panel[hidden],
+#enable-notifications-btn[hidden]{
+  display:none !important;
+}
