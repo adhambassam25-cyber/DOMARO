@@ -1,0 +1,11 @@
+DOMARO V30.1 — LIVE SYNC FIX
+
+No SQL migration is required.
+
+Fixes:
+- Wishlist, Account and AR/EN controls are now present directly in public page HTML instead of relying only on runtime injection.
+- New cache-busted customer bundle: v30-customer.js.
+- AR/EN remains visible on mobile.
+- Product page now has an explicit Recently Viewed / Recommendations host.
+- Public HTML is no-store so future production releases do not keep stale markup.
+- Existing V30 database/admin features are unchanged.

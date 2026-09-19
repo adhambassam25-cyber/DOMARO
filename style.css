@@ -1980,7 +1980,7 @@ body.entry-gate-open{
 .field-optional{font-size:8px;color:#8a8178;font-weight:400}
 
 @media(max-width:900px){.account-auth-grid{grid-template-columns:1fr}.product-gallery-thumbs{grid-template-columns:repeat(4,1fr)}.v30-variant-row,.v30-gallery-item,.v30-return-admin-card,.v30-abandoned-card,.v30-audit-row{grid-template-columns:1fr}.v30-return-controls{grid-template-columns:1fr}.v30-gallery-uploader,.v30-backup-card{display:grid;grid-template-columns:1fr}.v30-audit-row>div:last-child{text-align:left}}
-@media(max-width:640px){.nav-account-action .nav-action-label,.nav-wishlist-action .nav-action-label,.nav-lang-toggle{display:none}.product-gallery-thumbs{grid-template-columns:repeat(3,1fr)}.product-buy-row{grid-template-columns:1fr 46px}.account-order-card{align-items:flex-start;flex-direction:column}.account-profile-summary{grid-template-columns:1fr}.v30-promo-copy h2{font-size:34px}}
+@media(max-width:640px){.nav-account-action .nav-action-label,.nav-wishlist-action .nav-action-label{display:none}.nav-lang-toggle{display:inline-flex!important}.product-gallery-thumbs{grid-template-columns:repeat(3,1fr)}.product-buy-row{grid-template-columns:1fr 46px}.account-order-card{align-items:flex-start;flex-direction:column}.account-profile-summary{grid-template-columns:1fr}.v30-promo-copy h2{font-size:34px}}
 .admin-tabs{flex-wrap:wrap}
 
 
