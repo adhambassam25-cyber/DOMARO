@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>My Account | DOMARO</title>
+  <meta name="description" content="Manage your DOMARO account, wishlist and orders.">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"><link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0b0b0b">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="topbar">FLAT SHIPPING 80 EGP ACROSS EGYPT</div>
+<header><div class="container nav"><a class="logo" href="index.html">DOMARO<small>FRAGRANCES</small></a><nav class="navlinks"><a href="shop.html?category=men">MEN</a><a href="shop.html?category=women">WOMEN</a><a href="shop.html?category=unisex">UNISEX</a><a href="brands.html">BRANDS</a><a href="shop.html">SHOP ALL</a><a href="about.html">ABOUT</a><a href="contact.html">CONTACT</a></nav><div class="navicons"><button class="nav-action nav-search-trigger" type="button" aria-label="Search products or brands"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg><span class="nav-action-label">SEARCH</span></button><a class="nav-action nav-track-action" href="track.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7.5h14v11H5z"></path><path d="M8 7.5V5.8A2.8 2.8 0 0 1 10.8 3h2.4A2.8 2.8 0 0 1 16 5.8v1.7"></path></svg><span class="nav-action-label">TRACK</span></a><a class="nav-action nav-cart-action" href="cart.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l-1 11h-9z"></path><path d="M9 9V6.5a3 3 0 0 1 6 0V9"></path></svg><span class="nav-action-label">CART</span><span class="cart-pill" data-cart-count>0</span></a></div></div></header>
+<section class="page-hero"><div class="eyebrow">DOMARO CUSTOMER</div><h1>MY ACCOUNT</h1><p>Your orders, profile and saved fragrances in one place.</p></section>
+<main class="container account-page-v30" id="v30-account-shell">
+  <div id="v30-account-message" class="checkout-error"></div>
+  <section id="v30-account-auth" class="account-auth-grid">
+    <form id="v30-login-form" class="account-auth-card"><span>SIGN IN</span><h2>WELCOME BACK</h2><label>Email<input name="email" type="email" required autocomplete="email"></label><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="add-btn" type="submit">SIGN IN</button></form>
+    <form id="v30-signup-form" class="account-auth-card"><span>NEW CUSTOMER</span><h2>CREATE ACCOUNT</h2><div class="form-row"><label>First name<input name="first_name" required></label><label>Last name<input name="last_name" required></label></div><label>Mobile<input name="phone" required inputmode="tel" maxlength="11" placeholder="01XXXXXXXXX"></label><label>Email<input name="email" type="email" required autocomplete="email"></label><label>Password<input name="password" type="password" minlength="8" required autocomplete="new-password"></label><button class="add-btn" type="submit">CREATE ACCOUNT</button></form>
+  </section>
+  <section id="v30-account-dashboard" hidden>
+    <div class="account-dashboard-head"><div><span>WELCOME</span><h2 id="v30-account-name">DOMARO CUSTOMER</h2></div><button id="v30-account-logout" class="btn track-secondary" type="button">LOG OUT</button></div>
+    <div id="v30-account-profile" class="account-profile-summary"></div>
+    <form id="v30-profile-form" class="account-profile-form"><div class="section-head"><div class="kicker">PROFILE</div><h2>YOUR DETAILS</h2></div><div class="form-row"><label>First name<input id="v30-profile-first" name="first_name" required></label><label>Last name<input id="v30-profile-last" name="last_name" required></label></div><label>Mobile<input id="v30-profile-phone" name="phone" required maxlength="11"></label><button class="btn dark" type="submit">SAVE PROFILE</button></form>
+    <section class="account-section"><div class="section-head"><div class="kicker">ORDER HISTORY</div><h2>YOUR ORDERS</h2></div><div id="v30-account-orders" class="account-order-list"></div></section>
+    <section class="account-section" id="wishlist"><div class="section-head"><div class="kicker">SAVED FOR LATER</div><h2>YOUR WISHLIST</h2></div><div id="v30-account-wishlist"></div></section>
+  </section>
+</main>
+<footer><div class="container"><div class="footer-grid"><div><div class="logo">DOMARO<small>FRAGRANCES</small></div><p style="color:#8f877f;max-width:310px;line-height:1.7;font-size:12px;margin-top:20px">Modern fragrances designed to leave a lasting impression.</p></div><div class="footer-links"><a href="shop.html">SHOP</a><a href="about.html">ABOUT</a><a href="contact.html">CONTACT</a><a href="track.html">TRACK ORDER</a></div><div><div class="news-title">JOIN OUR NEWSLETTER</div><form class="newsletter" data-demo-form><input type="email" required placeholder="Your email address"><button>→</button></form></div></div><div class="copyright"><span>© 2026 DOMARO. ALL RIGHTS RESERVED.</span><span>A SCENT THAT BECOMES YOU.</span></div></div></footer>
+<script src="app.js"></script><script src="v30.js"></script>
+</body></html>

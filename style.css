@@ -1946,3 +1946,50 @@ body.entry-gate-open{
   .global-search-product img{width:48px;height:56px}
   .global-search-product strong{grid-column:2;justify-self:start}
 }
+
+/* =========================
+   DOMARO V30 ULTIMATE CORE
+   ========================= */
+.product-card{position:relative}
+.wishlist-card-btn{position:absolute;right:12px;top:12px;z-index:4;width:36px;height:36px;border:1px solid rgba(11,11,11,.13);background:rgba(249,246,241,.92);border-radius:50%;font-size:22px;line-height:1;color:#111;display:grid;place-items:center;transition:.2s}
+.wishlist-card-btn:hover,.wishlist-card-btn.active{background:#111;color:#fff;border-color:#111}
+.nav-heart-icon{font-size:21px;line-height:1}
+.wishlist-pill{right:-6px;top:-6px}
+.nav-lang-toggle{border:0;background:transparent;color:#fff}.nav-lang-text{font-weight:700;letter-spacing:1.5px;font-size:10px}
+
+.product-gallery-v30{min-width:0}.product-gallery-main{position:relative}.product-gallery-main img{cursor:zoom-in}
+.product-gallery-thumbs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:10px}
+.product-gallery-thumb{padding:0;border:1px solid var(--line);background:#efe8dd;overflow:hidden;opacity:.65;transition:.2s}.product-gallery-thumb.active,.product-gallery-thumb:hover{opacity:1;border-color:#111}.product-gallery-thumb img{aspect-ratio:1/1;object-fit:cover}
+.variant-selector-wrap{margin:20px 0}.variant-selector-label{font-size:9px;letter-spacing:2px;color:#6f675e;display:block;margin-bottom:10px}.variant-selector{display:flex;gap:8px;flex-wrap:wrap}.variant-option{min-width:105px;text-align:left;border:1px solid #cfc5b8;background:#f8f4ee;padding:10px 12px}.variant-option b,.variant-option span,.variant-option small{display:block}.variant-option b{font-size:11px;letter-spacing:1px}.variant-option span{font-size:10px;color:#665f57;margin-top:3px}.variant-option small{font-size:8px;color:#9b342b;margin-top:4px}.variant-option.active{background:#111;color:#fff;border-color:#111}.variant-option.active span{color:#ddd}
+.product-buy-row{display:grid;grid-template-columns:1fr 52px;gap:10px}.wishlist-product-btn{border:1px solid #111;background:transparent;font-size:26px}.wishlist-product-btn.active{background:#111;color:#fff}
+.product-recommendations-v30{padding:70px 0 0}.v30-rec-head{margin-top:70px}
+.v30-home-promo{padding:46px 0;background:#111;color:#fff}.v30-promo-copy{text-align:center;max-width:760px;margin:auto}.v30-promo-copy>span{font-size:9px;letter-spacing:4px;color:#c8a46d}.v30-promo-copy h2{font:500 42px "Cormorant Garamond",Georgia,serif;margin:10px 0}.v30-promo-copy p{color:#cfc6bd;line-height:1.7;margin:0 auto 22px}
+
+.lang-ar body,.lang-ar{font-family:Inter,Arial,sans-serif}.lang-ar .navlinks,.lang-ar .navicons{direction:rtl}.lang-ar .product-info,.lang-ar .product-copy,.lang-ar .track-page,.lang-ar .checkout-page,.lang-ar footer{text-align:right}.lang-ar .price-row{direction:rtl}.lang-ar .hero-copy-only{text-align:right;margin-left:auto}.lang-ar .entry-gate-content{text-align:center}
+
+.account-page-v30{padding:60px 0 90px}.account-auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}.account-auth-card,.account-profile-form{background:#f9f6f1;border:1px solid var(--line);padding:28px}.account-auth-card>span,.account-dashboard-head>div>span{font-size:9px;letter-spacing:3px;color:#766e64}.account-auth-card h2,.account-dashboard-head h2{font:500 36px "Cormorant Garamond",Georgia,serif;margin:8px 0 22px}.account-auth-card label,.account-profile-form label{display:grid;gap:7px;font-size:10px;letter-spacing:1px;margin-bottom:14px}.account-auth-card input,.account-profile-form input{width:100%;border:1px solid #d4c9bb;background:#fff;padding:12px}.account-dashboard-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}.account-profile-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}.account-profile-summary>div{background:#111;color:#fff;padding:18px}.account-profile-summary span{display:block;font-size:8px;letter-spacing:2px;color:#c5bcae;margin-bottom:8px}.account-profile-summary b{font-size:14px}.account-profile-form{margin-bottom:55px}.account-section{margin-top:55px}.account-order-list{display:grid;gap:12px}.account-order-card{border:1px solid var(--line);background:#f9f6f1;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:20px}.account-order-card span{font-size:9px;color:#7d746b;letter-spacing:1px}.account-order-card h3{margin:5px 0;font-size:16px}.account-order-card p{margin:0;font-size:11px;color:#726a62}.account-order-actions{display:flex;gap:8px;flex-wrap:wrap}
+.v30-return-box{margin-top:24px;border:1px solid #d7ccbf;background:#f8f4ee;padding:22px;display:grid;gap:12px}.v30-return-box span{font-size:9px;letter-spacing:3px;color:#776e65}.v30-return-box h3{font:500 28px "Cormorant Garamond",Georgia,serif;margin:5px 0}.v30-return-box p{margin:0;color:#71695f;font-size:12px}.v30-return-box select,.v30-return-box textarea{border:1px solid #d0c5b7;background:#fff;padding:12px}
+
+/* Admin V30 */
+.v30-admin-modal .v30-modal-card{max-width:900px}.v30-manager-head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px}.v30-manager-head span{font-size:8px;letter-spacing:2px;color:#7c746c;display:block}.v30-manager-head b{font-size:14px}
+.v30-variant-list,.v30-gallery-list,.v30-admin-list,.v30-audit-list{display:grid;gap:10px}.v30-variant-row,.v30-gallery-item,.v30-return-admin-card,.v30-abandoned-card,.v30-audit-row{border:1px solid #ded5ca;background:#faf7f2;padding:14px;display:grid;grid-template-columns:1fr auto auto;gap:18px;align-items:center}.v30-variant-row span,.v30-gallery-item small,.v30-return-admin-card span,.v30-abandoned-card span,.v30-audit-row span{font-size:8px;letter-spacing:1.2px;color:#7b736a;display:block}.v30-variant-row h3,.v30-return-admin-card h3,.v30-abandoned-card h3{margin:3px 0;font-size:15px}.v30-variant-row p,.v30-return-admin-card p,.v30-abandoned-card p{margin:0;font-size:10px;color:#6c655d}.v30-row-actions{display:flex;gap:8px;flex-wrap:wrap}.v30-inline-form{margin-top:18px;padding:18px;border:1px solid #d8cec2;background:#f3ece2}.v30-inline-form h3{margin-top:0}
+.v30-gallery-uploader{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end;margin-bottom:20px}.v30-gallery-item{grid-template-columns:80px 1fr auto}.v30-gallery-item img{width:80px;height:80px;object-fit:cover;background:#eee}
+.v30-return-admin-card{grid-template-columns:1fr 1.3fr}.v30-return-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}.v30-return-controls input,.v30-return-controls select{padding:9px;border:1px solid #d7cdbf;background:#fff}.v30-return-controls button{grid-column:1/-1}.v30-abandoned-card{grid-template-columns:1fr auto}.v30-audit-row{grid-template-columns:1fr 1fr}.v30-audit-row>div:last-child{text-align:right}
+.v30-store-form{display:grid;gap:20px}.v30-form-section,.v30-integration-status,.v30-backup-card{border:1px solid #ddd3c6;background:#f9f6f1;padding:22px}.v30-form-section h3,.v30-integration-status h3,.v30-backup-card h3{margin-top:0}.v30-form-section label{display:grid;gap:7px;font-size:10px;letter-spacing:1px;margin-bottom:12px}.v30-form-section input,.v30-form-section textarea{border:1px solid #d4c9bb;background:#fff;padding:11px}.v30-integration-status{display:grid;gap:12px}.v30-integration-status>div{display:grid;gap:5px;border-top:1px solid #e2d9ce;padding-top:12px}.v30-integration-status span{font-size:11px;color:#6f675f;line-height:1.55}.v30-backup-card{margin-top:22px;display:flex;justify-content:space-between;align-items:center;gap:20px}.v30-backup-card p{max-width:670px;font-size:11px;color:#6c655d}.v30-file-label{cursor:pointer}
+.v30-goal-bar{height:5px;background:#e3dbd0;margin-top:10px;overflow:hidden}.v30-goal-bar i{display:block;height:100%;width:0;background:#111;transition:.4s}
+.field-optional{font-size:8px;color:#8a8178;font-weight:400}
+
+@media(max-width:900px){.account-auth-grid{grid-template-columns:1fr}.product-gallery-thumbs{grid-template-columns:repeat(4,1fr)}.v30-variant-row,.v30-gallery-item,.v30-return-admin-card,.v30-abandoned-card,.v30-audit-row{grid-template-columns:1fr}.v30-return-controls{grid-template-columns:1fr}.v30-gallery-uploader,.v30-backup-card{display:grid;grid-template-columns:1fr}.v30-audit-row>div:last-child{text-align:left}}
+@media(max-width:640px){.nav-account-action .nav-action-label,.nav-wishlist-action .nav-action-label,.nav-lang-toggle{display:none}.product-gallery-thumbs{grid-template-columns:repeat(3,1fr)}.product-buy-row{grid-template-columns:1fr 46px}.account-order-card{align-items:flex-start;flex-direction:column}.account-profile-summary{grid-template-columns:1fr}.v30-promo-copy h2{font-size:34px}}
+.admin-tabs{flex-wrap:wrap}
+
+
+.v30-variant-managed-note{
+  border:1px solid rgba(176,142,85,.35);
+  background:rgba(176,142,85,.08);
+  padding:12px 14px;
+  font-size:12px;
+  line-height:1.55;
+  letter-spacing:.02em;
+}
+.v30-variant-managed-note b{letter-spacing:.08em}

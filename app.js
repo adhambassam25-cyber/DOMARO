@@ -4,10 +4,22 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c
 const SHIPPING_FEE = 80;
 
 let products = [];
+let productVariants = [];
+let productImages = [];
+let storeSettings = {};
 
 const money = n => Number(n || 0).toLocaleString('en-EG') + ' EGP';
 
-function getCart(){ return JSON.parse(localStorage.getItem('domaro_cart') || '[]'); }
+function getCart(){
+  try{
+    const parsed=JSON.parse(localStorage.getItem('domaro_cart') || '[]');
+    return Array.isArray(parsed) ? parsed.map(item=>({
+      id:String(item?.id || ''),
+      variantId:item?.variantId || item?.variant_id || null,
+      qty:Math.max(1,Number(item?.qty || 1))
+    })).filter(item=>item.id) : [];
+  }catch(_){ return []; }
+}
 function setCart(cart){ localStorage.setItem('domaro_cart', JSON.stringify(cart)); updateCartCount(); }
 function updateCartCount(){
   const count = getCart().reduce((a,x)=>a+x.qty,0);
@@ -20,59 +32,90 @@ function toast(msg){
   clearTimeout(window.__toastTimer);
   window.__toastTimer=setTimeout(()=>el.classList.remove('show'),1700);
 }
-function addToCart(id, qty=1){
+function variantForProduct(product, variantId=null){
+  if(!product) return null;
+  const list=Array.isArray(product.variants) ? product.variants.filter(v=>v.active!==false) : [];
+  if(!list.length) return null;
+  return (variantId && list.find(v=>v.id===variantId)) || list.find(v=>v.isDefault) || list[0];
+}
+function variantAvailable(v){
+  return Boolean(v && v.active!==false && v.inStock && (v.stockQuantity===null || Number(v.stockQuantity)>0));
+}
+function cartProduct(item){
+  const product=products.find(x=>x.id===item.id);
+  const variant=variantForProduct(product,item.variantId);
+  return {product,variant};
+}
+function addToCart(id, qty=1, variantId=null){
   const p=products.find(x=>x.id===id);
-  if(!p || !p.inStock){ toast('This product is currently out of stock.'); return; }
+  const variant=variantForProduct(p,variantId);
+  if(!p || !variant || !variantAvailable(variant)){ toast('This product option is currently out of stock.'); return; }
   const cart=getCart();
-  const item=cart.find(x=>x.id===id);
-  if(item) item.qty += qty; else cart.push({id,qty});
+  const item=cart.find(x=>x.id===id && (x.variantId || null)===(variant.id || null));
+  const safeQty=Math.max(1,Math.min(10,Number(qty||1)));
+  if(item) item.qty=Math.min(10,item.qty+safeQty); else cart.push({id,variantId:variant.id,qty:safeQty});
   setCart(cart);
   toast('Added to cart');
 }
-function removeItem(id){
-  setCart(getCart().filter(x=>x.id!==id));
+function removeItem(id,variantId=null){
+  setCart(getCart().filter(x=>!(x.id===id && (x.variantId || null)===(variantId || null))));
   renderCart();
+}
+function customerAuthHeaders(extra={}){
+  let token='';
+  try{
+    const session=JSON.parse(localStorage.getItem('domaro_customer_session') || 'null');
+    token=session?.access_token || '';
+  }catch(_){}
+  return {'apikey':SUPABASE_PUBLISHABLE_KEY,...(token?{'Authorization':`Bearer ${token}`}:{ }),...extra};
 }
 
 async function loadCatalog(){
   try{
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/products?select=id,name,category,size_ml,price,image_path,description,brand,story,top_notes,heart_notes,base_notes,in_stock,stock_quantity,active&active=eq.true&order=created_at.asc`,
-      { headers: { 'apikey': SUPABASE_PUBLISHABLE_KEY } }
-    );
-    const data = await response.json();
-    if(!response.ok || !Array.isArray(data)) throw new Error(data?.message || 'Catalog unavailable');
+    const [productsRes,variantsRes,imagesRes,settingsRes]=await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/products?select=id,name,category,size_ml,price,cost_price,has_variants,image_path,description,brand,story,top_notes,heart_notes,base_notes,in_stock,stock_quantity,active&active=eq.true&order=created_at.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
+      fetch(`${SUPABASE_URL}/rest/v1/product_variants?select=id,product_id,sku,label,size_ml,price,stock_quantity,in_stock,active,is_default,sort_order&active=eq.true&order=product_id.asc,sort_order.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
+      fetch(`${SUPABASE_URL}/rest/v1/product_images?select=id,product_id,image_path,alt_text,sort_order&order=product_id.asc,sort_order.asc,id.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
+      fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_store_settings`,{method:'POST',headers:{'apikey':SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},body:'{}'})
+    ]);
+    const data=await productsRes.json();
+    if(!productsRes.ok || !Array.isArray(data)) throw new Error(data?.message || 'Catalog unavailable');
+    productVariants=variantsRes.ok ? await variantsRes.json().catch(()=>[]) : [];
+    productImages=imagesRes.ok ? await imagesRes.json().catch(()=>[]) : [];
+    storeSettings=settingsRes.ok ? (await settingsRes.json().catch(()=>({})) || {}) : {};
 
-    products = data.map(p=>({
-      id:p.id,
-      name:p.name,
-      type:'Eau de Parfum',
-      price:Number(p.price),
-      size:`${p.size_ml} ML`,
-      size_ml:Number(p.size_ml),
-      img:p.image_path || 'assets/hero.svg',
-      cat:p.category,
-      badge:p.in_stock ? String(p.category).toUpperCase() : 'OUT OF STOCK',
-      stockQuantity:p.stock_quantity === null ? null : Number(p.stock_quantity),
-      inStock:Boolean(p.in_stock) && (p.stock_quantity === null || Number(p.stock_quantity) > 0),
-      active:Boolean(p.active),
-      brand:String(p.brand || '').trim(),
-      story:String(p.story || '').trim(),
-      topNotes:String(p.top_notes || '').trim(),
-      heartNotes:String(p.heart_notes || '').trim(),
-      baseNotes:String(p.base_notes || '').trim(),
-      desc:p.description || ''
-    }));
+    products=data.map(p=>{
+      const variants=(Array.isArray(productVariants)?productVariants:[]).filter(v=>v.product_id===p.id).map(v=>({
+        id:v.id,sku:String(v.sku||''),label:String(v.label||`${v.size_ml} ML`),size_ml:Number(v.size_ml),size:`${Number(v.size_ml)} ML`,price:Number(v.price),stockQuantity:v.stock_quantity===null?null:Number(v.stock_quantity),inStock:Boolean(v.in_stock),active:Boolean(v.active),isDefault:Boolean(v.is_default),sortOrder:Number(v.sort_order||0)
+      }));
+      if(!variants.length){
+        variants.push({id:null,sku:'',label:`${Number(p.size_ml)} ML`,size_ml:Number(p.size_ml),size:`${Number(p.size_ml)} ML`,price:Number(p.price),stockQuantity:p.stock_quantity===null?null:Number(p.stock_quantity),inStock:Boolean(p.in_stock),active:true,isDefault:true,sortOrder:0});
+      }
+      const defaultVariant=variants.find(v=>v.isDefault) || variants[0];
+      const gallery=(Array.isArray(productImages)?productImages:[]).filter(i=>i.product_id===p.id).map(i=>({id:i.id,path:i.image_path,alt:i.alt_text||p.name,sortOrder:Number(i.sort_order||0)}));
+      const availableVariants=variants.filter(variantAvailable);
+      const minPrice=Math.min(...variants.filter(v=>v.active!==false).map(v=>v.price));
+      return {
+        id:p.id,name:p.name,type:'Eau de Parfum',price:Number.isFinite(minPrice)?minPrice:Number(p.price),size:defaultVariant?.size || `${p.size_ml} ML`,size_ml:defaultVariant?.size_ml || Number(p.size_ml),img:p.image_path || 'assets/hero.svg',cat:p.category,
+        badge:availableVariants.length ? String(p.category).toUpperCase() : 'OUT OF STOCK',stockQuantity:p.stock_quantity===null?null:Number(p.stock_quantity),inStock:availableVariants.length>0,active:Boolean(p.active),brand:String(p.brand||'').trim(),story:String(p.story||'').trim(),topNotes:String(p.top_notes||'').trim(),heartNotes:String(p.heart_notes||'').trim(),baseNotes:String(p.base_notes||'').trim(),desc:p.description||'',hasVariants:Boolean(p.has_variants)||variants.length>1,variants,gallery
+      };
+    });
+    window.DOMARO_CATALOG_UNAVAILABLE=false;
+    window.DOMARO_STORE_SETTINGS=storeSettings;
+    window.dispatchEvent(new CustomEvent('domaro:catalog-ready',{detail:{products,storeSettings}}));
   }catch(err){
     console.error('DOMARO catalog unavailable:', err);
-    products=[];
+    products=[]; productVariants=[]; productImages=[]; storeSettings={};
     window.DOMARO_CATALOG_UNAVAILABLE = true;
   }
 }
 
 function productCard(p){
   const brandLine=p.brand ? `<div class="product-brand">${escapeTrackHtml(p.brand)}</div>` : '';
-  return `<a class="product-card" href="product.html?id=${encodeURIComponent(p.id)}">
+  const activeVariants=(p.variants||[]).filter(v=>v.active!==false);
+  const prices=[...new Set(activeVariants.map(v=>Number(v.price)))];
+  const priceLabel=prices.length>1 ? `FROM ${money(Math.min(...prices))}` : money(p.price);
+  return `<a class="product-card" href="product.html?id=${encodeURIComponent(p.id)}" data-product-id="${escapeTrackHtml(p.id)}">
     <div class="product-img real-photo">
       <span class="badge ${p.inStock ? '' : 'badge-out'}">${p.inStock ? p.badge : 'OUT OF STOCK'}</span>
       <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy" decoding="async">
@@ -80,11 +123,12 @@ function productCard(p){
     <div class="product-info">
       ${brandLine}
       <h3>${escapeTrackHtml(p.name)}</h3>
-      <div class="meta">${escapeTrackHtml(p.type)} · ${escapeTrackHtml(p.size)}</div>
-      <div class="price-row"><span class="price">${money(p.price)}</span><span class="meta">${escapeTrackHtml(String(p.cat || '').toUpperCase())}</span></div>
+      <div class="meta">${escapeTrackHtml(p.type)} · ${activeVariants.length>1 ? `${activeVariants.length} SIZES` : escapeTrackHtml(p.size)}</div>
+      <div class="price-row"><span class="price">${priceLabel}</span><span class="meta">${escapeTrackHtml(String(p.cat || '').toUpperCase())}</span></div>
     </div>
   </a>`;
 }
+
 function normalizeBrand(value){
   return String(value || '').trim().toLowerCase();
 }
@@ -271,9 +315,18 @@ function renderProductDetail(){
     return;
   }
 
+  try{
+    const recent=JSON.parse(localStorage.getItem('domaro_recently_viewed') || '[]');
+    const next=[p.id,...recent.filter(x=>x!==p.id)].slice(0,8);
+    localStorage.setItem('domaro_recently_viewed',JSON.stringify(next));
+  }catch(_){}
+
+  const variants=(p.variants||[]).filter(v=>v.active!==false);
+  const initialVariant=variantForProduct(p,null);
   const brandLabel=p.brand ? escapeTrackHtml(p.brand) : 'DOMARO EDIT';
   const storyText=p.story || p.desc || '';
   const hasNotes=Boolean(p.topNotes || p.heartNotes || p.baseNotes);
+  const gallery=[{path:p.img,alt:p.name},...(p.gallery||[]).filter(g=>g.path && g.path!==p.img)];
   const notesHtml=hasNotes ? `
     <section class="scent-notes-section">
       <div class="editorial-kicker">THE SCENT</div>
@@ -285,22 +338,35 @@ function renderProductDetail(){
       </div>
     </section>` : '';
 
+  const variantButtons=variants.length>1 ? `<div class="variant-selector-wrap">
+    <span class="variant-selector-label">SELECT SIZE</span>
+    <div class="variant-selector" id="variant-selector">
+      ${variants.map((v,i)=>`<button type="button" class="variant-option ${v.id===initialVariant?.id?'active':''}" data-variant-id="${escapeTrackHtml(v.id||'')}">
+        <b>${escapeTrackHtml(v.label || v.size)}</b><span>${money(v.price)}</span>${variantAvailable(v)?'':'<small>OUT OF STOCK</small>'}
+      </button>`).join('')}
+    </div>
+  </div>` : '';
+
   detail.innerHTML=`
     <div class="product-main-grid">
-      <div class="product-gallery real-photo"><img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" decoding="async" fetchpriority="high"></div>
+      <div class="product-gallery-v30">
+        <div class="product-gallery real-photo product-gallery-main"><img id="product-main-image" src="${safeImageSrc(gallery[0]?.path || p.img)}" alt="${escapeTrackHtml(p.name)}" decoding="async" fetchpriority="high"></div>
+        ${gallery.length>1?`<div class="product-gallery-thumbs">${gallery.map((g,i)=>`<button type="button" class="product-gallery-thumb ${i===0?'active':''}" data-gallery-src="${safeImageSrc(g.path)}"><img src="${safeImageSrc(g.path)}" alt="${escapeTrackHtml(g.alt||p.name)}" loading="lazy"></button>`).join('')}</div>`:''}
+      </div>
       <div class="product-copy">
         <a class="product-brand-link" href="${p.brand ? `shop.html?brand=${encodeURIComponent(p.brand)}` : 'shop.html'}">${brandLabel}</a>
         <h1>${escapeTrackHtml(p.name)}</h1>
         <div class="product-facts">
           <span>${escapeTrackHtml(String(p.cat || '').toUpperCase())}</span>
-          <span>${escapeTrackHtml(p.size)}</span>
+          <span id="product-selected-size">${escapeTrackHtml(initialVariant?.size || p.size)}</span>
           <span>${escapeTrackHtml(p.type)}</span>
         </div>
-        <div class="price" style="font-size:22px;margin:18px 0">${money(p.price)}</div>
-        <div class="stock-line"><span class="stock-dot ${p.inStock ? '' : 'stock-dot-out'}"></span>${p.inStock ? (p.stockQuantity === null ? 'AVAILABLE' : `${p.stockQuantity} IN STOCK`) : 'OUT OF STOCK'}</div>
+        <div class="price" id="product-selected-price" style="font-size:22px;margin:18px 0">${money(initialVariant?.price ?? p.price)}</div>
+        <div class="stock-line" id="product-selected-stock"><span class="stock-dot ${variantAvailable(initialVariant) ? '' : 'stock-dot-out'}"></span>${variantAvailable(initialVariant) ? (initialVariant.stockQuantity === null ? 'AVAILABLE' : `${initialVariant.stockQuantity} IN STOCK`) : 'OUT OF STOCK'}</div>
+        ${variantButtons}
         ${p.desc ? `<p class="product-short-desc">${escapeTrackHtml(p.desc)}</p>` : ''}
         <div class="qty"><button id="minus">−</button><input id="qty" type="number" min="1" max="10" value="1"><button id="plus">+</button></div>
-        <button class="add-btn" id="add" ${p.inStock ? '' : 'disabled'}>${p.inStock ? 'ADD TO CART' : 'OUT OF STOCK'}</button>
+        <div class="product-buy-row"><button class="add-btn" id="add" ${variantAvailable(initialVariant) ? '' : 'disabled'}>${variantAvailable(initialVariant) ? 'ADD TO CART' : 'OUT OF STOCK'}</button><button class="wishlist-product-btn" id="wishlist-product-btn" type="button" aria-label="Add to wishlist">♡</button></div>
         <div class="product-service-row">
           <span>80 EGP FLAT SHIPPING</span>
           <span>CASH ON DELIVERY</span>
@@ -318,14 +384,37 @@ function renderProductDetail(){
     </div>
 
     <div class="product-accordion-wide accordion">
-      <details open><summary>PRODUCT INFORMATION</summary><p>${p.brand ? `Brand: ${escapeTrackHtml(p.brand)}<br>` : ''}Size: ${escapeTrackHtml(p.size)}<br>Category: ${escapeTrackHtml(String(p.cat || '').charAt(0).toUpperCase()+String(p.cat || '').slice(1))}<br>Price: ${money(p.price)}</p></details>
+      <details open><summary>PRODUCT INFORMATION</summary><p>${p.brand ? `Brand: ${escapeTrackHtml(p.brand)}<br>` : ''}Size: <span id="product-info-size">${escapeTrackHtml(initialVariant?.size || p.size)}</span><br>Category: ${escapeTrackHtml(String(p.cat || '').charAt(0).toUpperCase()+String(p.cat || '').slice(1))}<br>Price: <span id="product-info-price">${money(initialVariant?.price ?? p.price)}</span></p></details>
       <details><summary>DELIVERY</summary><p>Flat shipping is currently 80 EGP per order across Egypt.</p></details>
-    </div>`;
+    </div>
+    <section id="product-recommendations" class="product-recommendations-v30"></section>`;
 
+  let selectedVariant=initialVariant;
   const qty=document.getElementById('qty');
+  const addBtn=document.getElementById('add');
+  const updateVariantUi=variant=>{
+    selectedVariant=variant;
+    document.querySelectorAll('.variant-option').forEach(btn=>btn.classList.toggle('active',btn.dataset.variantId===(variant?.id||'')));
+    const priceEl=document.getElementById('product-selected-price'); if(priceEl) priceEl.textContent=money(variant?.price ?? p.price);
+    const sizeEl=document.getElementById('product-selected-size'); if(sizeEl) sizeEl.textContent=variant?.size || p.size;
+    const infoSize=document.getElementById('product-info-size'); if(infoSize) infoSize.textContent=variant?.size || p.size;
+    const infoPrice=document.getElementById('product-info-price'); if(infoPrice) infoPrice.textContent=money(variant?.price ?? p.price);
+    const stock=document.getElementById('product-selected-stock');
+    if(stock) stock.innerHTML=`<span class="stock-dot ${variantAvailable(variant)?'':'stock-dot-out'}"></span>${variantAvailable(variant) ? (variant.stockQuantity===null?'AVAILABLE':`${variant.stockQuantity} IN STOCK`) : 'OUT OF STOCK'}`;
+    if(addBtn){ addBtn.disabled=!variantAvailable(variant); addBtn.textContent=variantAvailable(variant)?'ADD TO CART':'OUT OF STOCK'; }
+  };
+  document.querySelectorAll('.variant-option').forEach(btn=>btn.addEventListener('click',()=>{
+    const variant=variants.find(v=>(v.id||'')===btn.dataset.variantId); if(variant) updateVariantUi(variant);
+  }));
+  document.querySelectorAll('.product-gallery-thumb').forEach(btn=>btn.addEventListener('click',()=>{
+    const img=document.getElementById('product-main-image'); if(img) img.src=btn.dataset.gallerySrc || img.src;
+    document.querySelectorAll('.product-gallery-thumb').forEach(x=>x.classList.toggle('active',x===btn));
+  }));
   document.getElementById('minus').onclick=()=>qty.value=Math.max(1,(+qty.value||1)-1);
   document.getElementById('plus').onclick=()=>qty.value=Math.min(10,(+qty.value||1)+1);
-  if(p.inStock) document.getElementById('add').onclick=()=>addToCart(p.id,Math.max(1,Math.min(10,+qty.value||1)));
+  addBtn.onclick=()=>{ if(variantAvailable(selectedVariant)) addToCart(p.id,Math.max(1,Math.min(10,+qty.value||1)),selectedVariant?.id || null); };
+
+  if(typeof window.DOMAROV30InitProductExtras==='function') window.DOMAROV30InitProductExtras(p);
 }
 
 function renderCart(){
@@ -350,34 +439,34 @@ function renderCart(){
   const validItems=[];
 
   box.innerHTML=cart.map(item=>{
-    const p=products.find(x=>x.id===item.id);
-    if(!p) return '';
-    validItems.push(item);
-    subtotal += p.price*item.qty;
+    const {product:p,variant}=cartProduct(item);
+    if(!p || !variant) return '';
+    validItems.push({...item,variantId:variant.id});
+    subtotal += variant.price*item.qty;
+    const available=variantAvailable(variant);
     return `<div class="cart-item">
       <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy" decoding="async">
       <div>
         <b>${escapeTrackHtml(p.name)}</b>
-        <div class="meta">${escapeTrackHtml(p.type)} · ${escapeTrackHtml(p.size)}</div>
-        <div style="margin-top:6px">${item.qty} × ${money(p.price)}</div>
-        ${p.inStock ? '' : '<div class="cart-warning">Currently out of stock — remove before checkout.</div>'}
-        <button class="remove" type="button" data-remove-product="${escapeTrackHtml(p.id)}">Remove</button>
+        <div class="meta">${escapeTrackHtml(p.type)} · ${escapeTrackHtml(variant.label || variant.size)}</div>
+        <div style="margin-top:6px">${item.qty} × ${money(variant.price)}</div>
+        ${available ? '' : '<div class="cart-warning">Currently out of stock — remove before checkout.</div>'}
+        <button class="remove" type="button" data-remove-product="${escapeTrackHtml(p.id)}" data-remove-variant="${escapeTrackHtml(variant.id||'')}">Remove</button>
       </div>
-      <div class="item-total">${money(p.price*item.qty)}</div>
+      <div class="item-total">${money(variant.price*item.qty)}</div>
     </div>`;
   }).join('');
 
-  if(validItems.length !== cart.length) setCart(validItems);
+  if(validItems.length !== cart.length || validItems.some((x,i)=>x.variantId!==cart[i]?.variantId)) setCart(validItems);
 
   box.querySelectorAll('[data-remove-product]').forEach(btn=>{
-    btn.addEventListener('click',()=>removeItem(btn.dataset.removeProduct || ''));
+    btn.addEventListener('click',()=>removeItem(btn.dataset.removeProduct || '',btn.dataset.removeVariant || null));
   });
 
   if(summary){
     summary.style.display='block';
     document.getElementById('subtotal').textContent=money(subtotal);
-    const shipEl=document.getElementById('shipping-fee');
-    if(shipEl) shipEl.textContent=money(SHIPPING_FEE);
+    const shipEl=document.getElementById('shipping-fee'); if(shipEl) shipEl.textContent=money(SHIPPING_FEE);
     document.getElementById('cart-total').textContent=money(subtotal + SHIPPING_FEE);
   }
 }
@@ -416,14 +505,15 @@ function renderCheckout(){
   let checkoutToken=sessionStorage.getItem('domaro_checkout_token') || '';
 
   itemsBox.innerHTML=cart.map(item=>{
-    const p=products.find(x=>x.id===item.id);
-    if(!p) return '';
-    if(!p.inStock) hasUnavailable=true;
-    subtotal += p.price*item.qty;
+    const {product:p,variant}=cartProduct(item);
+    if(!p || !variant) return '';
+    const available=variantAvailable(variant);
+    if(!available) hasUnavailable=true;
+    subtotal += variant.price*item.qty;
     return `<div class="checkout-product">
       <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy" decoding="async">
-      <div><b>${escapeTrackHtml(p.name)}</b><div class="meta">${escapeTrackHtml(p.size)} · Qty ${item.qty}</div>${p.inStock ? '' : '<div class="cart-warning">Out of stock</div>'}</div>
-      <div class="checkout-product-price">${money(p.price*item.qty)}</div>
+      <div><b>${escapeTrackHtml(p.name)}</b><div class="meta">${escapeTrackHtml(variant.label || variant.size)} · Qty ${item.qty}</div>${available ? '' : '<div class="cart-warning">Out of stock</div>'}</div>
+      <div class="checkout-product-price">${money(variant.price*item.qty)}</div>
     </div>`;
   }).join('');
 
@@ -585,9 +675,10 @@ function renderCheckout(){
       p_building: fieldValue('building'),
       p_address: fieldValue('address'),
       p_notes: fieldValue('notes'),
-      p_items: cart.map(item=>({id:item.id,qty:item.qty})),
+      p_items: cart.map(item=>({id:item.id,variant_id:item.variantId || null,qty:item.qty})),
       p_coupon_code: appliedCoupon?.code || null,
-      p_checkout_token: checkoutToken
+      p_checkout_token: checkoutToken,
+      p_email: fieldValue('email') || null
     };
   }
 
@@ -596,9 +687,9 @@ function renderCheckout(){
     if(reviewError) reviewError.textContent='';
 
     const itemRows=cart.map(item=>{
-      const p=products.find(x=>x.id===item.id);
-      if(!p) return '';
-      return `<div class="review-item"><div><b>${escapeTrackHtml(p.name)}</b><span>${escapeTrackHtml(p.size)} · Qty ${item.qty}</span></div><strong>${money(p.price*item.qty)}</strong></div>`;
+      const {product:p,variant}=cartProduct(item);
+      if(!p || !variant) return '';
+      return `<div class="review-item"><div><b>${escapeTrackHtml(p.name)}</b><span>${escapeTrackHtml(variant.label || variant.size)} · Qty ${item.qty}</span></div><strong>${money(variant.price*item.qty)}</strong></div>`;
     }).join('');
 
     reviewContent.innerHTML=`
@@ -662,13 +753,12 @@ function renderCheckout(){
       confirmBtn.textContent='PLACING ORDER...';
 
       try{
-        const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/place_order`,{
+        const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/place_order_v30`,{
           method:'POST',
-          headers:{
-            'apikey':SUPABASE_PUBLISHABLE_KEY,
+          headers:customerAuthHeaders({
             'Content-Type':'application/json',
             'Accept':'application/json'
-          },
+          }),
           body:JSON.stringify(pendingPayload)
         });
 

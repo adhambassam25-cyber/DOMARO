@@ -1,0 +1,30 @@
+DOMARO V30 — ULTIMATE CORE UPGRADE
+==================================
+
+FULLY ACTIVE AFTER MIGRATION + DEPLOY
+- Product variants (size / SKU / price / cost / stock) with server-side checkout validation.
+- Advanced product gallery + image cleanup.
+- Customer accounts and profile-linked historical order history.
+- Wishlist (local for guests, synced for signed-in customers).
+- Recently viewed products and recommendations.
+- English / Arabic interface switch with RTL mode.
+- Invoice / receipt print flow (browser Print -> Save as PDF).
+- Return request flow and admin return status management. This tracks COD refunds; it does not send money electronically.
+- Abandoned checkout capture and admin follow-up list.
+- Homepage / announcement / promo manager from Owner STORE tab.
+- Monthly sales goal.
+- Cost price + known profit reporting. Old orders without historical cost are never given fabricated profit.
+- Owner backup + safe merge restore for catalog/settings/coupons. Orders are never overwritten.
+- Audit log for important admin catalog/settings/returns changes.
+- Optional Google Analytics 4, Meta Pixel and TikTok Pixel IDs from STORE settings.
+
+PREPARED, BUT INTENTIONALLY NOT ACTIVATED WITHOUT EXTERNAL SETUP
+- Online payment: COD stays live until a payment provider account/credentials are supplied.
+- Customer transactional emails: requires a verified sending domain for safe production delivery to arbitrary customer emails.
+- Custom domain: requires a domain you own and connection in Vercel.
+
+SAFETY NOTES
+- SUPABASE-V30-MIGRATION.sql is wrapped in one transaction. If Supabase reports an error, do not upload V30 to GitHub; send the error screenshot first.
+- Multi-variant product price/cost/stock are managed from VARIANTS, not the basic product edit form.
+- Product deletion remains Owner-only from V29.
+- Shipping remains 80 EGP and Cash on Delivery remains the live payment method.

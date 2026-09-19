@@ -1495,7 +1495,7 @@ function renderProductsAdmin(){
     const qty=tracked ? Number(p.stock_quantity) : null;
     const stockState=!p.in_stock || qty===0 ? 'OUT OF STOCK' : (low ? 'LOW STOCK' : 'IN STOCK');
     const stockClass=!p.in_stock || qty===0 ? 'mini-out' : (low ? 'mini-low' : 'mini-stock');
-    const adjustControls=tracked ? `
+    const adjustControls=tracked && !p.has_variants ? `
       <div class="quick-stock-adjuster" aria-label="Quick stock adjustment for ${esc(p.name)}">
         <button class="admin-secondary-btn stock-adjust-btn" type="button" data-id="${esc(p.id)}" data-delta="-1" ${qty<=0?'disabled':''}>−1</button>
         <span>${esc(qty)}</span>
@@ -1522,8 +1522,10 @@ function renderProductsAdmin(){
         <p>${esc(p.description || 'No description yet.')}</p>
         <div class="admin-product-actions">
           <button class="admin-secondary-btn edit-product-btn" data-id="${esc(p.id)}">EDIT</button>
-          <button class="admin-secondary-btn quick-stock-btn" data-id="${esc(p.id)}">${p.in_stock?'MARK OUT OF STOCK':'MARK IN STOCK'}</button>
+          ${p.has_variants ? '' : `<button class="admin-secondary-btn quick-stock-btn" data-id="${esc(p.id)}">${p.in_stock?'MARK OUT OF STOCK':'MARK IN STOCK'}</button>`}
           <button class="admin-secondary-btn quick-live-btn" data-id="${esc(p.id)}">${p.active?'HIDE':'MAKE LIVE'}</button>
+          <button class="admin-secondary-btn v30-manage-variants-btn" type="button" data-id="${esc(p.id)}">VARIANTS</button>
+          <button class="admin-secondary-btn v30-manage-gallery-btn" type="button" data-id="${esc(p.id)}">GALLERY</button>
           ${String(adminProfile?.role || '').toLowerCase()==='owner' ? `<button class="admin-secondary-btn admin-danger-btn delete-product-btn" type="button" data-id="${esc(p.id)}">DELETE</button>` : ''}
         </div>
       </div>
@@ -1572,6 +1574,11 @@ async function deleteProductOwnerOnly(productId){
 
   productsError.textContent='';
   try{
+    let galleryRows=[];
+    try{
+      const galleryResponse=await fetch(`${SUPABASE_URL}/rest/v1/product_images?select=image_path&product_id=eq.${encodeURIComponent(productId)}`,{headers:authHeaders()});
+      if(galleryResponse.ok) galleryRows=await galleryResponse.json().catch(()=>[]);
+    }catch(_){}
     const response=await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${encodeURIComponent(productId)}`,{
       method:'DELETE',
       headers:authHeaders({'Prefer':'return=representation'})
@@ -1581,6 +1588,7 @@ async function deleteProductOwnerOnly(productId){
     if(!response.ok) throw new Error(data?.message || data?.details || 'Could not delete product.');
 
     await deleteManagedProductImage(product.image_path);
+    for(const image of galleryRows){ await deleteManagedProductImage(image.image_path); }
     allProducts=allProducts.filter(p=>p.id!==productId);
     renderProductStats();
     renderProductsAdmin();
@@ -1654,6 +1662,7 @@ function openProductModal(product=null){
   document.getElementById('product-category').value=product?.category || 'men';
   document.getElementById('product-size').value=product?.size_ml || 200;
   document.getElementById('product-price').value=product?.price || 2000;
+  document.getElementById('product-cost-price').value=product?.cost_price ?? '';
   document.getElementById('product-description').value=product?.description || '';
   document.getElementById('product-story').value=product?.story || '';
   document.getElementById('product-top-notes').value=product?.top_notes || '';
@@ -1662,6 +1671,14 @@ function openProductModal(product=null){
   document.getElementById('product-stock-quantity').value=product?.stock_quantity ?? '';
   document.getElementById('product-stock').checked=product ? Boolean(product.in_stock) : true;
   document.getElementById('product-active').checked=product ? Boolean(product.active) : true;
+
+  const variantManaged=Boolean(product?.has_variants);
+  ['product-size','product-price','product-cost-price','product-stock-quantity','product-stock'].forEach(id=>{
+    const field=document.getElementById(id);
+    if(field) field.disabled=variantManaged;
+  });
+  const variantNote=document.getElementById('product-variant-managed-note');
+  if(variantNote) variantNote.hidden=!variantManaged;
 
   productFormTitle.textContent=product ? 'EDIT PRODUCT' : 'ADD PRODUCT';
   productModal.hidden=false;
@@ -1713,6 +1730,8 @@ productForm.addEventListener('submit',async e=>{
   const category=document.getElementById('product-category').value;
   const size_ml=Number(document.getElementById('product-size').value);
   const price=Number(document.getElementById('product-price').value);
+  const costRaw=document.getElementById('product-cost-price').value.trim();
+  const cost_price=costRaw==='' ? null : Number(costRaw);
   const description=document.getElementById('product-description').value.trim();
   const story=document.getElementById('product-story').value.trim();
   const top_notes=document.getElementById('product-top-notes').value.trim();
@@ -1732,7 +1751,7 @@ productForm.addEventListener('submit',async e=>{
   }
   const file=imageInput.files?.[0];
 
-  if(!name || !size_ml || price<0){
+  if(!name || !size_ml || price<0 || (cost_price!==null && cost_price<0)){
     productFormError.textContent='Please complete the required product information.';
     return;
   }
@@ -1758,19 +1777,18 @@ productForm.addEventListener('submit',async e=>{
       name,
       brand:brand || null,
       category,
-      size_ml,
-      price,
       description,
       story:story || null,
       top_notes:top_notes || null,
       heart_notes:heart_notes || null,
       base_notes:base_notes || null,
-      stock_quantity,
-      in_stock,
       active,
       image_path,
       updated_at:new Date().toISOString()
     };
+    if(!editingProduct?.has_variants){
+      Object.assign(payload,{size_ml,price,cost_price,stock_quantity,in_stock});
+    }
 
     let response;
     if(editingProduct){

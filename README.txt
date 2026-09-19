@@ -94,3 +94,8 @@ No SQL migration required. Adds manual call/WhatsApp actions, status-aware edita
 
 V28: Production Finalization
 No SQL migration required. Adds deployment security headers, cache rules, 30-minute admin inactivity logout, safer catalog rendering, image performance improvements, web app manifest, and final frontend secret hardening.
+
+V30 — ULTIMATE CORE UPGRADE
+---------------------------
+Run SUPABASE-V30-MIGRATION.sql before deploying the V30 frontend.
+See V30-NOTES.txt for the full feature/status list and external integrations that intentionally remain disabled until credentials/domain are supplied.

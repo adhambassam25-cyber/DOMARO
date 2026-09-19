@@ -584,6 +584,12 @@
       </div>
 
       <div>
+        <label>Cost price (EGP) <span class="field-optional">optional</span></label>
+        <input id="product-cost-price" type="number" min="0" step="0.01" placeholder="Used for profit reporting">
+        <small class="field-help">Private admin value. Customers never see this.</small>
+      </div>
+
+      <div>
         <label>Short description</label>
         <textarea id="product-description" class="small-textarea" placeholder="A short line shown beside the product"></textarea>
       </div>
@@ -625,6 +631,9 @@
           <span>LIVE ON WEBSITE</span>
         </label>
       </div>
+      <div id="product-variant-managed-note" class="v30-variant-managed-note" hidden>
+        Size, selling price, cost price and stock are managed from <b>VARIANTS</b> for this product.
+      </div>
 
       <div class="product-image-editor">
         <div>
@@ -649,6 +658,6 @@
       SUPABASE_KEY: "sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c"
     };
   </script>
-  <script src="admin.js"></script>
+  <script src="admin.js"></script><script src="v30-admin.js"></script>
 </body>
 </html>
