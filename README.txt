@@ -84,3 +84,6 @@ DOMARO V14
 
 DOMARO V15
 SEO, favicon, social metadata, robots.txt, sitemap.xml and 404 polish. No database changes required.
+
+V26: Advanced Business Dashboard
+Run SUPABASE-V26-MIGRATION.sql before deploying V26. Adds period-based reporting, comparisons, customer KPIs, trend reporting, top locations and CSV report export.

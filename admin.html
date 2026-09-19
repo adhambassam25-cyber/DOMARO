@@ -74,52 +74,101 @@
   </div>
 
   <section id="admin-sales-panel" class="admin-panel">
-    <div class="admin-dashboard-head">
+    <div class="admin-dashboard-head dashboard-v26-head">
       <div>
         <div class="eyebrow" style="color:#766b5d">DOMARO PERFORMANCE</div>
-        <h1>SALES DASHBOARD</h1>
+        <h1>BUSINESS DASHBOARD</h1>
+        <p class="admin-panel-intro">Live performance reporting from real DOMARO orders. Revenue is counted from delivered orders only.</p>
       </div>
-      <button id="refresh-dashboard" class="admin-secondary-btn">REFRESH</button>
+      <div class="dashboard-v26-actions">
+        <select id="dashboard-period" class="dashboard-period-select" aria-label="Dashboard reporting period">
+          <option value="7">LAST 7 DAYS</option>
+          <option value="30" selected>LAST 30 DAYS</option>
+          <option value="90">LAST 90 DAYS</option>
+          <option value="0">ALL TIME</option>
+        </select>
+        <button id="export-dashboard-csv" class="admin-primary-btn" type="button">EXPORT REPORT</button>
+        <button id="refresh-dashboard" class="admin-secondary-btn" type="button">REFRESH</button>
+      </div>
     </div>
 
     <div id="dashboard-loading" class="admin-loading" hidden>Loading dashboard…</div>
     <div id="dashboard-error" class="admin-error"></div>
 
-    <div class="sales-kpis">
+    <div class="sales-kpis dashboard-kpis-v26">
       <div class="sales-kpi sales-kpi-featured">
         <span>DELIVERED REVENUE</span>
         <b id="dashboard-total-sales">0 EGP</b>
-        <small>Sales from delivered orders</small>
+        <small id="dashboard-revenue-period-label">Selected period</small>
       </div>
       <div class="sales-kpi">
-        <span>TOTAL ORDERS</span>
+        <span>ORDERS</span>
         <b id="dashboard-total-orders">0</b>
+        <small>Orders placed in period</small>
       </div>
       <div class="sales-kpi">
-        <span>DELIVERED</span>
-        <b id="dashboard-delivered-orders">0</b>
+        <span>AVG. ORDER VALUE</span>
+        <b id="dashboard-average-order-value">0 EGP</b>
+        <small>Delivered orders only</small>
       </div>
       <div class="sales-kpi">
-        <span>CANCELLED</span>
-        <b id="dashboard-cancelled-orders">0</b>
+        <span>DELIVERED SHARE</span>
+        <b id="dashboard-delivery-rate">0%</b>
+        <small>Delivered ÷ all period orders</small>
       </div>
     </div>
 
-    <div class="sales-status-grid">
+    <div class="dashboard-comparison-grid">
+      <div class="dashboard-comparison-card">
+        <span>REVENUE VS PREVIOUS PERIOD</span>
+        <b id="dashboard-revenue-change">—</b>
+        <small id="dashboard-previous-revenue">No comparison available</small>
+      </div>
+      <div class="dashboard-comparison-card">
+        <span>ORDERS VS PREVIOUS PERIOD</span>
+        <b id="dashboard-orders-change">—</b>
+        <small id="dashboard-previous-orders">No comparison available</small>
+      </div>
+      <div class="dashboard-comparison-card">
+        <span>UNIQUE CUSTOMERS</span>
+        <b id="dashboard-unique-customers">0</b>
+        <small>Customers active in selected period</small>
+      </div>
+      <div class="dashboard-comparison-card">
+        <span>RETURNING CUSTOMERS</span>
+        <b id="dashboard-returning-customers">0</b>
+        <small>Customers with more than one lifetime order</small>
+      </div>
+    </div>
+
+    <div class="sales-status-grid dashboard-status-v26">
       <div><span>NEW</span><b id="dashboard-new-orders">0</b></div>
       <div><span>CONFIRMED</span><b id="dashboard-confirmed-orders">0</b></div>
       <div><span>SHIPPED</span><b id="dashboard-shipped-orders">0</b></div>
       <div><span>DELIVERED</span><b id="dashboard-status-delivered">0</b></div>
+      <div><span>CANCELLED</span><b id="dashboard-cancelled-orders">0</b></div>
     </div>
+    <span id="dashboard-delivered-orders" hidden>0</span>
 
-    <div class="sales-dashboard-grid">
+    <section class="sales-dashboard-card dashboard-trend-card">
+      <div class="sales-card-head">
+        <div>
+          <span>REVENUE TREND</span>
+          <h2>DAILY PERFORMANCE</h2>
+        </div>
+        <small id="dashboard-trend-note">Delivered revenue by order date</small>
+      </div>
+      <div id="dashboard-sales-trend" class="dashboard-sales-trend"></div>
+    </section>
+
+    <div class="sales-dashboard-grid dashboard-grid-v26">
       <section class="sales-dashboard-card">
         <div class="sales-card-head">
           <div>
             <span>TOP PRODUCTS</span>
             <h2>BEST SELLING</h2>
           </div>
-          <small>Excludes cancelled orders</small>
+          <small>Non-cancelled orders in period</small>
         </div>
         <div id="dashboard-best-products" class="sales-ranking"></div>
       </section>
@@ -127,10 +176,21 @@
       <section class="sales-dashboard-card">
         <div class="sales-card-head">
           <div>
+            <span>TOP LOCATIONS</span>
+            <h2>GOVERNORATES</h2>
+          </div>
+          <small>Non-cancelled orders in period</small>
+        </div>
+        <div id="dashboard-top-governorates" class="sales-ranking"></div>
+      </section>
+
+      <section class="sales-dashboard-card dashboard-recent-wide">
+        <div class="sales-card-head">
+          <div>
             <span>LATEST ACTIVITY</span>
             <h2>RECENT ORDERS</h2>
           </div>
-          <small>Latest 5 orders</small>
+          <small>Latest 5 orders in selected period</small>
         </div>
         <div id="dashboard-recent-orders" class="sales-recent-orders"></div>
       </section>

@@ -23,6 +23,10 @@ const dashboardError = document.getElementById('dashboard-error');
 const refreshDashboardBtn = document.getElementById('refresh-dashboard');
 const dashboardBestProducts = document.getElementById('dashboard-best-products');
 const dashboardRecentOrders = document.getElementById('dashboard-recent-orders');
+const dashboardPeriod = document.getElementById('dashboard-period');
+const exportDashboardCsvBtn = document.getElementById('export-dashboard-csv');
+const dashboardSalesTrend = document.getElementById('dashboard-sales-trend');
+const dashboardTopGovernorates = document.getElementById('dashboard-top-governorates');
 
 const ordersList = document.getElementById('orders-list');
 const ordersError = document.getElementById('orders-error');
@@ -341,36 +345,122 @@ async function loadDashboardStats(){
   dashboardError.textContent='';
   dashboardLoading.hidden=false;
   refreshDashboardBtn.disabled=true;
+  if(exportDashboardCsvBtn) exportDashboardCsvBtn.disabled=true;
   try{
-    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/admin_dashboard_stats`,{
+    const periodDays=Number(dashboardPeriod?.value || 30);
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/admin_dashboard_report`,{
       method:'POST',
       headers:authHeaders({'Content-Type':'application/json'}),
-      body:'{}'
+      body:JSON.stringify({p_days:periodDays})
     });
     const data=await response.json().catch(()=>null);
     if(response.status===401){clearSession();showLogin('Your session expired. Please sign in again.');return;}
     if(response.status===403) throw new Error('This account does not have permission to view dashboard statistics.');
-    if(!response.ok) throw new Error(data?.message || 'Could not load dashboard statistics.');
+    if(!response.ok) throw new Error(data?.message || 'Could not load dashboard reporting.');
     dashboardStats=data || {};
     renderDashboardStats();
   }catch(err){
-    dashboardError.textContent=err.message || 'Could not load dashboard statistics.';
+    dashboardError.textContent=err.message || 'Could not load dashboard reporting.';
   }finally{
     dashboardLoading.hidden=true;
     refreshDashboardBtn.disabled=false;
+    if(exportDashboardCsvBtn) exportDashboardCsvBtn.disabled=false;
   }
+}
+
+function dashboardPercentChange(current, previous){
+  if(previous === null || previous === undefined) return null;
+  const curr=Number(current || 0);
+  const prev=Number(previous || 0);
+  if(prev===0){
+    if(curr===0) return 0;
+    return null;
+  }
+  return ((curr-prev)/Math.abs(prev))*100;
+}
+
+function setDashboardGrowth(id, current, previous, previousTextId, formatter){
+  const valueEl=document.getElementById(id);
+  const previousEl=document.getElementById(previousTextId);
+  if(!valueEl || !previousEl) return;
+
+  valueEl.classList.remove('positive','negative','neutral');
+  if(previous === null || previous === undefined){
+    valueEl.textContent='—';
+    valueEl.classList.add('neutral');
+    previousEl.textContent='All-time view has no previous period comparison';
+    return;
+  }
+
+  const change=dashboardPercentChange(current,previous);
+  if(change===null){
+    valueEl.textContent=Number(current||0)>0 ? 'NEW' : '0%';
+    valueEl.classList.add(Number(current||0)>0 ? 'positive' : 'neutral');
+  }else{
+    const rounded=Math.abs(change)<0.05 ? 0 : change;
+    const sign=rounded>0 ? '+' : '';
+    valueEl.textContent=`${sign}${rounded.toFixed(1)}%`;
+    valueEl.classList.add(rounded>0?'positive':rounded<0?'negative':'neutral');
+  }
+  previousEl.textContent=`Previous period: ${formatter(previous)}`;
+}
+
+function formatDashboardDate(value){
+  if(!value) return '';
+  try{
+    return new Intl.DateTimeFormat('en-EG',{day:'numeric',month:'short'}).format(new Date(`${value}T12:00:00`));
+  }catch(_){return String(value);}
+}
+
+function renderDashboardTrend(points){
+  if(!dashboardSalesTrend) return;
+  const data=Array.isArray(points)?points:[];
+  if(!data.length){
+    dashboardSalesTrend.innerHTML='<div class="admin-empty compact">No trend data yet.</div>';
+    return;
+  }
+
+  const maxRevenue=Math.max(0,...data.map(p=>Number(p.revenue||0)));
+  const maxOrders=Math.max(0,...data.map(p=>Number(p.orders||0)));
+  const useRevenue=maxRevenue>0;
+  const maxValue=useRevenue?maxRevenue:maxOrders;
+
+  dashboardSalesTrend.innerHTML=`<div class="dashboard-trend-scroll">${data.map(point=>{
+    const value=useRevenue?Number(point.revenue||0):Number(point.orders||0);
+    const height=maxValue>0 && value>0 ? Math.max(6,Math.round((value/maxValue)*100)) : 0;
+    const title=`${formatDashboardDate(point.date)} · ${money(point.revenue)} · ${Number(point.orders||0)} orders`;
+    return `<div class="dashboard-trend-day" title="${esc(title)}">
+      <div class="dashboard-trend-value">${useRevenue && value>0 ? esc(Number(value).toLocaleString('en-EG')) : value>0 ? esc(String(value)) : ''}</div>
+      <div class="dashboard-trend-track"><span style="height:${height}%"></span></div>
+      <small>${esc(formatDashboardDate(point.date))}</small>
+    </div>`;
+  }).join('')}</div>`;
 }
 
 function renderDashboardStats(){
   const d=dashboardStats || {};
   document.getElementById('dashboard-total-sales').textContent=money(d.total_sales);
   document.getElementById('dashboard-total-orders').textContent=Number(d.total_orders || 0).toLocaleString('en-EG');
+  document.getElementById('dashboard-average-order-value').textContent=money(d.average_order_value);
+  document.getElementById('dashboard-delivery-rate').textContent=`${Number(d.delivery_rate || 0).toLocaleString('en-EG',{maximumFractionDigits:1})}%`;
   document.getElementById('dashboard-delivered-orders').textContent=Number(d.delivered_orders || 0).toLocaleString('en-EG');
   document.getElementById('dashboard-cancelled-orders').textContent=Number(d.cancelled_orders || 0).toLocaleString('en-EG');
   document.getElementById('dashboard-new-orders').textContent=Number(d.new_orders || 0).toLocaleString('en-EG');
   document.getElementById('dashboard-confirmed-orders').textContent=Number(d.confirmed_orders || 0).toLocaleString('en-EG');
   document.getElementById('dashboard-shipped-orders').textContent=Number(d.shipped_orders || 0).toLocaleString('en-EG');
   document.getElementById('dashboard-status-delivered').textContent=Number(d.delivered_orders || 0).toLocaleString('en-EG');
+  document.getElementById('dashboard-unique-customers').textContent=Number(d.unique_customers || 0).toLocaleString('en-EG');
+  document.getElementById('dashboard-returning-customers').textContent=Number(d.returning_customers || 0).toLocaleString('en-EG');
+
+  const periodLabel=document.getElementById('dashboard-revenue-period-label');
+  if(periodLabel){
+    periodLabel.textContent=Number(d.period_days||0)===0
+      ? 'All-time delivered revenue'
+      : `${formatDashboardDate(d.period_start)} – ${formatDashboardDate(d.period_end)}`;
+  }
+
+  setDashboardGrowth('dashboard-revenue-change',d.total_sales,d.previous_sales,'dashboard-previous-revenue',money);
+  setDashboardGrowth('dashboard-orders-change',d.total_orders,d.previous_orders,'dashboard-previous-orders',v=>`${Number(v||0).toLocaleString('en-EG')} orders`);
 
   const products=Array.isArray(d.best_selling_products)?d.best_selling_products:[];
   dashboardBestProducts.innerHTML=products.length?products.map((p,index)=>`
@@ -378,10 +468,31 @@ function renderDashboardStats(){
       <span class="sales-rank-number">${index+1}</span>
       <div class="sales-rank-product">
         <b>${esc(p.product_name)}</b>
-        <span>${esc(p.size_ml)} ML · ${Number(p.quantity_sold || 0).toLocaleString('en-EG')} sold</span>
+        <span>${esc(p.size_ml)} ML · ${Number(p.quantity_sold || 0).toLocaleString('en-EG')} units</span>
       </div>
       <strong>${money(p.sales)}</strong>
-    </div>`).join(''):'<div class="admin-empty compact">No sales data yet.</div>';
+    </div>`).join(''):'<div class="admin-empty compact">No product activity in this period.</div>';
+
+  const governorates=Array.isArray(d.top_governorates)?d.top_governorates:[];
+  if(dashboardTopGovernorates){
+    dashboardTopGovernorates.innerHTML=governorates.length?governorates.map((g,index)=>`
+      <div class="sales-rank-row">
+        <span class="sales-rank-number">${index+1}</span>
+        <div class="sales-rank-product">
+          <b>${esc(g.governorate)}</b>
+          <span>${Number(g.orders || 0).toLocaleString('en-EG')} orders</span>
+        </div>
+        <strong>${money(g.sales)}</strong>
+      </div>`).join(''):'<div class="admin-empty compact">No location activity in this period.</div>';
+  }
+
+  renderDashboardTrend(d.daily_trend);
+  const trendNote=document.getElementById('dashboard-trend-note');
+  if(trendNote){
+    trendNote.textContent=Number(d.period_days||0)>30 || Number(d.period_days||0)===0
+      ? 'Latest 30 days · delivered revenue by order date'
+      : 'Delivered revenue by order date';
+  }
 
   const recent=Array.isArray(d.recent_orders)?d.recent_orders:[];
   dashboardRecentOrders.innerHTML=recent.length?recent.map(o=>`
@@ -394,7 +505,55 @@ function renderDashboardStats(){
         <strong>${money(o.total)}</strong>
         <span class="status-badge status-${esc(o.status)}">${esc(prettyStatus(o.status))}</span>
       </div>
-    </div>`).join(''):'<div class="admin-empty compact">No orders yet.</div>';
+    </div>`).join(''):'<div class="admin-empty compact">No orders in this period.</div>';
+}
+
+function exportDashboardReport(){
+  const d=dashboardStats || {};
+  if(!Object.keys(d).length){
+    dashboardError.textContent='Load the dashboard report before exporting.';
+    return;
+  }
+  dashboardError.textContent='';
+
+  const period=Number(d.period_days||0)===0 ? 'All time' : `${d.period_start || ''} to ${d.period_end || ''}`;
+  const rows=[
+    ['Summary','Period',period,''],
+    ['Summary','Delivered Revenue',d.total_sales,'EGP'],
+    ['Summary','Orders',d.total_orders,''],
+    ['Summary','Average Order Value',d.average_order_value,'EGP'],
+    ['Summary','Delivered Share',d.delivery_rate,'%'],
+    ['Summary','Unique Customers',d.unique_customers,''],
+    ['Summary','Returning Customers',d.returning_customers,''],
+    ['Status','New',d.new_orders,'orders'],
+    ['Status','Confirmed',d.confirmed_orders,'orders'],
+    ['Status','Shipped',d.shipped_orders,'orders'],
+    ['Status','Delivered',d.delivered_orders,'orders'],
+    ['Status','Cancelled',d.cancelled_orders,'orders']
+  ];
+
+  (Array.isArray(d.best_selling_products)?d.best_selling_products:[]).forEach((p,index)=>{
+    rows.push(['Top Product',`${index+1}. ${p.product_name} ${p.size_ml || ''}ML`,p.quantity_sold,`${p.sales} EGP`]);
+  });
+  (Array.isArray(d.top_governorates)?d.top_governorates:[]).forEach((g,index)=>{
+    rows.push(['Top Governorate',`${index+1}. ${g.governorate}`,g.orders,`${g.sales} EGP`]);
+  });
+  (Array.isArray(d.daily_trend)?d.daily_trend:[]).forEach(point=>{
+    rows.push(['Daily Trend',point.date,point.orders,`${point.revenue} EGP`]);
+  });
+
+  const headers=['Section','Metric','Value','Extra'];
+  const csv='\uFEFF'+[headers,...rows].map(row=>row.map(csvSafe).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const today=new Date().toISOString().slice(0,10);
+  a.href=url;
+  a.download=`DOMARO-dashboard-${today}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),500);
 }
 
 async function loadOrders(){
@@ -1989,6 +2148,16 @@ logoutBtn.addEventListener('click',()=>{
   showLogin();
 });
 refreshDashboardBtn.addEventListener('click',loadDashboardStats);
+if(dashboardPeriod){
+  const savedDashboardPeriod=localStorage.getItem('domaro_dashboard_period');
+  if(['0','7','30','90'].includes(savedDashboardPeriod || '')) dashboardPeriod.value=savedDashboardPeriod;
+  dashboardPeriod.addEventListener('change',()=>{
+    localStorage.setItem('domaro_dashboard_period',dashboardPeriod.value);
+    dashboardStats=null;
+    loadDashboardStats();
+  });
+}
+exportDashboardCsvBtn?.addEventListener('click',exportDashboardReport);
 refreshBtn.addEventListener('click',loadOrders);
 refreshCustomersBtn?.addEventListener('click',loadCustomers);
 customerSearch?.addEventListener('input',renderCustomers);

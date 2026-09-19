@@ -1794,3 +1794,48 @@ body.entry-gate-open{
   .customer-product-list>div{flex-direction:column;gap:3px}
   .customer-product-list span{text-align:left}
 }
+
+/* DOMARO V26 — advanced business dashboard */
+.dashboard-v26-head{align-items:flex-start}
+.dashboard-v26-actions{display:flex;gap:9px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.dashboard-period-select{height:42px;border:1px solid #cfc4b6;background:#f8f4ee;color:#171513;padding:0 34px 0 13px;font:600 9px Inter,Arial,sans-serif;letter-spacing:1px;cursor:pointer}
+.dashboard-kpis-v26{grid-template-columns:1.55fr repeat(3,1fr)}
+.dashboard-comparison-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 14px}
+.dashboard-comparison-card{background:#fff;border:1px solid #d8cfc2;padding:17px 18px;min-height:104px;display:flex;flex-direction:column;justify-content:center}
+.dashboard-comparison-card span{font-size:8px;line-height:1.5;letter-spacing:1.25px;color:#756b61}
+.dashboard-comparison-card b{font:600 28px "Cormorant Garamond",Georgia,serif;margin-top:7px}
+.dashboard-comparison-card b.positive{color:#256237}
+.dashboard-comparison-card b.negative{color:#9a3e34}
+.dashboard-comparison-card b.neutral{color:#25211e}
+.dashboard-comparison-card small{font-size:8px;color:#93887b;margin-top:5px;line-height:1.45}
+.dashboard-status-v26{grid-template-columns:repeat(5,1fr)}
+.dashboard-trend-card{margin-bottom:16px}
+.dashboard-sales-trend{padding-top:20px;min-height:210px}
+.dashboard-trend-scroll{display:grid;grid-template-columns:repeat(auto-fit,minmax(30px,1fr));gap:7px;align-items:end;min-height:175px;overflow-x:auto;padding:0 2px 3px}
+.dashboard-trend-day{min-width:30px;height:170px;display:grid;grid-template-rows:18px 1fr 28px;gap:5px;text-align:center;align-items:end}
+.dashboard-trend-value{font-size:7px;color:#766d64;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-trend-track{height:116px;background:#eee7dd;display:flex;align-items:flex-end;position:relative;overflow:hidden}
+.dashboard-trend-track span{display:block;width:100%;background:#171513;min-height:0;transition:height .2s ease}
+.dashboard-trend-day small{font-size:7px;line-height:1.2;color:#82786e;white-space:nowrap}
+.dashboard-grid-v26{grid-template-columns:1fr 1fr}
+.dashboard-recent-wide{grid-column:1 / -1}
+@media(max-width:1100px){
+  .dashboard-kpis-v26{grid-template-columns:1fr 1fr}
+  .dashboard-comparison-grid{grid-template-columns:1fr 1fr}
+  .dashboard-status-v26{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:760px){
+  .dashboard-v26-actions{width:100%;justify-content:flex-start}
+  .dashboard-period-select{flex:1;min-width:160px}
+  .dashboard-v26-actions .admin-primary-btn,.dashboard-v26-actions .admin-secondary-btn{flex:1}
+  .dashboard-grid-v26{grid-template-columns:1fr}
+  .dashboard-recent-wide{grid-column:auto}
+  .dashboard-trend-scroll{grid-auto-flow:column;grid-auto-columns:minmax(34px,42px);grid-template-columns:none;justify-content:start}
+}
+@media(max-width:520px){
+  .dashboard-kpis-v26,.dashboard-comparison-grid,.dashboard-status-v26{grid-template-columns:1fr 1fr}
+  .dashboard-comparison-card{min-height:94px;padding:14px}
+  .dashboard-comparison-card b{font-size:24px}
+  .dashboard-v26-actions{display:grid;grid-template-columns:1fr 1fr}
+  .dashboard-period-select{grid-column:1/-1;width:100%}
+}

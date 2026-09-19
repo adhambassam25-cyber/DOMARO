@@ -1,0 +1,19 @@
+DOMARO V26 — Advanced Business Dashboard
+
+What's new
+- Dashboard reporting period: Last 7 / 30 / 90 days / All time.
+- Delivered revenue, order count, average delivered order value, delivered share.
+- Revenue and order comparison against the immediately previous equivalent period.
+- Unique and returning customer KPIs.
+- Status breakdown for the selected period.
+- Daily performance chart (latest 30 days for 90-day and all-time views).
+- Top products and top governorates for the selected period.
+- Recent orders scoped to the selected period.
+- Dashboard CSV report export.
+
+Important
+- Run SUPABASE-V26-MIGRATION.sql before deploying the V26 frontend.
+- Revenue is counted from orders whose current status is delivered.
+- Trend revenue is grouped by the order creation date because DOMARO does not currently store a delivered_at timestamp.
+- Top products and locations exclude cancelled orders.
+- No analytics are fabricated; all figures come from live order data.
