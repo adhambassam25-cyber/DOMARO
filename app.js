@@ -151,6 +151,7 @@ function renderProducts(targetId, filter='all', limit=null, brand='', query=''){
   el.innerHTML=list.length
     ? list.map(productCard).join('')
     : `<div class="empty" style="grid-column:1/-1">${window.DOMARO_CATALOG_UNAVAILABLE ? 'Our catalog is temporarily unavailable. Please refresh in a moment.' : 'No products match this selection yet.'}</div>`;
+  if(typeof window.DOMAROV30DecorateProductCards==='function') window.DOMAROV30DecorateProductCards();
 }
 
 function catalogBrands(){

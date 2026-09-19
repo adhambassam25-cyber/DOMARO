@@ -75,6 +75,7 @@ function decorateProductCards(){
   });
   setWishlist(getWishlist());
 }
+window.DOMAROV30DecorateProductCards=decorateProductCards;
 
 window.DOMAROV30InitProductExtras=function(product){
   const wishBtn=document.getElementById('wishlist-product-btn');
@@ -329,6 +330,4 @@ window.addEventListener('load',()=>{
   injectV30Nav(); setWishlist(getWishlist()); applyLanguage(); initCheckoutCapture(); initReturnRequestEnhancement(); initAccountPage();
   if(window.DOMARO_STORE_SETTINGS) applyStoreSettings(window.DOMARO_STORE_SETTINGS);
   decorateProductCards();
-  const observer=new MutationObserver(()=>{ decorateProductCards(); if(getLanguage()==='ar') translateTextNodes(); });
-  observer.observe(document.body,{childList:true,subtree:true});
 });

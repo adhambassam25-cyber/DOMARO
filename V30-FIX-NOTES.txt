@@ -1,0 +1,5 @@
+DOMARO V30 Runtime Fix
+
+Fixes a frontend freeze caused by a broad MutationObserver repeatedly triggering wishlist decoration.
+Product-card wishlist decoration is now invoked explicitly after product grids render, avoiding self-triggering DOM mutation loops.
+No additional SQL migration is required if SUPABASE-V30-MIGRATION.sql already completed successfully.
