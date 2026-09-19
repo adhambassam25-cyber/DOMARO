@@ -1,0 +1,13 @@
+DOMARO V21 — Orders Workflow Upgrade
+
+Frontend-only update. No SQL migration is required.
+
+Changes:
+- Cleaner, compact order cards in Admin > Orders.
+- Existing order search and status filter retained.
+- 8 orders per page with Previous / Next pagination.
+- Visible filtered-order count and page indicator.
+- New View Details modal with full customer, delivery, payment, item, totals, coupon/discount and note information.
+- Quick status update remains available on each order card.
+- Responsive mobile layout.
+- Includes V20 admin permissions visibility fix.

@@ -29,6 +29,14 @@ const ordersLoading = document.getElementById('orders-loading');
 const refreshBtn = document.getElementById('refresh-orders');
 const searchInput = document.getElementById('order-search');
 const statusFilter = document.getElementById('status-filter');
+const ordersCountLabel = document.getElementById('orders-count-label');
+const ordersPagination = document.getElementById('orders-pagination');
+const ordersPrevPage = document.getElementById('orders-prev-page');
+const ordersNextPage = document.getElementById('orders-next-page');
+const ordersPageLabel = document.getElementById('orders-page-label');
+const orderDetailsModal = document.getElementById('order-details-modal');
+const orderDetailsTitle = document.getElementById('order-details-title');
+const orderDetailsContent = document.getElementById('order-details-content');
 
 const productsList = document.getElementById('products-list');
 const productsError = document.getElementById('products-error');
@@ -71,6 +79,8 @@ let accessToken = sessionStorage.getItem('domaro_admin_access_token') || '';
 let adminEmail = sessionStorage.getItem('domaro_admin_email') || '';
 let allOrders = [];
 let orderItems = [];
+let ordersPage = 1;
+const ordersPerPage = 8;
 let allProducts = [];
 let allCoupons = [];
 let allAdmins = [];
@@ -376,6 +386,7 @@ async function loadOrders(){
 
     allOrders=Array.isArray(ordersData)?ordersData:[];
     orderItems=Array.isArray(itemsData)?itemsData:[];
+    ordersPage=1;
     renderStats();
     renderOrders();
   }catch(err){
@@ -402,34 +413,54 @@ function filteredOrders(){
     return matchesStatus && (!q || haystack.includes(q));
   });
 }
+function orderItemCount(orderId){
+  return orderItems
+    .filter(i=>i.order_id===orderId)
+    .reduce((sum,i)=>sum+Number(i.quantity || 0),0);
+}
+
 function renderOrders(){
   const list=filteredOrders();
+  const totalPages=Math.max(1,Math.ceil(list.length/ordersPerPage));
+  if(ordersPage>totalPages) ordersPage=totalPages;
+  if(ordersPage<1) ordersPage=1;
+
+  if(ordersCountLabel){
+    ordersCountLabel.textContent=`${list.length.toLocaleString('en-EG')} ${list.length===1?'order':'orders'}`;
+  }
+
   if(!list.length){
     ordersList.innerHTML='<div class="admin-empty">No matching orders.</div>';
+    if(ordersPagination) ordersPagination.hidden=true;
     return;
   }
-  ordersList.innerHTML=list.map(order=>{
-    const items=orderItems.filter(i=>i.order_id===order.id);
-    const productsHtml=items.map(i=>`
-      <div class="admin-order-item">
-        <div><b>${esc(i.product_name)}</b><span>${esc(i.size_ml)} ML · Qty ${esc(i.quantity)}</span></div>
-        <strong>${money(i.line_total)}</strong>
-      </div>`).join('');
 
-    return `<article class="admin-order-card" data-order-id="${esc(order.id)}">
-      <div class="admin-order-head">
-        <div><div class="admin-order-number">${esc(order.order_number)}</div><div class="admin-order-date">${esc(fmtDate(order.created_at))}</div></div>
+  const startIndex=(ordersPage-1)*ordersPerPage;
+  const pageOrders=list.slice(startIndex,startIndex+ordersPerPage);
+
+  ordersList.innerHTML=pageOrders.map(order=>{
+    const itemCount=orderItemCount(order.id);
+    const customer=`${order.first_name || ''} ${order.last_name || ''}`.trim();
+    const destination=[order.governorate,order.area].filter(Boolean).join(' · ');
+
+    return `<article class="admin-order-card admin-order-card-compact" data-order-id="${esc(order.id)}">
+      <div class="admin-order-head compact-order-head">
+        <div>
+          <div class="admin-order-number">${esc(order.order_number)}</div>
+          <div class="admin-order-date">${esc(fmtDate(order.created_at))}</div>
+        </div>
         <span class="status-badge status-${esc(order.status)}">${esc(prettyStatus(order.status))}</span>
       </div>
-      <div class="admin-order-grid">
-        <div class="admin-order-section"><h3>CUSTOMER</h3><p><b>${esc(order.first_name)} ${esc(order.last_name)}</b></p><p><a href="tel:${esc(order.phone)}">${esc(order.phone)}</a></p></div>
-        <div class="admin-order-section"><h3>DELIVERY</h3><p>${esc(order.governorate)} · ${esc(order.area)}</p><p>${esc(order.address)}</p>${order.building?`<p>${esc(order.building)}</p>`:''}</div>
-        <div class="admin-order-section"><h3>PAYMENT</h3><p>${esc(order.payment_method)}</p><p><b>${money(order.total)}</b></p></div>
+
+      <div class="order-summary-grid">
+        <div><span>CUSTOMER</span><b>${esc(customer || '—')}</b><small>${esc(order.phone || '')}</small></div>
+        <div><span>DELIVERY</span><b>${esc(destination || '—')}</b><small>${esc(order.address || '')}</small></div>
+        <div><span>ITEMS</span><b>${itemCount.toLocaleString('en-EG')}</b><small>${itemCount===1?'item':'items'}</small></div>
+        <div><span>TOTAL</span><b>${money(order.total)}</b><small>${esc(order.payment_method || '')}</small></div>
       </div>
-      <div class="admin-items-block"><h3>ITEMS</h3>${productsHtml || '<div class="meta">No items found.</div>'}</div>
-      <div class="admin-order-totals"><span>Subtotal: <b>${money(order.subtotal)}</b></span>${Number(order.discount||0)>0?`<span>Discount${order.coupon_code?` (${esc(order.coupon_code)})`:''}: <b>− ${money(order.discount)}</b></span>`:''}<span>Shipping: <b>${money(order.shipping)}</b></span><span>Total: <b>${money(order.total)}</b></span></div>
-      ${order.notes?`<div class="admin-note"><b>Customer note:</b> ${esc(order.notes)}</div>`:''}
-      <div class="admin-order-actions">
+
+      <div class="admin-order-actions compact-order-actions">
+        <button class="admin-view-order admin-secondary-btn" type="button" data-order-id="${esc(order.id)}">VIEW DETAILS</button>
         <label>STATUS
           <select class="order-status-select" data-order-id="${esc(order.id)}">
             ${['new','confirmed','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${s===order.status?'selected':''}>${prettyStatus(s)}</option>`).join('')}
@@ -440,6 +471,10 @@ function renderOrders(){
     </article>`;
   }).join('');
 
+  document.querySelectorAll('.admin-view-order').forEach(btn=>{
+    btn.addEventListener('click',()=>openOrderDetails(btn.dataset.orderId));
+  });
+
   document.querySelectorAll('.admin-save-status').forEach(btn=>{
     btn.addEventListener('click',async()=>{
       const orderId=btn.dataset.orderId;
@@ -447,6 +482,52 @@ function renderOrders(){
       await updateOrderStatus(orderId,select.value,btn);
     });
   });
+
+  if(ordersPagination){
+    ordersPagination.hidden=totalPages<=1;
+    ordersPageLabel.textContent=`Page ${ordersPage} of ${totalPages}`;
+    ordersPrevPage.disabled=ordersPage<=1;
+    ordersNextPage.disabled=ordersPage>=totalPages;
+  }
+}
+
+function openOrderDetails(orderId){
+  const order=allOrders.find(o=>o.id===orderId);
+  if(!order || !orderDetailsModal || !orderDetailsContent) return;
+
+  const items=orderItems.filter(i=>i.order_id===order.id);
+  const productsHtml=items.map(i=>`
+    <div class="admin-order-item">
+      <div><b>${esc(i.product_name)}</b><span>${esc(i.size_ml)} ML · Qty ${esc(i.quantity)}</span></div>
+      <strong>${money(i.line_total)}</strong>
+    </div>`).join('');
+
+  orderDetailsTitle.textContent=order.order_number || 'ORDER';
+  orderDetailsContent.innerHTML=`
+    <div class="order-detail-topline">
+      <span>${esc(fmtDate(order.created_at))}</span>
+      <span class="status-badge status-${esc(order.status)}">${esc(prettyStatus(order.status))}</span>
+    </div>
+
+    <div class="admin-order-grid order-modal-grid">
+      <div class="admin-order-section"><h3>CUSTOMER</h3><p><b>${esc(order.first_name)} ${esc(order.last_name)}</b></p><p><a href="tel:${esc(order.phone)}">${esc(order.phone)}</a></p></div>
+      <div class="admin-order-section"><h3>DELIVERY</h3><p>${esc(order.governorate)} · ${esc(order.area)}</p><p>${esc(order.address)}</p>${order.building?`<p>${esc(order.building)}</p>`:''}</div>
+      <div class="admin-order-section"><h3>PAYMENT</h3><p>${esc(order.payment_method)}</p><p><b>${money(order.total)}</b></p></div>
+    </div>
+
+    <div class="admin-items-block"><h3>ITEMS</h3>${productsHtml || '<div class="meta">No items found.</div>'}</div>
+    <div class="admin-order-totals order-modal-totals"><span>Subtotal: <b>${money(order.subtotal)}</b></span>${Number(order.discount||0)>0?`<span>Discount${order.coupon_code?` (${esc(order.coupon_code)})`:''}: <b>− ${money(order.discount)}</b></span>`:''}<span>Shipping: <b>${money(order.shipping)}</b></span><span>Total: <b>${money(order.total)}</b></span></div>
+    ${order.notes?`<div class="admin-note"><b>Customer note:</b> ${esc(order.notes)}</div>`:''}
+  `;
+
+  orderDetailsModal.hidden=false;
+  document.body.style.overflow='hidden';
+}
+
+function closeOrderDetails(){
+  if(!orderDetailsModal) return;
+  orderDetailsModal.hidden=true;
+  document.body.style.overflow='';
 }
 
 async function updateOrderStatus(orderId,status,button){
@@ -1305,8 +1386,12 @@ logoutBtn.addEventListener('click',()=>{
 });
 refreshDashboardBtn.addEventListener('click',loadDashboardStats);
 refreshBtn.addEventListener('click',loadOrders);
-searchInput.addEventListener('input',renderOrders);
-statusFilter.addEventListener('change',renderOrders);
+searchInput.addEventListener('input',()=>{ordersPage=1;renderOrders();});
+statusFilter.addEventListener('change',()=>{ordersPage=1;renderOrders();});
+ordersPrevPage?.addEventListener('click',()=>{if(ordersPage>1){ordersPage-=1;renderOrders();ordersPanel.scrollIntoView({behavior:'smooth',block:'start'});}});
+ordersNextPage?.addEventListener('click',()=>{const pages=Math.max(1,Math.ceil(filteredOrders().length/ordersPerPage));if(ordersPage<pages){ordersPage+=1;renderOrders();ordersPanel.scrollIntoView({behavior:'smooth',block:'start'});}});
+document.querySelectorAll('[data-close-order-modal]').forEach(el=>el.addEventListener('click',closeOrderDetails));
+document.addEventListener('keydown',e=>{if(e.key==='Escape' && orderDetailsModal && !orderDetailsModal.hidden) closeOrderDetails();});
 productSearch.addEventListener('input',renderProductsAdmin);
 productFilter.addEventListener('change',renderProductsAdmin);
 

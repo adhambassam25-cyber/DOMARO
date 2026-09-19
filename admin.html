@@ -165,9 +165,19 @@
       </select>
     </div>
 
+    <div class="orders-results-bar">
+      <span id="orders-count-label">0 orders</span>
+      <span>Newest orders first</span>
+    </div>
+
     <div id="orders-loading" class="admin-loading" hidden>Loading orders…</div>
     <div id="orders-error" class="admin-error"></div>
     <div id="orders-list" class="orders-list"></div>
+    <div id="orders-pagination" class="orders-pagination" hidden>
+      <button id="orders-prev-page" class="admin-secondary-btn" type="button">PREVIOUS</button>
+      <span id="orders-page-label">Page 1 of 1</span>
+      <button id="orders-next-page" class="admin-secondary-btn" type="button">NEXT</button>
+    </div>
   </section>
 
   <section id="admin-products-panel" class="admin-panel" hidden>
@@ -255,6 +265,21 @@
     <div id="admins-list" class="admin-users-list"></div>
   </section>
 
+</section>
+
+
+<section id="order-details-modal" class="product-modal" hidden>
+  <div class="product-modal-backdrop" data-close-order-modal></div>
+  <div class="product-modal-card order-details-modal-card">
+    <div class="product-modal-head">
+      <div>
+        <div class="eyebrow" style="color:#766b5d">ORDER DETAILS</div>
+        <h2 id="order-details-title">ORDER</h2>
+      </div>
+      <button class="product-modal-close" type="button" data-close-order-modal>×</button>
+    </div>
+    <div id="order-details-content"></div>
+  </div>
 </section>
 
 <section id="admin-user-modal" class="product-modal" hidden>
