@@ -1531,3 +1531,186 @@ body.entry-gate-open{
   .order-modal-tools .admin-secondary-btn{font-size:8px;padding:8px 10px}
 }
 \n\n/* DOMARO v23 — Inventory Center */\n.inventory-stats{grid-template-columns:repeat(5,1fr)}\n.inventory-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start;margin-bottom:22px}\n.inventory-toolbar .admin-controls{margin-bottom:0}\n.inventory-filter-grid{grid-template-columns:minmax(220px,1fr) 220px}\n.low-stock-setting{display:grid;grid-template-columns:auto 72px auto;align-items:center;gap:8px;background:#f8f4ee;border:1px solid #d8cfc2;padding:9px 12px;min-height:44px}\n.low-stock-setting span{font-size:9px;letter-spacing:1.2px;color:#6f665d;font-weight:700;white-space:nowrap}\n.low-stock-setting input{width:72px;min-width:0;padding:9px 8px;background:#fff;text-align:center}\n.low-stock-setting small{font-size:9px;color:#857c73}\n.mini-low{background:#fff2cd;border-color:#ddb85e;color:#765715!important}\n.low-stock-card{border-color:#d7b65e;box-shadow:inset 3px 0 0 #c59b39}\n.inventory-stock-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:9px}\n.inventory-stock-row .admin-stock-qty{margin-top:0}\n.quick-stock-adjuster{display:inline-flex;align-items:center;border:1px solid #d7cec2;background:#fff}\n.quick-stock-adjuster .admin-secondary-btn{border:0;border-radius:0;padding:6px 9px;min-width:40px}\n.quick-stock-adjuster span{min-width:38px;text-align:center;font-size:10px;font-weight:700;border-left:1px solid #e0d7cb;border-right:1px solid #e0d7cb;padding:7px 8px}\n.low-stock-warning{display:inline-block;margin-top:10px;padding:7px 9px;background:#fff2cd;border:1px solid #ddb85e;color:#765715;font-size:9px;font-weight:700;letter-spacing:1px}\n@media(max-width:900px){\n  .inventory-stats{grid-template-columns:repeat(2,1fr)}\n  .inventory-toolbar{grid-template-columns:1fr}\n  .low-stock-setting{width:max-content;max-width:100%}\n}\n@media(max-width:640px){\n  .inventory-filter-grid{grid-template-columns:1fr}\n  .low-stock-setting{width:100%;grid-template-columns:1fr 72px auto}\n}\n
+/* DOMARO V24 — Order Timeline, Admin Notes & Status History */
+.order-history-workspace{
+  margin-top:26px;
+  padding-top:24px;
+  border-top:1px solid #d9d0c4;
+}
+.order-history-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:18px;
+  margin-bottom:16px;
+}
+.order-history-head span{
+  display:block;
+  margin-bottom:4px;
+  color:#8a8075;
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:1.45px;
+}
+.order-history-head h3{
+  margin:0;
+  color:#241f1b;
+  font:600 21px "Cormorant Garamond",Georgia,serif;
+  letter-spacing:.7px;
+}
+.order-history-head small{
+  max-width:330px;
+  color:#857b70;
+  font-size:9px;
+  line-height:1.5;
+  text-align:right;
+}
+.order-admin-note-form{
+  margin-bottom:22px;
+  padding:15px;
+  border:1px solid #d9d0c4;
+  background:#f8f4ee;
+}
+.order-admin-note-form>label{
+  display:block;
+  margin-bottom:8px;
+  color:#70675e;
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:1.35px;
+}
+.order-admin-note-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:stretch;
+}
+.order-admin-note-row textarea{
+  width:100%;
+  min-height:78px;
+  resize:vertical;
+  border:1px solid #cfc5b8;
+  background:#fff;
+  padding:11px 12px;
+  color:#2a241f;
+  font:inherit;
+  line-height:1.5;
+}
+.order-admin-note-row .admin-primary-btn{
+  min-width:112px;
+  align-self:stretch;
+}
+.order-timeline-list{
+  position:relative;
+  display:grid;
+  gap:0;
+  padding-left:6px;
+}
+.order-timeline-list:before{
+  content:"";
+  position:absolute;
+  left:17px;
+  top:13px;
+  bottom:13px;
+  width:1px;
+  background:#d9d0c4;
+}
+.order-timeline-event{
+  position:relative;
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr);
+  gap:12px;
+  padding:0 0 18px;
+}
+.order-timeline-event:last-child{padding-bottom:0}
+.order-timeline-marker{
+  position:relative;
+  z-index:1;
+  display:grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+  margin-top:2px;
+  border:1px solid #cfc5b8;
+  border-radius:50%;
+  background:#fff;
+  color:#4f473f;
+  font-size:10px;
+  font-weight:700;
+}
+.order-timeline-status_change .order-timeline-marker{
+  background:#17130f;
+  border-color:#17130f;
+  color:#fff;
+}
+.order-timeline-admin_note .order-timeline-marker{
+  background:#efe6d9;
+  border-color:#cdbca8;
+  color:#5c4d3e;
+}
+.order-timeline-body{
+  min-width:0;
+  padding:11px 13px;
+  border:1px solid #e0d7cb;
+  background:#fcfaf7;
+}
+.order-timeline-event-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+.order-timeline-event-head b{
+  color:#29231e;
+  font-size:11px;
+  letter-spacing:.25px;
+}
+.order-timeline-event-head time{
+  color:#91877c;
+  font-size:8px;
+  white-space:nowrap;
+}
+.order-timeline-body>small{
+  display:block;
+  margin-top:8px;
+  color:#897f75;
+  font-size:8px;
+  word-break:break-word;
+}
+.order-timeline-status{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:9px;
+}
+.timeline-arrow{
+  color:#8b8176;
+  font-size:12px;
+}
+.order-timeline-note{
+  margin:8px 0 0;
+  color:#504840;
+  font-size:11px;
+  line-height:1.6;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.order-timeline-loading,.order-timeline-empty{
+  padding:16px;
+  border:1px dashed #d5cabd;
+  color:#80766c;
+  font-size:10px;
+  text-align:center;
+}
+@media(max-width:640px){
+  .order-history-head{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .order-history-head small{text-align:left}
+  .order-admin-note-row{grid-template-columns:1fr}
+  .order-admin-note-row .admin-primary-btn{min-height:42px}
+  .order-timeline-event-head{flex-direction:column;gap:4px}
+  .order-timeline-event-head time{white-space:normal}
+}

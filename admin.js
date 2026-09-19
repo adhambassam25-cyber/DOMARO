@@ -606,7 +606,124 @@ function renderOrders(){
   }
 }
 
-function openOrderDetails(orderId){
+function orderActivityActor(activity){
+  if(activity?.actor_email) return activity.actor_email;
+  if(activity?.event_type==='created') return 'Customer checkout';
+  return 'DOMARO system';
+}
+
+function renderOrderTimeline(events){
+  if(!Array.isArray(events) || !events.length){
+    return '<div class="order-timeline-empty">No order activity yet.</div>';
+  }
+
+  return events.map(activity=>{
+    const type=activity.event_type || '';
+    const actor=orderActivityActor(activity);
+    let icon='•';
+    let title='Order activity';
+    let body='';
+
+    if(type==='created'){
+      icon='+';
+      title='Order placed';
+      body=`<div class="order-timeline-status"><span class="status-badge status-new">New</span></div>`;
+    }else if(type==='status_change'){
+      icon='↻';
+      title='Status changed';
+      body=`<div class="order-timeline-status">
+        <span class="status-badge status-${esc(activity.old_status)}">${esc(prettyStatus(activity.old_status))}</span>
+        <span class="timeline-arrow">→</span>
+        <span class="status-badge status-${esc(activity.new_status)}">${esc(prettyStatus(activity.new_status))}</span>
+      </div>`;
+    }else if(type==='admin_note'){
+      icon='N';
+      title='Admin note';
+      body=`<p class="order-timeline-note">${esc(activity.note || '')}</p>`;
+    }
+
+    return `<article class="order-timeline-event order-timeline-${esc(type)}">
+      <div class="order-timeline-marker">${esc(icon)}</div>
+      <div class="order-timeline-body">
+        <div class="order-timeline-event-head">
+          <b>${esc(title)}</b>
+          <time>${esc(fmtDate(activity.created_at))}</time>
+        </div>
+        ${body}
+        <small>${esc(actor)}</small>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+async function loadOrderActivity(orderId){
+  const response=await fetch(
+    `${SUPABASE_URL}/rest/v1/order_activity?select=id,order_id,event_type,old_status,new_status,note,actor_email,created_at&order_id=eq.${encodeURIComponent(orderId)}&order=created_at.desc,id.desc`,
+    {headers:authHeaders()}
+  );
+  const data=await response.json().catch(()=>[]);
+  if(response.status===401){
+    clearSession();
+    showLogin('Your session expired. Please sign in again.');
+    throw new Error('Your session has expired.');
+  }
+  if(response.status===403) throw new Error('This account does not have permission to view order history.');
+  if(!response.ok) throw new Error(data?.message || 'Could not load order history.');
+  return Array.isArray(data)?data:[];
+}
+
+async function refreshOrderTimeline(orderId){
+  const list=document.getElementById('order-timeline-list');
+  const errorEl=document.getElementById('order-timeline-error');
+  if(!list) return;
+  list.innerHTML='<div class="order-timeline-loading">Loading order history…</div>';
+  if(errorEl) errorEl.textContent='';
+  try{
+    const activity=await loadOrderActivity(orderId);
+    if(currentDetailOrderId!==orderId) return;
+    list.innerHTML=renderOrderTimeline(activity);
+  }catch(err){
+    if(currentDetailOrderId!==orderId) return;
+    list.innerHTML='';
+    if(errorEl) errorEl.textContent=err.message || 'Could not load order history.';
+  }
+}
+
+async function addOrderAdminNote(orderId,form){
+  const textarea=form.querySelector('#order-admin-note');
+  const button=form.querySelector('button[type="submit"]');
+  const errorEl=document.getElementById('order-admin-note-error');
+  const note=textarea?.value.trim() || '';
+  if(!note){
+    if(errorEl) errorEl.textContent='Write an admin note first.';
+    textarea?.focus();
+    return;
+  }
+
+  const oldText=button?.textContent || 'ADD NOTE';
+  if(button){button.disabled=true;button.textContent='SAVING…';}
+  if(errorEl) errorEl.textContent='';
+
+  try{
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/add_order_note`,{
+      method:'POST',
+      headers:authHeaders({'Content-Type':'application/json'}),
+      body:JSON.stringify({p_order_id:orderId,p_note:note})
+    });
+    const data=await response.json().catch(()=>null);
+    if(response.status===401){clearSession();showLogin('Your session expired. Please sign in again.');return;}
+    if(response.status===403) throw new Error('This account does not have permission to add order notes.');
+    if(!response.ok) throw new Error(data?.message || 'Could not add admin note.');
+    if(textarea) textarea.value='';
+    await refreshOrderTimeline(orderId);
+  }catch(err){
+    if(errorEl) errorEl.textContent=err.message || 'Could not add admin note.';
+  }finally{
+    if(button){button.disabled=false;button.textContent=oldText;}
+  }
+}
+
+async function openOrderDetails(orderId){
   const order=allOrders.find(o=>o.id===orderId);
   if(!order || !orderDetailsModal || !orderDetailsContent) return;
   currentDetailOrderId=orderId;
@@ -634,10 +751,37 @@ function openOrderDetails(orderId){
     <div class="admin-items-block"><h3>ITEMS</h3>${productsHtml || '<div class="meta">No items found.</div>'}</div>
     <div class="admin-order-totals order-modal-totals"><span>Subtotal: <b>${money(order.subtotal)}</b></span>${Number(order.discount||0)>0?`<span>Discount${order.coupon_code?` (${esc(order.coupon_code)})`:''}: <b>− ${money(order.discount)}</b></span>`:''}<span>Shipping: <b>${money(order.shipping)}</b></span><span>Total: <b>${money(order.total)}</b></span></div>
     ${order.notes?`<div class="admin-note"><b>Customer note:</b> ${esc(order.notes)}</div>`:''}
+
+    <section class="order-history-workspace">
+      <div class="order-history-head">
+        <div><span>INTERNAL WORKSPACE</span><h3>ORDER TIMELINE</h3></div>
+        <small>History is recorded automatically from V24 onward.</small>
+      </div>
+
+      <form id="order-admin-note-form" class="order-admin-note-form">
+        <label for="order-admin-note">ADMIN NOTE</label>
+        <div class="order-admin-note-row">
+          <textarea id="order-admin-note" maxlength="2000" placeholder="Add an internal note for the team…" required></textarea>
+          <button class="admin-primary-btn" type="submit">ADD NOTE</button>
+        </div>
+        <div id="order-admin-note-error" class="admin-error"></div>
+      </form>
+
+      <div id="order-timeline-error" class="admin-error"></div>
+      <div id="order-timeline-list" class="order-timeline-list"></div>
+    </section>
   `;
 
   orderDetailsModal.hidden=false;
   document.body.style.overflow='hidden';
+
+  const noteForm=document.getElementById('order-admin-note-form');
+  noteForm?.addEventListener('submit',e=>{
+    e.preventDefault();
+    addOrderAdminNote(orderId,noteForm);
+  });
+
+  await refreshOrderTimeline(orderId);
 }
 
 function closeOrderDetails(){
@@ -660,14 +804,18 @@ async function updateOrderStatus(orderId,status,button){
     });
     if(response.status===401){clearSession();showLogin('Your session expired. Please sign in again.');return;}
     const data=await response.json().catch(()=>null);
+    if(response.status===403) throw new Error('This account does not have permission to update order status.');
     if(!response.ok) throw new Error(data?.message || 'Could not update order status.');
     const target=allOrders.find(o=>o.id===orderId);
-    if(target) target.status=status;
-    renderStats(); renderOrders();
-    loadDashboardStats();
+    if(target) target.status=data?.status || status;
+    renderStats();
+    renderOrders();
+    await loadDashboardStats();
+    if(currentDetailOrderId===orderId) await openOrderDetails(orderId);
   }catch(err){
     ordersError.textContent=err.message || 'Could not update order status.';
-    button.disabled=false; button.textContent=original;
+    button.disabled=false;
+    button.textContent=original;
   }
 }
 

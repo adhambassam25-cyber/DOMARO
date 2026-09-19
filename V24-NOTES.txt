@@ -1,0 +1,15 @@
+DOMARO V24 — ORDER HISTORY
+
+New admin order workflow:
+- Order Timeline inside View Details.
+- Automatic "Order placed" activity for future orders.
+- Status History records old status -> new status, admin email and timestamp.
+- Internal Admin Notes can be added from the order modal.
+- Existing orders receive a backfilled "Order placed" event.
+- Notes and status history are readable only by admins with Orders permission.
+- Direct writes to order_activity are blocked; writes go through permission-checked RPCs.
+
+Deployment order:
+1. Run SUPABASE-V24-MIGRATION.sql in Supabase SQL Editor.
+2. Deploy the V24 website files.
+3. Open an existing order and test ADD NOTE + one status change.
