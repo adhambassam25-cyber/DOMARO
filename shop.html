@@ -24,12 +24,13 @@
   <div class="container nav">
     <a class="logo" href="index.html">DOMARO<small>FRAGRANCES</small></a>
     <nav class="navlinks">
-      <a href="index.html">HOME</a>
-      <a href="shop.html">SHOP</a>
-      <a href="shop.html">COLLECTIONS</a>
+      <a href="shop.html?category=men">MEN</a>
+      <a href="shop.html?category=women">WOMEN</a>
+      <a href="shop.html?category=unisex">UNISEX</a>
+      <a href="brands.html">BRANDS</a>
+      <a href="shop.html">SHOP ALL</a>
       <a href="about.html">ABOUT</a>
       <a href="contact.html">CONTACT</a>
-      <a href="track.html">TRACK ORDER</a>
     </nav>
     <div class="navicons">
       <button class="icon-btn" aria-label="Search">⌕</button>
@@ -38,13 +39,17 @@
     </div>
   </div>
 </header>
-<section class="page-hero"><div class="eyebrow">DOMARO COLLECTION</div><h1>SHOP FRAGRANCES</h1><p>Browse the currently available DOMARO collection.</p></section>
+<section class="page-hero"><div class="eyebrow">DOMARO COLLECTION</div><h1 id="shop-context-title">SHOP FRAGRANCES</h1><p id="shop-context-sub">Browse the currently available DOMARO collection.</p></section>
 <section class="section"><div class="container">
   <div class="filters">
     <button class="filter-btn active" data-filter="all">ALL</button>
     <button class="filter-btn" data-filter="men">MEN</button>
     <button class="filter-btn" data-filter="women">WOMEN</button>
     <button class="filter-btn" data-filter="unisex">UNISEX</button>
+  </div>
+  <div class="brand-filter-wrap">
+    <div class="brand-filter-title">SHOP BY BRAND</div>
+    <div id="brand-filters" class="brand-filters"></div>
   </div>
   <div id="shop-products" class="products"></div>
 </div></section>

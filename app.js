@@ -7,20 +7,26 @@ const fallbackProducts = [
   {
     id:'hook-blue', name:'HOOK BLUE', type:'Eau de Parfum', price:2000,
     size:'200 ML', size_ml:200, img:'assets/hook-blue.png', cat:'men',
-    badge:'MEN', inStock:true, active:true,
-    desc:'HOOK BLUE by Assaf. Fragrance notes and the final product description can be added once confirmed.'
+    badge:'MEN', inStock:true, active:true, brand:'ASSAF',
+    story:'HOOK BLUE by Assaf. Fragrance story can be expanded from the admin dashboard.',
+    topNotes:'', heartNotes:'', baseNotes:'',
+    desc:'HOOK BLUE by Assaf.'
   },
   {
     id:'arrogate-blue', name:'ARROGATE BLUE', type:'Eau de Parfum', price:2000,
     size:'200 ML', size_ml:200, img:'assets/arrogate-blue.png', cat:'men',
-    badge:'MEN', inStock:true, active:true,
-    desc:'ARROGATE BLUE by Assaf. Fragrance notes and the final product description can be added once confirmed.'
+    badge:'MEN', inStock:true, active:true, brand:'ASSAF',
+    story:'ARROGATE BLUE by Assaf. Fragrance story can be expanded from the admin dashboard.',
+    topNotes:'', heartNotes:'', baseNotes:'',
+    desc:'ARROGATE BLUE by Assaf.'
   },
   {
     id:'arrogate-pink', name:'ARROGATE PINK', type:'Eau de Parfum', price:2000,
     size:'200 ML', size_ml:200, img:'assets/arrogate-pink.png', cat:'women',
-    badge:'WOMEN', inStock:true, active:true,
-    desc:'ARROGATE PINK by Assaf. Fragrance notes and the final product description can be added once confirmed.'
+    badge:'WOMEN', inStock:true, active:true, brand:'ASSAF',
+    story:'ARROGATE PINK by Assaf. Fragrance story can be expanded from the admin dashboard.',
+    topNotes:'', heartNotes:'', baseNotes:'',
+    desc:'ARROGATE PINK by Assaf.'
   }
 ];
 
@@ -58,7 +64,7 @@ function removeItem(id){
 async function loadCatalog(){
   try{
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/products?select=id,name,category,size_ml,price,image_path,description,in_stock,stock_quantity,active&active=eq.true&order=created_at.asc`,
+      `${SUPABASE_URL}/rest/v1/products?select=id,name,category,size_ml,price,image_path,description,brand,story,top_notes,heart_notes,base_notes,in_stock,stock_quantity,active&active=eq.true&order=created_at.asc`,
       { headers: { 'apikey': SUPABASE_PUBLISHABLE_KEY } }
     );
     const data = await response.json();
@@ -77,7 +83,12 @@ async function loadCatalog(){
       stockQuantity:p.stock_quantity === null ? null : Number(p.stock_quantity),
       inStock:Boolean(p.in_stock) && (p.stock_quantity === null || Number(p.stock_quantity) > 0),
       active:Boolean(p.active),
-      desc:p.description || `${p.name} by DOMARO.`
+      brand:String(p.brand || '').trim(),
+      story:String(p.story || '').trim(),
+      topNotes:String(p.top_notes || '').trim(),
+      heartNotes:String(p.heart_notes || '').trim(),
+      baseNotes:String(p.base_notes || '').trim(),
+      desc:p.description || ''
     }));
   }catch(err){
     console.warn('Using local fallback catalog:', err);
@@ -86,50 +97,133 @@ async function loadCatalog(){
 }
 
 function productCard(p){
+  const brandLine=p.brand ? `<div class="product-brand">${escapeTrackHtml(p.brand)}</div>` : '';
   return `<a class="product-card" href="product.html?id=${encodeURIComponent(p.id)}">
     <div class="product-img real-photo">
       <span class="badge ${p.inStock ? '' : 'badge-out'}">${p.inStock ? p.badge : 'OUT OF STOCK'}</span>
-      <img src="${p.img}" alt="${p.name}">
+      <img src="${p.img}" alt="${escapeTrackHtml(p.name)}">
     </div>
     <div class="product-info">
-      <h3>${p.name}</h3>
+      ${brandLine}
+      <h3>${escapeTrackHtml(p.name)}</h3>
       <div class="meta">${p.type} · ${p.size}</div>
       <div class="price-row"><span class="price">${money(p.price)}</span><span class="meta">${p.cat.toUpperCase()}</span></div>
     </div>
   </a>`;
 }
-function renderProducts(targetId, filter='all', limit=null){
+function normalizeBrand(value){
+  return String(value || '').trim().toLowerCase();
+}
+
+function filteredCatalog(category='all', brand=''){
+  return products.filter(p=>{
+    const categoryMatch=category==='all' || p.cat===category;
+    const brandMatch=!brand || normalizeBrand(p.brand)===normalizeBrand(brand);
+    return categoryMatch && brandMatch;
+  });
+}
+
+function renderProducts(targetId, filter='all', limit=null, brand=''){
   const el=document.getElementById(targetId);
   if(!el) return;
-  let list=filter==='all' ? products : products.filter(p=>p.cat===filter);
+  let list=filteredCatalog(filter,brand);
   if(limit) list=list.slice(0,limit);
-  el.innerHTML=list.length ? list.map(productCard).join('') : '<div class="empty" style="grid-column:1/-1">No products in this category yet.</div>';
+  el.innerHTML=list.length ? list.map(productCard).join('') : '<div class="empty" style="grid-column:1/-1">No products match this selection yet.</div>';
+}
+
+function catalogBrands(){
+  const map=new Map();
+  products.forEach(p=>{
+    const label=String(p.brand || '').trim();
+    if(!label) return;
+    const key=label.toLowerCase();
+    if(!map.has(key)) map.set(key,label);
+  });
+  return [...map.values()].sort((a,b)=>a.localeCompare(b));
+}
+
+function renderBrandDirectory(){
+  const grid=document.getElementById('brands-grid');
+  if(!grid) return;
+  const brands=catalogBrands();
+
+  grid.innerHTML=brands.length
+    ? brands.map(brand=>{
+        const count=products.filter(p=>normalizeBrand(p.brand)===normalizeBrand(brand)).length;
+        return `<a class="brand-directory-card" href="shop.html?brand=${encodeURIComponent(brand)}">
+          <span class="brand-directory-label">FRAGRANCE HOUSE</span>
+          <h2>${escapeTrackHtml(brand)}</h2>
+          <span>${count} PRODUCT${count===1?'':'S'} →</span>
+        </a>`;
+      }).join('')
+    : '<div class="empty" style="grid-column:1/-1">Brands will appear here as soon as you add a Brand to your products from the Admin dashboard.</div>';
+}
+
+function renderShopBrandFilters(activeBrand=''){
+  const box=document.getElementById('brand-filters');
+  if(!box) return;
+
+  const brands=catalogBrands();
+  box.innerHTML = brands.length
+    ? `<button class="brand-filter-btn ${!activeBrand?'active':''}" data-brand="">ALL BRANDS</button>` +
+      brands.map(brand=>`<button class="brand-filter-btn ${normalizeBrand(activeBrand)===normalizeBrand(brand)?'active':''}" data-brand="${escapeTrackHtml(brand)}">${escapeTrackHtml(brand)}</button>`).join('')
+    : '';
 }
 
 function initFilters(){
   const allowedFilters=['all','men','women','unisex'];
-  const urlFilter=(new URLSearchParams(location.search).get('category') || 'all').toLowerCase();
-  const initialFilter=allowedFilters.includes(urlFilter) ? urlFilter : 'all';
+  const params=new URLSearchParams(location.search);
+  const urlFilter=(params.get('category') || 'all').toLowerCase();
+  let activeCategory=allowedFilters.includes(urlFilter) ? urlFilter : 'all';
+  let activeBrand=String(params.get('brand') || '').trim();
+
+  const updateShop=()=>{
+    document.querySelectorAll('.filter-btn').forEach(btn=>{
+      btn.classList.toggle('active',btn.dataset.filter===activeCategory);
+    });
+    renderShopBrandFilters(activeBrand);
+    document.querySelectorAll('.brand-filter-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        activeBrand=btn.dataset.brand || '';
+        updateShopUrl();
+        updateShop();
+      });
+    });
+    renderProducts('shop-products',activeCategory,null,activeBrand);
+    const title=document.getElementById('shop-context-title');
+    const sub=document.getElementById('shop-context-sub');
+    if(title){
+      if(activeBrand) title.textContent=activeBrand;
+      else if(activeCategory!=='all') title.textContent=activeCategory.toUpperCase()+' FRAGRANCES';
+      else title.textContent='SHOP FRAGRANCES';
+    }
+    if(sub){
+      sub.textContent=activeBrand
+        ? `Explore every ${activeBrand} fragrance currently available at DOMARO.`
+        : activeCategory!=='all'
+          ? `Explore the ${activeCategory} collection.`
+          : 'Browse the currently available DOMARO collection.';
+    }
+  };
+
+  const updateShopUrl=()=>{
+    const url=new URL(location.href);
+    if(activeCategory==='all') url.searchParams.delete('category');
+    else url.searchParams.set('category',activeCategory);
+    if(activeBrand) url.searchParams.set('brand',activeBrand);
+    else url.searchParams.delete('brand');
+    history.replaceState({},'',url);
+  };
 
   document.querySelectorAll('.filter-btn').forEach(btn=>{
-    btn.classList.toggle('active', btn.dataset.filter===initialFilter);
-
     btn.addEventListener('click',()=>{
-      document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      renderProducts('shop-products', btn.dataset.filter);
-
-      const url=new URL(location.href);
-      if(btn.dataset.filter==='all'){
-        url.searchParams.delete('category');
-      }else{
-        url.searchParams.set('category', btn.dataset.filter);
-      }
-      history.replaceState({},'',url);
+      activeCategory=btn.dataset.filter;
+      updateShopUrl();
+      updateShop();
     });
   });
 
-  renderProducts('shop-products', initialFilter);
+  updateShop();
 }
 
 function renderProductDetail(){
@@ -144,22 +238,55 @@ function renderProductDetail(){
     return;
   }
 
-  detail.innerHTML=`
-    <div class="product-gallery real-photo"><img src="${p.img}" alt="${p.name}"></div>
-    <div class="product-copy">
-      <div class="eyebrow" style="color:#766b5d">DOMARO FRAGRANCES</div>
-      <h1>${p.name}</h1>
-      <div class="meta">${p.type} · ${p.size} · ${p.cat.toUpperCase()}</div>
-      <div class="price" style="font-size:22px;margin:18px 0">${money(p.price)}</div>
-      <div class="stock-line"><span class="stock-dot ${p.inStock ? '' : 'stock-dot-out'}"></span>${p.inStock ? (p.stockQuantity === null ? 'AVAILABLE' : `${p.stockQuantity} IN STOCK`) : 'OUT OF STOCK'}</div>
-      <p class="desc">${p.desc}</p>
-      <div class="qty"><button id="minus">−</button><input id="qty" type="number" min="1" max="10" value="1"><button id="plus">+</button></div>
-      <button class="add-btn" id="add" ${p.inStock ? '' : 'disabled'}>${p.inStock ? 'ADD TO CART' : 'OUT OF STOCK'}</button>
-      <div class="accordion">
-        <details open><summary>PRODUCT INFORMATION</summary><p>Size: ${p.size}<br>Category: ${p.cat.charAt(0).toUpperCase()+p.cat.slice(1)}<br>Price: ${money(p.price)}</p></details>
-        <details><summary>DELIVERY</summary><p>Flat shipping is currently 80 EGP per order across Egypt.</p></details>
-        <details><summary>RETURNS</summary><p>The final return and exchange policy will be added before full launch.</p></details>
+  const brandLabel=p.brand ? escapeTrackHtml(p.brand) : 'DOMARO EDIT';
+  const storyText=p.story || p.desc || '';
+  const hasNotes=Boolean(p.topNotes || p.heartNotes || p.baseNotes);
+  const notesHtml=hasNotes ? `
+    <section class="scent-notes-section">
+      <div class="editorial-kicker">THE SCENT</div>
+      <h2>THE COMPOSITION</h2>
+      <div class="scent-notes-grid">
+        <div class="scent-note-card"><span>01</span><b>TOP NOTES</b><p>${escapeTrackHtml(p.topNotes || 'To be added')}</p></div>
+        <div class="scent-note-card"><span>02</span><b>HEART NOTES</b><p>${escapeTrackHtml(p.heartNotes || 'To be added')}</p></div>
+        <div class="scent-note-card"><span>03</span><b>BASE NOTES</b><p>${escapeTrackHtml(p.baseNotes || 'To be added')}</p></div>
       </div>
+    </section>` : '';
+
+  detail.innerHTML=`
+    <div class="product-main-grid">
+      <div class="product-gallery real-photo"><img src="${p.img}" alt="${escapeTrackHtml(p.name)}"></div>
+      <div class="product-copy">
+        <a class="product-brand-link" href="${p.brand ? `shop.html?brand=${encodeURIComponent(p.brand)}` : 'shop.html'}">${brandLabel}</a>
+        <h1>${escapeTrackHtml(p.name)}</h1>
+        <div class="product-facts">
+          <span>${p.cat.toUpperCase()}</span>
+          <span>${p.size}</span>
+          <span>${p.type}</span>
+        </div>
+        <div class="price" style="font-size:22px;margin:18px 0">${money(p.price)}</div>
+        <div class="stock-line"><span class="stock-dot ${p.inStock ? '' : 'stock-dot-out'}"></span>${p.inStock ? (p.stockQuantity === null ? 'AVAILABLE' : `${p.stockQuantity} IN STOCK`) : 'OUT OF STOCK'}</div>
+        ${p.desc ? `<p class="product-short-desc">${escapeTrackHtml(p.desc)}</p>` : ''}
+        <div class="qty"><button id="minus">−</button><input id="qty" type="number" min="1" max="10" value="1"><button id="plus">+</button></div>
+        <button class="add-btn" id="add" ${p.inStock ? '' : 'disabled'}>${p.inStock ? 'ADD TO CART' : 'OUT OF STOCK'}</button>
+        <div class="product-service-row">
+          <span>80 EGP FLAT SHIPPING</span>
+          <span>CASH ON DELIVERY</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-editorial">
+      ${storyText ? `<section class="product-story-section">
+        <div class="editorial-kicker">THE STORY</div>
+        <h2>A SCENT WITH A POINT OF VIEW</h2>
+        <p>${escapeTrackHtml(storyText)}</p>
+      </section>` : ''}
+      ${notesHtml}
+    </div>
+
+    <div class="product-accordion-wide accordion">
+      <details open><summary>PRODUCT INFORMATION</summary><p>${p.brand ? `Brand: ${escapeTrackHtml(p.brand)}<br>` : ''}Size: ${p.size}<br>Category: ${p.cat.charAt(0).toUpperCase()+p.cat.slice(1)}<br>Price: ${money(p.price)}</p></details>
+      <details><summary>DELIVERY</summary><p>Flat shipping is currently 80 EGP per order across Egypt.</p></details>
     </div>`;
 
   const qty=document.getElementById('qty');
@@ -758,6 +885,7 @@ async function initStore(){
   updateCartCount();
   await loadCatalog();
   renderProducts('best-products','all',4);
+  renderBrandDirectory();
   initFilters();
   renderProductDetail();
   renderCart();

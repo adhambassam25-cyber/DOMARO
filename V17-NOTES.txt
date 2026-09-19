@@ -1,0 +1,14 @@
+DOMARO V17 — BRANDS + STORYTELLING
+
+What changed:
+- New BRAND field in Admin product editor.
+- New Storytelling, Top Notes, Heart Notes and Base Notes fields.
+- Public navigation now includes MEN, WOMEN, UNISEX and BRANDS.
+- New brands.html page automatically builds itself from product Brand values.
+- Shop supports category + brand filtering.
+- Product cards show Brand above product name.
+- Product page has an editorial story section and Top / Heart / Base notes side-by-side.
+- Brand name on product page links directly to that brand's collection.
+
+Database migration required before upload:
+brand, story, top_notes, heart_notes, base_notes columns on public.products.

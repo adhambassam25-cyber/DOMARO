@@ -381,7 +381,7 @@ function filteredProducts(){
   const q=productSearch.value.trim().toLowerCase();
   const filter=productFilter.value;
   return allProducts.filter(p=>{
-    const matchesSearch=!q || [p.name,p.id,p.category].join(' ').toLowerCase().includes(q);
+    const matchesSearch=!q || [p.name,p.id,p.category,p.brand].join(' ').toLowerCase().includes(q);
     const matchesFilter=
       filter==='all' ||
       (filter==='live' && p.active) ||
@@ -404,7 +404,7 @@ function renderProductsAdmin(){
       <div class="admin-product-image"><img src="${esc(p.image_path || 'assets/hero.svg')}" alt="${esc(p.name)}"></div>
       <div class="admin-product-main">
         <div class="admin-product-title-row">
-          <div><h3>${esc(p.name)}</h3><span>${esc(String(p.category).toUpperCase())} · ${esc(p.size_ml)} ML</span></div>
+          <div><h3>${esc(p.name)}</h3><span>${p.brand?`${esc(String(p.brand).toUpperCase())} · `:''}${esc(String(p.category).toUpperCase())} · ${esc(p.size_ml)} ML</span></div>
           <div class="admin-product-badges">
             <span class="mini-status ${p.active?'mini-live':'mini-hidden'}">${p.active?'LIVE':'HIDDEN'}</span>
             <span class="mini-status ${p.in_stock?'mini-stock':'mini-out'}">${p.in_stock?'IN STOCK':'OUT OF STOCK'}</span>
@@ -466,10 +466,15 @@ function openProductModal(product=null){
 
   document.getElementById('product-id').value=product?.id || '';
   document.getElementById('product-name').value=product?.name || '';
+  document.getElementById('product-brand').value=product?.brand || '';
   document.getElementById('product-category').value=product?.category || 'men';
   document.getElementById('product-size').value=product?.size_ml || 200;
   document.getElementById('product-price').value=product?.price || 2000;
   document.getElementById('product-description').value=product?.description || '';
+  document.getElementById('product-story').value=product?.story || '';
+  document.getElementById('product-top-notes').value=product?.top_notes || '';
+  document.getElementById('product-heart-notes').value=product?.heart_notes || '';
+  document.getElementById('product-base-notes').value=product?.base_notes || '';
   document.getElementById('product-stock-quantity').value=product?.stock_quantity ?? '';
   document.getElementById('product-stock').checked=product ? Boolean(product.in_stock) : true;
   document.getElementById('product-active').checked=product ? Boolean(product.active) : true;
@@ -520,10 +525,15 @@ productForm.addEventListener('submit',async e=>{
   productFormError.textContent='';
 
   const name=document.getElementById('product-name').value.trim();
+  const brand=document.getElementById('product-brand').value.trim();
   const category=document.getElementById('product-category').value;
   const size_ml=Number(document.getElementById('product-size').value);
   const price=Number(document.getElementById('product-price').value);
   const description=document.getElementById('product-description').value.trim();
+  const story=document.getElementById('product-story').value.trim();
+  const top_notes=document.getElementById('product-top-notes').value.trim();
+  const heart_notes=document.getElementById('product-heart-notes').value.trim();
+  const base_notes=document.getElementById('product-base-notes').value.trim();
   const stockRaw=document.getElementById('product-stock-quantity').value.trim();
   const stock_quantity=stockRaw==='' ? null : Number(stockRaw);
   let in_stock=document.getElementById('product-stock').checked;
@@ -562,10 +572,15 @@ productForm.addEventListener('submit',async e=>{
 
     const payload={
       name,
+      brand:brand || null,
       category,
       size_ml,
       price,
       description,
+      story:story || null,
+      top_notes:top_notes || null,
+      heart_notes:heart_notes || null,
+      base_notes:base_notes || null,
       stock_quantity,
       in_stock,
       active,
