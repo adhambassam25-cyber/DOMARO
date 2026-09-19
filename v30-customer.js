@@ -327,8 +327,10 @@ async function initAccountPage(){
 
 // ---------- boot ----------
 function v30OnCatalogReady(){
+  // Product recommendations are initialized by app.js only after renderProductDetail()
+  // creates the product DOM. Running them here as well caused duplicate
+  // Recently Viewed / You May Also Like sections on product pages.
   injectV30Nav(); decorateProductCards(); applyStoreSettings(window.DOMARO_STORE_SETTINGS||{}); applyLanguage();
-  const id=new URLSearchParams(location.search).get('id'); if(id && typeof products!=='undefined'){ const p=products.find(x=>x.id===id); if(p) window.DOMAROV30InitProductExtras(p); }
 }
 window.addEventListener('domaro:catalog-ready',v30OnCatalogReady);
 window.addEventListener('load',()=>{

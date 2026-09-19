@@ -1,0 +1,5 @@
+DOMARO V30.2 — Recommendations duplication fix
+- Removed duplicate static recommendation host from product.html.
+- Product extras now initialize only after app.js renders the product detail.
+- Prevents duplicate Recently Viewed and You May Also Like sections.
+- No database or SQL changes.
