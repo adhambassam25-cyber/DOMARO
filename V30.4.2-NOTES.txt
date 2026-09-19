@@ -1,0 +1,6 @@
+DOMARO V30.4.2 — Account Session Visibility Fix
+
+- When a customer is signed in, SIGN IN and CREATE ACCOUNT are now hidden reliably.
+- Only the signed-in customer dashboard/profile/orders/wishlist remain visible.
+- No database or SQL changes required.
+- Cache-buster bumped on account.html.

@@ -2014,3 +2014,9 @@ body.entry-gate-open{
 .delivery-other-area{margin-top:8px}
 .delivery-other-area[hidden]{display:none!important}
 #area:disabled{opacity:.65;cursor:not-allowed}
+
+/* V30.4.2 — Customer account session visibility fix */
+#v30-account-auth[hidden],
+#v30-account-dashboard[hidden] {
+  display: none !important;
+}
