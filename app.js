@@ -170,6 +170,40 @@ function renderShopBrandFilters(activeBrand=''){
     : '';
 }
 
+
+function setShopView(view){
+  const grid=document.getElementById('shop-products');
+  if(!grid) return;
+
+  const mode=view==='list' ? 'list' : 'thumbnail';
+  grid.classList.toggle('products-list-view',mode==='list');
+  grid.classList.toggle('products-thumbnail-view',mode==='thumbnail');
+
+  document.querySelectorAll('.shop-view-btn').forEach(btn=>{
+    const active=btn.dataset.view===mode;
+    btn.classList.toggle('active',active);
+    btn.setAttribute('aria-pressed',active ? 'true' : 'false');
+  });
+
+  try{ localStorage.setItem('domaroProductView',mode); }catch(_){}
+}
+
+function initShopView(){
+  if(!document.getElementById('shop-products')) return;
+
+  let saved='thumbnail';
+  try{
+    const value=localStorage.getItem('domaroProductView');
+    if(value==='list' || value==='thumbnail') saved=value;
+  }catch(_){}
+
+  document.querySelectorAll('.shop-view-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>setShopView(btn.dataset.view));
+  });
+
+  setShopView(saved);
+}
+
 function initFilters(){
   const allowedFilters=['all','men','women','unisex'];
   const params=new URLSearchParams(location.search);
@@ -887,6 +921,7 @@ async function initStore(){
   renderProducts('best-products','all',4);
   renderBrandDirectory();
   initFilters();
+  initShopView();
   renderProductDetail();
   renderCart();
   renderCheckout();

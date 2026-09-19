@@ -1,0 +1,10 @@
+DOMARO V18 — CLEAN HERO + PRODUCT VIEW SWITCHER
+
+Changes:
+- Removed the product bottle image from the first screen/home hero.
+- Home opening is now clean, text-led and centered.
+- Shop now has THUMBNAILS and LIST product views.
+- View preference is remembered on the same browser.
+- Category and Brand filters continue to work in both views.
+- Mobile layout is optimized for both product views.
+- No Supabase or SQL changes required.

@@ -51,7 +51,18 @@
     <div class="brand-filter-title">SHOP BY BRAND</div>
     <div id="brand-filters" class="brand-filters"></div>
   </div>
-  <div id="shop-products" class="products"></div>
+  <div class="shop-view-toolbar" aria-label="Product view">
+    <span class="shop-view-label">VIEW</span>
+    <button class="shop-view-btn active" type="button" data-view="thumbnail" aria-pressed="true" title="Thumbnail view">
+      <span class="view-icon view-icon-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      THUMBNAILS
+    </button>
+    <button class="shop-view-btn" type="button" data-view="list" aria-pressed="false" title="List view">
+      <span class="view-icon view-icon-list" aria-hidden="true"><i></i><i></i><i></i></span>
+      LIST
+    </button>
+  </div>
+  <div id="shop-products" class="products products-thumbnail-view"></div>
 </div></section>
 
 <footer>
