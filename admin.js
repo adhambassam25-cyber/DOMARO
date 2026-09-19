@@ -12,6 +12,7 @@ const enableNotificationsBtn = document.getElementById('enable-notifications-btn
 
 const dashboardPanel = document.getElementById('admin-sales-panel');
 const ordersPanel = document.getElementById('admin-orders-panel');
+const customersPanel = document.getElementById('admin-customers-panel');
 const productsPanel = document.getElementById('admin-products-panel');
 const couponsPanel = document.getElementById('admin-coupons-panel');
 const adminsPanel = document.getElementById('admin-admins-panel');
@@ -43,6 +44,18 @@ const orderDetailsTitle = document.getElementById('order-details-title');
 const orderDetailsContent = document.getElementById('order-details-content');
 const copyOrderSummaryBtn = document.getElementById('copy-order-summary');
 const printOrderBtn = document.getElementById('print-order');
+
+const customersList = document.getElementById('customers-list');
+const customersError = document.getElementById('customers-error');
+const customersLoading = document.getElementById('customers-loading');
+const refreshCustomersBtn = document.getElementById('refresh-customers');
+const customerSearch = document.getElementById('customer-search');
+const customerFilter = document.getElementById('customer-filter');
+const exportCustomersCsvBtn = document.getElementById('export-customers-csv');
+const customersCountLabel = document.getElementById('customers-count-label');
+const customerDetailsModal = document.getElementById('customer-details-modal');
+const customerDetailsTitle = document.getElementById('customer-details-title');
+const customerDetailsContent = document.getElementById('customer-details-content');
 
 const productsList = document.getElementById('products-list');
 const productsError = document.getElementById('products-error');
@@ -88,6 +101,7 @@ let allOrders = [];
 let orderItems = [];
 let ordersPage = 1;
 let currentDetailOrderId = null;
+let currentCustomerKey = null;
 const ordersPerPage = 8;
 let allProducts = [];
 let allCoupons = [];
@@ -185,8 +199,11 @@ function hasPermission(permission){
 }
 
 function allowedTabs(){
-  const tabs=['dashboard','orders','products','coupons']
-    .filter(tab=>hasPermission(tab));
+  const tabs=[];
+  if(hasPermission('dashboard')) tabs.push('dashboard');
+  if(hasPermission('orders')) tabs.push('orders','customers');
+  if(hasPermission('products')) tabs.push('products');
+  if(hasPermission('coupons')) tabs.push('coupons');
 
   if(String(adminProfile?.role || '').toLowerCase()==='owner'){
     tabs.push('admins');
@@ -206,6 +223,7 @@ function applyAdminPermissions(){
   const permissionMap={
     dashboard:'dashboard',
     orders:'orders',
+    customers:'orders',
     products:'products',
     coupons:'coupons',
     admins:'admins'
@@ -278,8 +296,9 @@ function setTab(tab){
   const isOwner=String(adminProfile?.role || '').toLowerCase()==='owner';
   if(tab==='admins'){
     if(!isOwner) return;
-  }else if(!hasPermission(tab)){
-    return;
+  }else{
+    const requiredPermission=tab==='customers' ? 'orders' : tab;
+    if(!hasPermission(requiredPermission)) return;
   }
 
   document.querySelectorAll('.admin-tab').forEach(btn=>{
@@ -289,6 +308,7 @@ function setTab(tab){
   const panels={
     dashboard:dashboardPanel,
     orders:ordersPanel,
+    customers:customersPanel,
     products:productsPanel,
     coupons:couponsPanel,
     admins:adminsPanel
@@ -304,6 +324,10 @@ function setTab(tab){
 
   if(tab==='dashboard' && !dashboardStats) loadDashboardStats();
   if(tab==='orders' && !allOrders.length) loadOrders();
+  if(tab==='customers'){
+    if(!allOrders.length) loadCustomers();
+    else renderCustomers();
+  }
   if(tab==='products' && !allProducts.length) loadProducts();
   if(tab==='coupons' && !allCoupons.length) loadCoupons();
   if(tab==='admins' && isOwner && !allAdmins.length) loadAdmins();
@@ -397,6 +421,7 @@ async function loadOrders(){
     ordersPage=1;
     renderStats();
     renderOrders();
+    renderCustomers();
   }catch(err){
     ordersError.textContent=err.message || 'Could not load orders.';
   }finally{
@@ -412,6 +437,253 @@ function renderStats(){
   document.getElementById('stat-shipped').textContent=allOrders.filter(o=>o.status==='shipped').length;
   document.getElementById('stat-delivered').textContent=allOrders.filter(o=>o.status==='delivered').length;
 }
+function normalizeCustomerPhone(value){
+  let digits=String(value || '').replace(/\D/g,'');
+  if(digits.startsWith('0020')) digits=digits.slice(4);
+  else if(digits.startsWith('20') && digits.length>=12) digits=digits.slice(2);
+  if(digits.startsWith('0')) digits=digits.slice(1);
+  return digits;
+}
+
+function buildCustomerProfiles(){
+  const profiles=new Map();
+  allOrders.forEach(order=>{
+    const normalized=normalizeCustomerPhone(order.phone);
+    const key=normalized || `order:${order.id}`;
+    let customer=profiles.get(key);
+    if(!customer){
+      customer={
+        key,
+        phone:order.phone || '',
+        first_name:order.first_name || '',
+        last_name:order.last_name || '',
+        orders:[],
+        order_count:0,
+        delivered_count:0,
+        delivered_spend:0,
+        last_order_at:order.created_at || '',
+        last_order_number:order.order_number || '',
+        locations:new Set()
+      };
+      profiles.set(key,customer);
+    }
+
+    customer.orders.push(order);
+    customer.order_count+=1;
+    if(order.status==='delivered'){
+      customer.delivered_count+=1;
+      customer.delivered_spend+=Number(order.total || 0);
+    }
+
+    const location=[order.governorate,order.area].filter(Boolean).join(' · ');
+    if(location) customer.locations.add(location);
+
+    const currentTime=new Date(customer.last_order_at || 0).getTime();
+    const orderTime=new Date(order.created_at || 0).getTime();
+    if(orderTime>=currentTime){
+      customer.phone=order.phone || customer.phone;
+      customer.first_name=order.first_name || customer.first_name;
+      customer.last_name=order.last_name || customer.last_name;
+      customer.last_order_at=order.created_at || customer.last_order_at;
+      customer.last_order_number=order.order_number || customer.last_order_number;
+    }
+  });
+
+  return Array.from(profiles.values()).map(customer=>({
+    ...customer,
+    locations:Array.from(customer.locations),
+    orders:customer.orders.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0))
+  })).sort((a,b)=>new Date(b.last_order_at||0)-new Date(a.last_order_at||0));
+}
+
+function filteredCustomers(){
+  const q=(customerSearch?.value || '').trim().toLowerCase();
+  const filter=customerFilter?.value || 'all';
+  return buildCustomerProfiles().filter(customer=>{
+    const name=`${customer.first_name} ${customer.last_name}`.trim();
+    const haystack=[name,customer.phone,...customer.locations].join(' ').toLowerCase();
+    const matchesFilter=
+      filter==='all' ||
+      (filter==='returning' && customer.order_count>=2) ||
+      (filter==='single' && customer.order_count===1) ||
+      (filter==='delivered' && customer.delivered_count>0);
+    return matchesFilter && (!q || haystack.includes(q));
+  });
+}
+
+function renderCustomerStats(){
+  const customers=buildCustomerProfiles();
+  const uniqueEl=document.getElementById('customer-stat-all');
+  const returningEl=document.getElementById('customer-stat-returning');
+  const ordersEl=document.getElementById('customer-stat-orders');
+  const spendEl=document.getElementById('customer-stat-spend');
+  if(uniqueEl) uniqueEl.textContent=customers.length.toLocaleString('en-EG');
+  if(returningEl) returningEl.textContent=customers.filter(c=>c.order_count>=2).length.toLocaleString('en-EG');
+  if(ordersEl) ordersEl.textContent=allOrders.length.toLocaleString('en-EG');
+  if(spendEl) spendEl.textContent=money(customers.reduce((sum,c)=>sum+c.delivered_spend,0));
+}
+
+function renderCustomers(){
+  if(!customersList) return;
+  renderCustomerStats();
+  const customers=filteredCustomers();
+  if(customersCountLabel){
+    customersCountLabel.textContent=`${customers.length.toLocaleString('en-EG')} ${customers.length===1?'customer':'customers'}`;
+  }
+
+  if(!customers.length){
+    customersList.innerHTML='<div class="admin-empty">No matching customers.</div>';
+    return;
+  }
+
+  customersList.innerHTML=customers.map(customer=>{
+    const name=`${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Customer';
+    const location=customer.locations[0] || '—';
+    const returning=customer.order_count>=2;
+    return `<article class="customer-card" data-customer-key="${esc(customer.key)}">
+      <div class="customer-card-main">
+        <div>
+          <span class="customer-label">CUSTOMER</span>
+          <h3>${esc(name)}</h3>
+          <p>${esc(customer.phone || '—')}</p>
+        </div>
+        ${returning?'<span class="customer-returning-badge">RETURNING</span>':''}
+      </div>
+      <div class="customer-card-metrics">
+        <div><span>ORDERS</span><b>${customer.order_count.toLocaleString('en-EG')}</b></div>
+        <div><span>DELIVERED SPEND</span><b>${money(customer.delivered_spend)}</b></div>
+        <div><span>LAST ORDER</span><b>${esc(customer.last_order_number || '—')}</b><small>${esc(fmtDate(customer.last_order_at))}</small></div>
+        <div><span>LOCATION</span><b>${esc(location)}</b></div>
+      </div>
+      <div class="customer-card-actions">
+        <button class="admin-secondary-btn customer-view-profile" type="button" data-customer-key="${esc(customer.key)}">VIEW PROFILE</button>
+      </div>
+    </article>`;
+  }).join('');
+
+  document.querySelectorAll('.customer-view-profile').forEach(btn=>{
+    btn.addEventListener('click',()=>openCustomerProfile(btn.dataset.customerKey));
+  });
+}
+
+async function loadCustomers(){
+  if(!customersLoading) return loadOrders();
+  customersError.textContent='';
+  customersLoading.hidden=false;
+  if(refreshCustomersBtn) refreshCustomersBtn.disabled=true;
+  try{
+    await loadOrders();
+    if(ordersError?.textContent) customersError.textContent=ordersError.textContent;
+    renderCustomers();
+  }catch(err){
+    customersError.textContent=err.message || 'Could not load customers.';
+  }finally{
+    customersLoading.hidden=true;
+    if(refreshCustomersBtn) refreshCustomersBtn.disabled=false;
+  }
+}
+
+function customerProductSummary(customer){
+  const validOrderIds=new Set(customer.orders.filter(o=>o.status!=='cancelled').map(o=>o.id));
+  const summary=new Map();
+  orderItems.forEach(item=>{
+    if(!validOrderIds.has(item.order_id)) return;
+    const key=item.product_id || item.product_name || item.id;
+    const current=summary.get(key) || {name:item.product_name || 'Product',size_ml:item.size_ml,qty:0};
+    current.qty+=Number(item.quantity || 0);
+    summary.set(key,current);
+  });
+  return Array.from(summary.values()).sort((a,b)=>b.qty-a.qty);
+}
+
+function openCustomerProfile(customerKey){
+  const customer=buildCustomerProfiles().find(c=>c.key===customerKey);
+  if(!customer || !customerDetailsModal || !customerDetailsContent) return;
+  currentCustomerKey=customerKey;
+  const name=`${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Customer';
+  if(customerDetailsTitle) customerDetailsTitle.textContent=name.toUpperCase();
+  const products=customerProductSummary(customer);
+  const locations=customer.locations.length ? customer.locations : ['No delivery location available'];
+
+  customerDetailsContent.innerHTML=`
+    <div class="customer-profile-hero">
+      <div><span>PHONE</span><b>${esc(customer.phone || '—')}</b></div>
+      <div><span>ORDERS</span><b>${customer.order_count.toLocaleString('en-EG')}</b></div>
+      <div><span>DELIVERED</span><b>${customer.delivered_count.toLocaleString('en-EG')}</b></div>
+      <div><span>DELIVERED SPEND</span><b>${money(customer.delivered_spend)}</b></div>
+    </div>
+
+    <div class="customer-profile-grid">
+      <section class="customer-profile-card">
+        <div class="customer-profile-card-head"><span>DELIVERY AREAS</span><h3>LOCATIONS</h3></div>
+        <div class="customer-location-list">${locations.map(location=>`<div>${esc(location)}</div>`).join('')}</div>
+      </section>
+      <section class="customer-profile-card">
+        <div class="customer-profile-card-head"><span>ORDERED PRODUCTS</span><h3>PRODUCT HISTORY</h3></div>
+        <div class="customer-product-list">${products.length?products.map(product=>`<div><b>${esc(product.name)}</b><span>${esc(product.size_ml || '')}${product.size_ml?' ML · ':''}${product.qty.toLocaleString('en-EG')} unit${product.qty===1?'':'s'}</span></div>`).join(''):'<div class="customer-empty-line">No non-cancelled product history.</div>'}</div>
+      </section>
+    </div>
+
+    <section class="customer-orders-history">
+      <div class="customer-profile-card-head"><span>FULL HISTORY</span><h3>ORDERS</h3></div>
+      <div class="customer-order-list">${customer.orders.map(order=>`
+        <div class="customer-order-row">
+          <div><b>${esc(order.order_number)}</b><span>${esc(fmtDate(order.created_at))}</span></div>
+          <span class="status-badge status-${esc(order.status)}">${esc(prettyStatus(order.status))}</span>
+          <strong>${money(order.total)}</strong>
+          <button class="admin-secondary-btn customer-open-order" type="button" data-order-id="${esc(order.id)}">OPEN ORDER</button>
+        </div>`).join('')}</div>
+    </section>`;
+
+  customerDetailsModal.hidden=false;
+  document.body.style.overflow='hidden';
+  document.querySelectorAll('.customer-open-order').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const orderId=btn.dataset.orderId;
+      closeCustomerProfile();
+      openOrderDetails(orderId);
+    });
+  });
+}
+
+function closeCustomerProfile(){
+  if(!customerDetailsModal) return;
+  customerDetailsModal.hidden=true;
+  currentCustomerKey=null;
+  document.body.style.overflow='';
+}
+
+function exportCustomersCsv(){
+  const customers=filteredCustomers();
+  if(!customers.length){
+    customersError.textContent='There are no matching customers to export.';
+    return;
+  }
+  customersError.textContent='';
+  const headers=['Customer Name','Phone','Orders','Delivered Orders','Delivered Spend','Last Order','Last Order Date','Locations'];
+  const rows=customers.map(customer=>[
+    `${customer.first_name || ''} ${customer.last_name || ''}`.trim(),
+    customer.phone,
+    customer.order_count,
+    customer.delivered_count,
+    customer.delivered_spend,
+    customer.last_order_number,
+    fmtDate(customer.last_order_at),
+    customer.locations.join(' | ')
+  ]);
+  const csv='\uFEFF'+[headers,...rows].map(row=>row.map(csvSafe).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const today=new Date().toISOString().slice(0,10);
+  a.href=url;
+  a.download=`DOMARO-customers-${today}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),500);
+}
+
 function filteredOrders(){
   const q=searchInput.value.trim().toLowerCase();
   const status=statusFilter.value;
@@ -1713,11 +1985,15 @@ logoutBtn.addEventListener('click',()=>{
   stopOrderNotificationPolling();
   clearSession();
   allOrders=[]; orderItems=[]; allProducts=[]; allCoupons=[]; allAdmins=[]; dashboardStats=null; adminProfile=null;
-  ordersList.innerHTML=''; productsList.innerHTML=''; if(adminsList) adminsList.innerHTML='';
+  ordersList.innerHTML=''; if(customersList) customersList.innerHTML=''; productsList.innerHTML=''; if(adminsList) adminsList.innerHTML='';
   showLogin();
 });
 refreshDashboardBtn.addEventListener('click',loadDashboardStats);
 refreshBtn.addEventListener('click',loadOrders);
+refreshCustomersBtn?.addEventListener('click',loadCustomers);
+customerSearch?.addEventListener('input',renderCustomers);
+customerFilter?.addEventListener('change',renderCustomers);
+exportCustomersCsvBtn?.addEventListener('click',exportCustomersCsv);
 searchInput.addEventListener('input',()=>{ordersPage=1;renderOrders();});
 statusFilter.addEventListener('change',()=>{ordersPage=1;renderOrders();});
 ordersDateFrom?.addEventListener('change',()=>{ordersPage=1;renderOrders();});
@@ -1734,7 +2010,12 @@ printOrderBtn?.addEventListener('click',printCurrentOrder);
 ordersPrevPage?.addEventListener('click',()=>{if(ordersPage>1){ordersPage-=1;renderOrders();ordersPanel.scrollIntoView({behavior:'smooth',block:'start'});}});
 ordersNextPage?.addEventListener('click',()=>{const pages=Math.max(1,Math.ceil(filteredOrders().length/ordersPerPage));if(ordersPage<pages){ordersPage+=1;renderOrders();ordersPanel.scrollIntoView({behavior:'smooth',block:'start'});}});
 document.querySelectorAll('[data-close-order-modal]').forEach(el=>el.addEventListener('click',closeOrderDetails));
-document.addEventListener('keydown',e=>{if(e.key==='Escape' && orderDetailsModal && !orderDetailsModal.hidden) closeOrderDetails();});
+document.querySelectorAll('[data-close-customer-modal]').forEach(el=>el.addEventListener('click',closeCustomerProfile));
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape') return;
+  if(customerDetailsModal && !customerDetailsModal.hidden) closeCustomerProfile();
+  else if(orderDetailsModal && !orderDetailsModal.hidden) closeOrderDetails();
+});
 productSearch.addEventListener('input',renderProductsAdmin);
 productFilter.addEventListener('change',renderProductsAdmin);
 if(productLowThreshold){

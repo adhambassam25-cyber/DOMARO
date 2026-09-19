@@ -67,6 +67,7 @@
   <div class="admin-tabs">
     <button class="admin-tab active" data-admin-tab="dashboard">DASHBOARD</button>
     <button class="admin-tab" data-admin-tab="orders">ORDERS</button>
+    <button class="admin-tab" data-admin-tab="customers">CUSTOMERS</button>
     <button class="admin-tab" data-admin-tab="products">PRODUCTS</button>
     <button class="admin-tab" data-admin-tab="coupons">COUPONS</button>
     <button id="admins-tab-btn" class="admin-tab" data-admin-tab="admins" hidden>ADMINS</button>
@@ -184,6 +185,44 @@
     </div>
   </section>
 
+  <section id="admin-customers-panel" class="admin-panel" hidden>
+    <div class="admin-dashboard-head">
+      <div>
+        <div class="eyebrow" style="color:#766b5d">DOMARO RELATIONSHIPS</div>
+        <h1>CUSTOMER CENTER</h1>
+        <p class="admin-panel-intro">A live customer view derived from DOMARO orders. Customers are matched by phone number.</p>
+      </div>
+      <button id="refresh-customers" class="admin-secondary-btn" type="button">REFRESH</button>
+    </div>
+
+    <div class="admin-stats customer-stats">
+      <div class="admin-stat"><span>UNIQUE CUSTOMERS</span><b id="customer-stat-all">0</b></div>
+      <div class="admin-stat"><span>RETURNING</span><b id="customer-stat-returning">0</b></div>
+      <div class="admin-stat"><span>TOTAL ORDERS</span><b id="customer-stat-orders">0</b></div>
+      <div class="admin-stat"><span>DELIVERED SPEND</span><b id="customer-stat-spend">0 EGP</b></div>
+    </div>
+
+    <div class="admin-controls customer-controls">
+      <input id="customer-search" type="search" placeholder="Search customer name, phone or location">
+      <select id="customer-filter">
+        <option value="all">All customers</option>
+        <option value="returning">Returning customers</option>
+        <option value="single">One order only</option>
+        <option value="delivered">Has delivered order</option>
+      </select>
+      <button id="export-customers-csv" class="admin-primary-btn" type="button">EXPORT CSV</button>
+    </div>
+
+    <div class="customers-results-bar">
+      <span id="customers-count-label">0 customers</span>
+      <span>Newest customer activity first</span>
+    </div>
+
+    <div id="customers-loading" class="admin-loading" hidden>Loading customers…</div>
+    <div id="customers-error" class="admin-error"></div>
+    <div id="customers-list" class="customers-list"></div>
+  </section>
+
   <section id="admin-products-panel" class="admin-panel" hidden>
     <div class="admin-dashboard-head">
       <div>
@@ -269,7 +308,7 @@
 
     <div class="admin-permission-guide">
       <div><b>DASHBOARD</b><span>Sales figures, best sellers and recent orders</span></div>
-      <div><b>ORDERS</b><span>Customer orders and status updates</span></div>
+      <div><b>ORDERS</b><span>Customer orders, Customer Center and status updates</span></div>
       <div><b>PRODUCTS</b><span>Products, stock, images and catalog editing</span></div>
       <div><b>COUPONS</b><span>Discount codes and promotions</span></div>
     </div>
@@ -297,6 +336,20 @@
       </div>
     </div>
     <div id="order-details-content"></div>
+  </div>
+</section>
+
+<section id="customer-details-modal" class="product-modal" hidden>
+  <div class="product-modal-backdrop" data-close-customer-modal></div>
+  <div class="product-modal-card customer-details-modal-card">
+    <div class="product-modal-head">
+      <div>
+        <div class="eyebrow" style="color:#766b5d">CUSTOMER PROFILE</div>
+        <h2 id="customer-details-title">CUSTOMER</h2>
+      </div>
+      <button class="product-modal-close" type="button" data-close-customer-modal>×</button>
+    </div>
+    <div id="customer-details-content"></div>
   </div>
 </section>
 
@@ -335,7 +388,7 @@
 
         <label class="admin-permission-check">
           <input id="perm-orders" type="checkbox">
-          <span><b>Orders</b><small>View customer orders and change order status</small></span>
+          <span><b>Orders</b><small>View orders, Customer Center and change order status</small></span>
         </label>
 
         <label class="admin-permission-check">

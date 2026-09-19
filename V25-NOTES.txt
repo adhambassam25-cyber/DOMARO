@@ -1,0 +1,15 @@
+DOMARO V25 — CUSTOMER CENTER
+
+New in this version:
+- New CUSTOMERS tab for admins with Orders permission.
+- Customer profiles are derived from existing orders and matched by normalized phone number.
+- Unique customer, returning customer, total order and delivered spend KPIs.
+- Customer search and filters: all, returning, one order, has delivered order.
+- Customer CSV export.
+- Customer profile modal with delivery areas, ordered products and full order history.
+- One-click OPEN ORDER from the customer profile.
+- No database migration is required for V25.
+
+Security:
+- The Customers tab is tied to the existing Orders permission.
+- No new public data access is added; the UI only derives customer summaries from order data the signed-in admin is already permitted to read.
