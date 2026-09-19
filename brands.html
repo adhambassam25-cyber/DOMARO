@@ -10,14 +10,30 @@
 <meta property="og:url" content="https://domaro.vercel.app/brands.html">
 <meta property="og:image" content="https://domaro.vercel.app/assets/hook-blue.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg"><meta name="theme-color" content="#0b0b0b">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"><link rel="manifest" href="manifest.webmanifest">
+<meta name="application-name" content="DOMARO">
+</head><body>
 <div class="topbar">FLAT SHIPPING 80 EGP ACROSS EGYPT</div>
 <header><div class="container nav">
 <a class="logo" href="index.html">DOMARO<small>FRAGRANCES</small></a>
 <nav class="navlinks">
 <a href="shop.html?category=men">MEN</a><a href="shop.html?category=women">WOMEN</a><a href="shop.html?category=unisex">UNISEX</a><a class="active" href="brands.html">BRANDS</a><a href="shop.html">SHOP ALL</a><a href="about.html">ABOUT</a><a href="contact.html">CONTACT</a>
 </nav>
-<div class="navicons"><button class="icon-btn" aria-label="Search">⌕</button><a class="icon-btn" href="track.html" aria-label="Track order" title="Track order">♙</a><a class="icon-btn" href="cart.html" aria-label="Cart">◱<span class="cart-pill" data-cart-count>0</span></a></div>
+<div class="navicons">
+      <button class="nav-action nav-search-trigger" type="button" aria-label="Search products or brands" title="Search products or brands">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+        <span class="nav-action-label nav-search-label">SEARCH</span>
+      </button>
+      <a class="nav-action nav-track-action" href="track.html" aria-label="Track order" title="Track order">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7.5h14v11H5z"></path><path d="M8 7.5V5.8A2.8 2.8 0 0 1 10.8 3h2.4A2.8 2.8 0 0 1 16 5.8v1.7"></path><path d="M8.5 12h7"></path></svg>
+        <span class="nav-action-label">TRACK</span>
+      </a>
+      <a class="nav-action nav-cart-action" href="cart.html" aria-label="Cart" title="Cart">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l-1 11h-9z"></path><path d="M9 9V6.5a3 3 0 0 1 6 0V9"></path></svg>
+        <span class="nav-action-label">CART</span>
+        <span class="cart-pill" data-cart-count>0</span>
+      </a>
+    </div>
 </div></header>
 <section class="page-hero"><div class="eyebrow">SHOP YOUR HOUSE</div><h1>BRANDS</h1><p>Choose a fragrance house and discover every scent currently available from that brand.</p></section>
 <section class="section"><div class="container"><div id="brands-grid" class="brand-directory-grid"></div></div></section>

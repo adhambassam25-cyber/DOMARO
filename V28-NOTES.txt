@@ -1,0 +1,24 @@
+DOMARO V28 — Production Finalization
+
+What changed
+- Added Vercel security headers: CSP, clickjacking protection, nosniff, referrer policy and restricted browser permissions.
+- Admin HTML/JS are served with no-store caching; public app/style revalidate; static product assets use long-term immutable caching.
+- Added a 30-minute admin inactivity sign-out for shared-device safety.
+- Hardened public catalog rendering against unsafe product text/image values.
+- Removed stale hardcoded catalog fallback from customer-facing browsing: if Supabase is unavailable, DOMARO now shows a temporary catalog-unavailable message instead of potentially outdated prices/stock.
+- Added lazy image loading/async decoding where appropriate for faster browsing.
+- Added a web app manifest and application metadata for cleaner install/home-screen behavior.
+- Final frontend secret scan: no service-role, Resend, webhook or server secret is included in the frontend files.
+
+Database
+- No SQL migration is required for V28.
+
+Final smoke test
+1. Home + Shop load normally.
+2. Product page opens and Add to Cart works.
+3. Cart + checkout load normally (do not place a new test order unless needed).
+4. Track Order still requires order number + matching phone.
+5. Admin login works and permissions still hide unauthorized tabs.
+6. Existing test order opens in Order Workspace.
+7. Customers, Dashboard, Products, Coupons and Admins tabs open according to permissions.
+8. WhatsApp/Call actions remain manual.

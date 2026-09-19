@@ -1,0 +1,12 @@
+DOMARO V29 — Catalog Control & Global Search
+
+- Product DELETE button appears only for the Owner in Admin > Products.
+- Database delete policy is owner-only (server enforced).
+- Existing order history remains intact after a catalog product is deleted.
+- Redesigned Track and Cart header actions with clean luxury icons.
+- Search button now opens a global live search overlay on every public page.
+- Search finds both product names and brands.
+- Search result submission opens Shop with ?search= and filters the live catalog.
+- Keyboard shortcut: / opens search; Escape closes it.
+
+Run SUPABASE-V29-MIGRATION.sql before deploying V29.

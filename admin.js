@@ -117,6 +117,8 @@ let editingCoupon = null;
 let editingManagedAdmin = null;
 let notificationPollTimer = null;
 let lastKnownOrderCreatedAt = localStorage.getItem('domaro_last_known_order_created_at') || '';
+const ADMIN_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+let adminIdleTimer = null;
 
 function money(n){
   return Number(n || 0).toLocaleString('en-EG') + ' EGP';
@@ -324,6 +326,28 @@ function applyAdminPermissions(){
   adminUserLabel.textContent=`${adminProfile?.email || adminEmail || 'Admin'} · ${roleText}`;
 }
 
+function stopAdminIdleTimer(){
+  if(adminIdleTimer){
+    clearTimeout(adminIdleTimer);
+    adminIdleTimer=null;
+  }
+}
+
+function resetAdminIdleTimer(){
+  stopAdminIdleTimer();
+  if(!accessToken || dashboardSection.hidden) return;
+  adminIdleTimer=setTimeout(()=>{
+    stopOrderNotificationPolling();
+    clearSession();
+    allOrders=[]; orderItems=[]; allProducts=[]; allCoupons=[]; allAdmins=[]; dashboardStats=null;
+    ordersList.innerHTML='';
+    if(customersList) customersList.innerHTML='';
+    productsList.innerHTML='';
+    if(adminsList) adminsList.innerHTML='';
+    showLogin('Signed out after 30 minutes of inactivity.');
+  },ADMIN_IDLE_TIMEOUT_MS);
+}
+
 function showDashboard(){
   loginSection.hidden=true;
   dashboardSection.hidden=false;
@@ -338,6 +362,7 @@ function showDashboard(){
 
   applyAdminPermissions();
   updateNotificationButton();
+  resetAdminIdleTimer();
 
   const tabs=allowedTabs();
   if(!tabs.length) return;
@@ -351,12 +376,14 @@ function showLogin(message=''){
   logoutBtn.hidden=true;
   enableNotificationsBtn.hidden=true;
   stopOrderNotificationPolling();
+  stopAdminIdleTimer();
   adminUserLabel.textContent='';
   adminProfile=null;
   if(message) loginError.textContent=message;
 }
 
 function clearSession(){
+  stopAdminIdleTimer();
   accessToken='';
   adminEmail='';
   adminProfile=null;
@@ -1497,6 +1524,7 @@ function renderProductsAdmin(){
           <button class="admin-secondary-btn edit-product-btn" data-id="${esc(p.id)}">EDIT</button>
           <button class="admin-secondary-btn quick-stock-btn" data-id="${esc(p.id)}">${p.in_stock?'MARK OUT OF STOCK':'MARK IN STOCK'}</button>
           <button class="admin-secondary-btn quick-live-btn" data-id="${esc(p.id)}">${p.active?'HIDE':'MAKE LIVE'}</button>
+          ${String(adminProfile?.role || '').toLowerCase()==='owner' ? `<button class="admin-secondary-btn admin-danger-btn delete-product-btn" type="button" data-id="${esc(p.id)}">DELETE</button>` : ''}
         </div>
       </div>
     </article>`;
@@ -1514,6 +1542,52 @@ function renderProductsAdmin(){
   }));
   document.querySelectorAll('.quick-live-btn').forEach(btn=>btn.addEventListener('click',()=>quickUpdateProduct(btn.dataset.id,'active')));
   document.querySelectorAll('.stock-adjust-btn').forEach(btn=>btn.addEventListener('click',()=>adjustProductStock(btn)));
+  document.querySelectorAll('.delete-product-btn').forEach(btn=>btn.addEventListener('click',()=>deleteProductOwnerOnly(btn.dataset.id)));
+}
+
+async function deleteManagedProductImage(imagePath){
+  const marker='/storage/v1/object/public/products/';
+  const raw=String(imagePath || '');
+  const index=raw.indexOf(marker);
+  if(index<0) return;
+  const objectPath=raw.slice(index+marker.length);
+  if(!objectPath) return;
+  try{
+    await fetch(`${SUPABASE_URL}/storage/v1/object/products/${objectPath.split('/').map(encodeURIComponent).join('/')}`,{
+      method:'DELETE',
+      headers:authHeaders()
+    });
+  }catch(_){}
+}
+
+async function deleteProductOwnerOnly(productId){
+  if(String(adminProfile?.role || '').toLowerCase()!=='owner'){
+    productsError.textContent='Only the owner can delete products.';
+    return;
+  }
+  const product=allProducts.find(p=>p.id===productId);
+  if(!product) return;
+  const confirmed=window.confirm(`Delete ${product.name}?\n\nThis removes the product from the catalog. Existing order history will stay intact.`);
+  if(!confirmed) return;
+
+  productsError.textContent='';
+  try{
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${encodeURIComponent(productId)}`,{
+      method:'DELETE',
+      headers:authHeaders({'Prefer':'return=representation'})
+    });
+    const data=await response.json().catch(()=>[]);
+    if(response.status===401){clearSession();showLogin('Your session expired. Please sign in again.');return;}
+    if(!response.ok) throw new Error(data?.message || data?.details || 'Could not delete product.');
+
+    await deleteManagedProductImage(product.image_path);
+    allProducts=allProducts.filter(p=>p.id!==productId);
+    renderProductStats();
+    renderProductsAdmin();
+    window.alert(`${product.name} was deleted.`);
+  }catch(err){
+    productsError.textContent=err.message || 'Could not delete product.';
+  }
 }
 
 async function adjustProductStock(button){
@@ -2339,6 +2413,16 @@ if(productLowThreshold){
     renderProductsAdmin();
   });
 }
+
+['pointerdown','keydown','touchstart'].forEach(eventName=>{
+  document.addEventListener(eventName,()=>{
+    if(accessToken && !dashboardSection.hidden) resetAdminIdleTimer();
+  },{passive:true});
+});
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible' && accessToken && !dashboardSection.hidden) resetAdminIdleTimer();
+});
 
 (async function restoreSession(){
   if(!accessToken) return;

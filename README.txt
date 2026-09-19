@@ -91,3 +91,6 @@ Run SUPABASE-V26-MIGRATION.sql before deploying V26. Adds period-based reporting
 
 V27: Customer Communication Tools
 No SQL migration required. Adds manual call/WhatsApp actions, status-aware editable message templates, copy-message support, and customer profile contact shortcuts.
+
+V28: Production Finalization
+No SQL migration required. Adds deployment security headers, cache rules, 30-minute admin inactivity logout, safer catalog rendering, image performance improvements, web app manifest, and final frontend secret hardening.

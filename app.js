@@ -3,34 +3,7 @@ const SUPABASE_URL = "https://zuqjxcsjjgotwwmlvxmf.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c";
 const SHIPPING_FEE = 80;
 
-const fallbackProducts = [
-  {
-    id:'hook-blue', name:'HOOK BLUE', type:'Eau de Parfum', price:2000,
-    size:'200 ML', size_ml:200, img:'assets/hook-blue.png', cat:'men',
-    badge:'MEN', inStock:true, active:true, brand:'ASSAF',
-    story:'HOOK BLUE by Assaf. Fragrance story can be expanded from the admin dashboard.',
-    topNotes:'', heartNotes:'', baseNotes:'',
-    desc:'HOOK BLUE by Assaf.'
-  },
-  {
-    id:'arrogate-blue', name:'ARROGATE BLUE', type:'Eau de Parfum', price:2000,
-    size:'200 ML', size_ml:200, img:'assets/arrogate-blue.png', cat:'men',
-    badge:'MEN', inStock:true, active:true, brand:'ASSAF',
-    story:'ARROGATE BLUE by Assaf. Fragrance story can be expanded from the admin dashboard.',
-    topNotes:'', heartNotes:'', baseNotes:'',
-    desc:'ARROGATE BLUE by Assaf.'
-  },
-  {
-    id:'arrogate-pink', name:'ARROGATE PINK', type:'Eau de Parfum', price:2000,
-    size:'200 ML', size_ml:200, img:'assets/arrogate-pink.png', cat:'women',
-    badge:'WOMEN', inStock:true, active:true, brand:'ASSAF',
-    story:'ARROGATE PINK by Assaf. Fragrance story can be expanded from the admin dashboard.',
-    topNotes:'', heartNotes:'', baseNotes:'',
-    desc:'ARROGATE PINK by Assaf.'
-  }
-];
-
-let products = [...fallbackProducts];
+let products = [];
 
 const money = n => Number(n || 0).toLocaleString('en-EG') + ' EGP';
 
@@ -91,8 +64,9 @@ async function loadCatalog(){
       desc:p.description || ''
     }));
   }catch(err){
-    console.warn('Using local fallback catalog:', err);
-    products=[...fallbackProducts];
+    console.error('DOMARO catalog unavailable:', err);
+    products=[];
+    window.DOMARO_CATALOG_UNAVAILABLE = true;
   }
 }
 
@@ -101,13 +75,13 @@ function productCard(p){
   return `<a class="product-card" href="product.html?id=${encodeURIComponent(p.id)}">
     <div class="product-img real-photo">
       <span class="badge ${p.inStock ? '' : 'badge-out'}">${p.inStock ? p.badge : 'OUT OF STOCK'}</span>
-      <img src="${p.img}" alt="${escapeTrackHtml(p.name)}">
+      <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy" decoding="async">
     </div>
     <div class="product-info">
       ${brandLine}
       <h3>${escapeTrackHtml(p.name)}</h3>
-      <div class="meta">${p.type} · ${p.size}</div>
-      <div class="price-row"><span class="price">${money(p.price)}</span><span class="meta">${p.cat.toUpperCase()}</span></div>
+      <div class="meta">${escapeTrackHtml(p.type)} · ${escapeTrackHtml(p.size)}</div>
+      <div class="price-row"><span class="price">${money(p.price)}</span><span class="meta">${escapeTrackHtml(String(p.cat || '').toUpperCase())}</span></div>
     </div>
   </a>`;
 }
@@ -115,20 +89,24 @@ function normalizeBrand(value){
   return String(value || '').trim().toLowerCase();
 }
 
-function filteredCatalog(category='all', brand=''){
+function filteredCatalog(category='all', brand='', query=''){
+  const q=String(query || '').trim().toLowerCase();
   return products.filter(p=>{
     const categoryMatch=category==='all' || p.cat===category;
     const brandMatch=!brand || normalizeBrand(p.brand)===normalizeBrand(brand);
-    return categoryMatch && brandMatch;
+    const searchMatch=!q || [p.name,p.brand,p.cat,p.desc].join(' ').toLowerCase().includes(q);
+    return categoryMatch && brandMatch && searchMatch;
   });
 }
 
-function renderProducts(targetId, filter='all', limit=null, brand=''){
+function renderProducts(targetId, filter='all', limit=null, brand='', query=''){
   const el=document.getElementById(targetId);
   if(!el) return;
-  let list=filteredCatalog(filter,brand);
+  let list=filteredCatalog(filter,brand,query);
   if(limit) list=list.slice(0,limit);
-  el.innerHTML=list.length ? list.map(productCard).join('') : '<div class="empty" style="grid-column:1/-1">No products match this selection yet.</div>';
+  el.innerHTML=list.length
+    ? list.map(productCard).join('')
+    : `<div class="empty" style="grid-column:1/-1">${window.DOMARO_CATALOG_UNAVAILABLE ? 'Our catalog is temporarily unavailable. Please refresh in a moment.' : 'No products match this selection yet.'}</div>`;
 }
 
 function catalogBrands(){
@@ -210,6 +188,7 @@ function initFilters(){
   const urlFilter=(params.get('category') || 'all').toLowerCase();
   let activeCategory=allowedFilters.includes(urlFilter) ? urlFilter : 'all';
   let activeBrand=String(params.get('brand') || '').trim();
+  let activeSearch=String(params.get('search') || '').trim();
 
   const updateShop=()=>{
     document.querySelectorAll('.filter-btn').forEach(btn=>{
@@ -223,20 +202,23 @@ function initFilters(){
         updateShop();
       });
     });
-    renderProducts('shop-products',activeCategory,null,activeBrand);
+    renderProducts('shop-products',activeCategory,null,activeBrand,activeSearch);
     const title=document.getElementById('shop-context-title');
     const sub=document.getElementById('shop-context-sub');
     if(title){
-      if(activeBrand) title.textContent=activeBrand;
+      if(activeSearch) title.textContent='SEARCH RESULTS';
+      else if(activeBrand) title.textContent=activeBrand;
       else if(activeCategory!=='all') title.textContent=activeCategory.toUpperCase()+' FRAGRANCES';
       else title.textContent='SHOP FRAGRANCES';
     }
     if(sub){
-      sub.textContent=activeBrand
-        ? `Explore every ${activeBrand} fragrance currently available at DOMARO.`
-        : activeCategory!=='all'
-          ? `Explore the ${activeCategory} collection.`
-          : 'Browse the currently available DOMARO collection.';
+      sub.textContent=activeSearch
+        ? `Products matching “${activeSearch}” by fragrance name or brand.`
+        : activeBrand
+          ? `Explore every ${activeBrand} fragrance currently available at DOMARO.`
+          : activeCategory!=='all'
+            ? `Explore the ${activeCategory} collection.`
+            : 'Browse the currently available DOMARO collection.';
     }
   };
 
@@ -246,6 +228,8 @@ function initFilters(){
     else url.searchParams.set('category',activeCategory);
     if(activeBrand) url.searchParams.set('brand',activeBrand);
     else url.searchParams.delete('brand');
+    if(activeSearch) url.searchParams.set('search',activeSearch);
+    else url.searchParams.delete('search');
     history.replaceState({},'',url);
   };
 
@@ -260,6 +244,18 @@ function initFilters(){
   updateShop();
 }
 
+function safeImageSrc(value){
+  const raw=String(value || '').trim();
+  if(!raw) return 'assets/hero.svg';
+  if(/^assets\/[a-z0-9._/-]+$/i.test(raw)) return raw;
+  try{
+    const url=new URL(raw, location.origin);
+    const allowedHosts=new Set([location.host,'zuqjxcsjjgotwwmlvxmf.supabase.co']);
+    if(url.protocol==='https:' && allowedHosts.has(url.host)) return escapeTrackHtml(url.href);
+  }catch(_){}
+  return 'assets/hero.svg';
+}
+
 function renderProductDetail(){
   const detail=document.getElementById('product-detail');
   if(!detail) return;
@@ -268,7 +264,10 @@ function renderProductDetail(){
   const p=products.find(x=>x.id===id);
 
   if(!p){
-    detail.innerHTML='<div class="empty" style="grid-column:1/-1">Product not found.<br><br><a class="btn dark" href="shop.html">BACK TO SHOP</a></div>';
+    const message=window.DOMARO_CATALOG_UNAVAILABLE
+      ? 'Our catalog is temporarily unavailable. Please refresh in a moment.'
+      : 'Product not found.';
+    detail.innerHTML=`<div class="empty" style="grid-column:1/-1">${message}<br><br><a class="btn dark" href="shop.html">BACK TO SHOP</a></div>`;
     return;
   }
 
@@ -288,14 +287,14 @@ function renderProductDetail(){
 
   detail.innerHTML=`
     <div class="product-main-grid">
-      <div class="product-gallery real-photo"><img src="${p.img}" alt="${escapeTrackHtml(p.name)}"></div>
+      <div class="product-gallery real-photo"><img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" decoding="async" fetchpriority="high"></div>
       <div class="product-copy">
         <a class="product-brand-link" href="${p.brand ? `shop.html?brand=${encodeURIComponent(p.brand)}` : 'shop.html'}">${brandLabel}</a>
         <h1>${escapeTrackHtml(p.name)}</h1>
         <div class="product-facts">
-          <span>${p.cat.toUpperCase()}</span>
-          <span>${p.size}</span>
-          <span>${p.type}</span>
+          <span>${escapeTrackHtml(String(p.cat || '').toUpperCase())}</span>
+          <span>${escapeTrackHtml(p.size)}</span>
+          <span>${escapeTrackHtml(p.type)}</span>
         </div>
         <div class="price" style="font-size:22px;margin:18px 0">${money(p.price)}</div>
         <div class="stock-line"><span class="stock-dot ${p.inStock ? '' : 'stock-dot-out'}"></span>${p.inStock ? (p.stockQuantity === null ? 'AVAILABLE' : `${p.stockQuantity} IN STOCK`) : 'OUT OF STOCK'}</div>
@@ -319,7 +318,7 @@ function renderProductDetail(){
     </div>
 
     <div class="product-accordion-wide accordion">
-      <details open><summary>PRODUCT INFORMATION</summary><p>${p.brand ? `Brand: ${escapeTrackHtml(p.brand)}<br>` : ''}Size: ${p.size}<br>Category: ${p.cat.charAt(0).toUpperCase()+p.cat.slice(1)}<br>Price: ${money(p.price)}</p></details>
+      <details open><summary>PRODUCT INFORMATION</summary><p>${p.brand ? `Brand: ${escapeTrackHtml(p.brand)}<br>` : ''}Size: ${escapeTrackHtml(p.size)}<br>Category: ${escapeTrackHtml(String(p.cat || '').charAt(0).toUpperCase()+String(p.cat || '').slice(1))}<br>Price: ${money(p.price)}</p></details>
       <details><summary>DELIVERY</summary><p>Flat shipping is currently 80 EGP per order across Egypt.</p></details>
     </div>`;
 
@@ -334,6 +333,12 @@ function renderCart(){
   if(!box) return;
   const cart=getCart();
   const summary=document.getElementById('cart-summary');
+
+  if(window.DOMARO_CATALOG_UNAVAILABLE){
+    box.innerHTML='<div class="empty">Our catalog is temporarily unavailable. Your cart has been kept safely in this browser. Please refresh in a moment.</div>';
+    if(summary) summary.style.display='none';
+    return;
+  }
 
   if(!cart.length){
     box.innerHTML='<div class="empty">Your cart is empty.<br><br><a class="btn dark" href="shop.html">SHOP FRAGRANCES</a></div>';
@@ -350,19 +355,23 @@ function renderCart(){
     validItems.push(item);
     subtotal += p.price*item.qty;
     return `<div class="cart-item">
-      <img src="${p.img}" alt="${p.name}">
+      <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy" decoding="async">
       <div>
-        <b>${p.name}</b>
-        <div class="meta">${p.type} · ${p.size}</div>
+        <b>${escapeTrackHtml(p.name)}</b>
+        <div class="meta">${escapeTrackHtml(p.type)} · ${escapeTrackHtml(p.size)}</div>
         <div style="margin-top:6px">${item.qty} × ${money(p.price)}</div>
         ${p.inStock ? '' : '<div class="cart-warning">Currently out of stock — remove before checkout.</div>'}
-        <button class="remove" onclick="removeItem('${p.id}')">Remove</button>
+        <button class="remove" type="button" data-remove-product="${escapeTrackHtml(p.id)}">Remove</button>
       </div>
       <div class="item-total">${money(p.price*item.qty)}</div>
     </div>`;
   }).join('');
 
   if(validItems.length !== cart.length) setCart(validItems);
+
+  box.querySelectorAll('[data-remove-product]').forEach(btn=>{
+    btn.addEventListener('click',()=>removeItem(btn.dataset.removeProduct || ''));
+  });
 
   if(summary){
     summary.style.display='block';
@@ -384,6 +393,11 @@ function renderCheckout(){
   const cart=getCart();
   const form=document.getElementById('checkout-form');
   const grid=document.querySelector('.checkout-grid');
+
+  if(window.DOMARO_CATALOG_UNAVAILABLE){
+    if(grid) grid.innerHTML='<div class="empty" style="grid-column:1/-1">Our catalog is temporarily unavailable. Your cart has been kept safely in this browser. Please refresh before checkout.</div>';
+    return;
+  }
   const reviewModal=document.getElementById('review-modal');
   const reviewContent=document.getElementById('review-content');
   const reviewError=document.getElementById('review-error');
@@ -407,7 +421,7 @@ function renderCheckout(){
     if(!p.inStock) hasUnavailable=true;
     subtotal += p.price*item.qty;
     return `<div class="checkout-product">
-      <img src="${p.img}" alt="${escapeTrackHtml(p.name)}">
+      <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy" decoding="async">
       <div><b>${escapeTrackHtml(p.name)}</b><div class="meta">${escapeTrackHtml(p.size)} · Qty ${item.qty}</div>${p.inStock ? '' : '<div class="cart-warning">Out of stock</div>'}</div>
       <div class="checkout-product-price">${money(p.price*item.qty)}</div>
     </div>`;
@@ -873,6 +887,107 @@ function initOrderTracking(){
 
 
 
+// DOMARO V29 — global product & brand search
+function initGlobalSearch(){
+  const triggers=[...document.querySelectorAll('.nav-search-trigger')];
+  if(!triggers.length) return;
+
+  const overlay=document.createElement('div');
+  overlay.id='global-search-overlay';
+  overlay.className='global-search-overlay';
+  overlay.hidden=true;
+  overlay.innerHTML=`
+    <div class="global-search-backdrop" data-search-close></div>
+    <section class="global-search-panel" role="dialog" aria-modal="true" aria-labelledby="global-search-title">
+      <div class="global-search-head">
+        <div><span>DISCOVER DOMARO</span><h2 id="global-search-title">SEARCH</h2></div>
+        <button class="global-search-close" type="button" data-search-close aria-label="Close search">×</button>
+      </div>
+      <form id="global-search-form" class="global-search-form">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+        <input id="global-search-input" type="search" autocomplete="off" placeholder="Search products or brands" aria-label="Search products or brands">
+        <button type="submit">VIEW ALL</button>
+      </form>
+      <div id="global-search-results" class="global-search-results"></div>
+    </section>`;
+  document.body.appendChild(overlay);
+
+  const input=overlay.querySelector('#global-search-input');
+  const results=overlay.querySelector('#global-search-results');
+  const form=overlay.querySelector('#global-search-form');
+
+  const close=()=>{
+    overlay.hidden=true;
+    document.body.classList.remove('global-search-open');
+  };
+
+  const render=(value='')=>{
+    const q=String(value || '').trim().toLowerCase();
+    const brands=catalogBrands();
+    if(!q){
+      results.innerHTML=`
+        <div class="global-search-empty">
+          <span>SEARCH THE COLLECTION</span>
+          <p>Type a fragrance name or brand.</p>
+          ${brands.length?`<div class="global-search-brand-chips">${brands.slice(0,8).map(brand=>`<a href="shop.html?brand=${encodeURIComponent(brand)}">${escapeTrackHtml(brand)}</a>`).join('')}</div>`:''}
+        </div>`;
+      return;
+    }
+
+    const productMatches=products.filter(p=>[p.name,p.brand,p.cat].join(' ').toLowerCase().includes(q)).slice(0,6);
+    const brandMatches=brands.filter(brand=>brand.toLowerCase().includes(q)).slice(0,6);
+
+    if(!productMatches.length && !brandMatches.length){
+      results.innerHTML=`<div class="global-search-empty"><span>NO RESULTS</span><p>Try another product or brand name.</p></div>`;
+      return;
+    }
+
+    const productHtml=productMatches.length?`
+      <div class="global-search-section">
+        <div class="global-search-section-title">PRODUCTS</div>
+        <div class="global-search-product-list">${productMatches.map(p=>`
+          <a class="global-search-product" href="product.html?id=${encodeURIComponent(p.id)}">
+            <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy">
+            <span><b>${escapeTrackHtml(p.name)}</b><small>${p.brand?escapeTrackHtml(p.brand)+' · ':''}${escapeTrackHtml(p.size)}</small></span>
+            <strong>${money(p.price)}</strong>
+          </a>`).join('')}</div>
+      </div>`:'';
+
+    const brandHtml=brandMatches.length?`
+      <div class="global-search-section">
+        <div class="global-search-section-title">BRANDS</div>
+        <div class="global-search-brand-results">${brandMatches.map(brand=>`<a href="shop.html?brand=${encodeURIComponent(brand)}">${escapeTrackHtml(brand)}<span>→</span></a>`).join('')}</div>
+      </div>`:'';
+
+    results.innerHTML=productHtml+brandHtml;
+  };
+
+  const open=()=>{
+    overlay.hidden=false;
+    document.body.classList.add('global-search-open');
+    input.value='';
+    render('');
+    requestAnimationFrame(()=>input.focus());
+  };
+
+  triggers.forEach(btn=>btn.addEventListener('click',open));
+  overlay.querySelectorAll('[data-search-close]').forEach(el=>el.addEventListener('click',close));
+  input.addEventListener('input',()=>render(input.value));
+  form.addEventListener('submit',e=>{
+    e.preventDefault();
+    const q=input.value.trim();
+    if(!q) return;
+    window.location.href=`shop.html?search=${encodeURIComponent(q)}`;
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && !overlay.hidden) close();
+    if(e.key==='/' && overlay.hidden && !/input|textarea|select/i.test(document.activeElement?.tagName || '')){
+      e.preventDefault();
+      open();
+    }
+  });
+}
+
 // DOMARO V19 — audience entry gate
 function initEntryGate(){
   const gate=document.getElementById('entry-gate');
@@ -951,6 +1066,7 @@ async function initStore(){
   initMobileNavigation();
   updateCartCount();
   await loadCatalog();
+  initGlobalSearch();
   renderProducts('best-products','all',4);
   renderBrandDirectory();
   initFilters();
