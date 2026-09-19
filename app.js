@@ -389,7 +389,7 @@ function renderProductDetail(){
 
     <div class="product-accordion-wide accordion">
       <details open><summary>PRODUCT INFORMATION</summary><p>${p.brand ? `Brand: ${escapeTrackHtml(p.brand)}<br>` : ''}Size: <span id="product-info-size">${escapeTrackHtml(initialVariant?.size || p.size)}</span><br>Category: ${escapeTrackHtml(String(p.cat || '').charAt(0).toUpperCase()+String(p.cat || '').slice(1))}<br>Price: <span id="product-info-price">${money(initialVariant?.price ?? p.price)}</span></p></details>
-      <details><summary>DELIVERY</summary><p>Delivery is available across Egypt. Current shipping fee: ${money(SHIPPING_FEE)} per order.</p></details>
+      <details><summary>DELIVERY</summary><p>Delivery is available across Egypt. The delivery fee is calculated automatically at checkout based on your governorate and area.</p></details>
     </div>
     <section id="product-recommendations" class="product-recommendations-v30"></section>`;
 
@@ -470,8 +470,8 @@ function renderCart(){
   if(summary){
     summary.style.display='block';
     document.getElementById('subtotal').textContent=money(subtotal);
-    const shipEl=document.getElementById('shipping-fee'); if(shipEl) shipEl.textContent=money(SHIPPING_FEE);
-    document.getElementById('cart-total').textContent=money(subtotal + SHIPPING_FEE);
+    const shipEl=document.getElementById('shipping-fee'); if(shipEl) shipEl.textContent='Calculated at checkout';
+    document.getElementById('cart-total').textContent=`${money(subtotal)} + delivery`;
   }
 }
 
@@ -506,6 +506,9 @@ function renderCheckout(){
   let hasUnavailable=false;
   let appliedCoupon=null;
   let pendingPayload=null;
+  let checkoutShippingFee=null;
+  let shippingQuoteRequest=0;
+  let shippingQuoteTimer=null;
   let checkoutToken=sessionStorage.getItem('domaro_checkout_token') || '';
 
   itemsBox.innerHTML=cart.map(item=>{
@@ -534,13 +537,14 @@ function renderCheckout(){
   const checkoutError=document.getElementById('checkout-error');
 
   function currentDiscount(){ return Number(appliedCoupon?.discount || 0); }
-  function currentTotal(){ return Math.max(0, subtotal-currentDiscount()) + SHIPPING_FEE; }
+  function currentNetSubtotal(){ return Math.max(0, subtotal-currentDiscount()); }
+  function currentTotal(){ return currentNetSubtotal() + Number(checkoutShippingFee || 0); }
 
   function renderCheckoutTotals(){
     const discount=currentDiscount();
     subtotalEl.textContent=money(subtotal);
-    if(shippingEl) shippingEl.textContent=money(SHIPPING_FEE);
-    totalEl.textContent=money(currentTotal());
+    if(shippingEl) shippingEl.textContent=checkoutShippingFee===null ? 'Select location' : money(checkoutShippingFee);
+    totalEl.textContent=checkoutShippingFee===null ? `${money(currentNetSubtotal())} + delivery` : money(currentTotal());
     if(appliedCoupon && discount>0){
       discountRow.hidden=false;
       discountEl.textContent=`− ${money(discount)}`;
@@ -552,6 +556,117 @@ function renderCheckout(){
     }
   }
   renderCheckoutTotals();
+
+  const governorateEl=document.getElementById('governorate');
+  const areaEl=document.getElementById('area');
+  const areaOtherWrap=document.getElementById('area-other-wrap');
+  const areaOtherEl=document.getElementById('area-other');
+  const deliveryHint=document.getElementById('delivery-fee-hint');
+  const OTHER_AREA_VALUE='__OTHER__';
+
+  function currentAreaValue(){
+    const selected=String(areaEl?.value||'').trim();
+    if(selected===OTHER_AREA_VALUE) return String(areaOtherEl?.value||'').trim();
+    return selected;
+  }
+
+  function syncOtherAreaField(){
+    const isOther=String(areaEl?.value||'')===OTHER_AREA_VALUE;
+    if(areaOtherWrap) areaOtherWrap.hidden=!isOther;
+    if(areaOtherEl){
+      areaOtherEl.required=isOther;
+      if(!isOther) areaOtherEl.value='';
+    }
+  }
+
+  async function loadAreaOptions(governorate){
+    if(!areaEl) return;
+    areaEl.disabled=true;
+    areaEl.innerHTML=`<option value="">${governorate?'Loading areas…':'Select governorate first'}</option>`;
+    if(areaOtherWrap) areaOtherWrap.hidden=true;
+    if(areaOtherEl){ areaOtherEl.required=false; areaOtherEl.value=''; }
+    if(!governorate) return;
+    try{
+      const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_delivery_areas`,{
+        method:'POST',
+        headers:{'apikey':SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json','Accept':'application/json'},
+        body:JSON.stringify({p_governorate:governorate})
+      });
+      const rows=await response.json().catch(()=>[]);
+      if(!response.ok || !Array.isArray(rows)) throw new Error('Could not load delivery areas.');
+      const unique=[...new Set(rows.map(v=>String(v||'').trim()).filter(Boolean))];
+      areaEl.innerHTML=`<option value="">Select area / district</option>${unique.map(area=>`<option value="${escapeTrackHtml(area)}">${escapeTrackHtml(area)}</option>`).join('')}<option value="${OTHER_AREA_VALUE}">Other / Not listed</option>`;
+      areaEl.disabled=false;
+    }catch(_){
+      areaEl.innerHTML=`<option value="">Select area / district</option><option value="${OTHER_AREA_VALUE}">Other / Not listed</option>`;
+      areaEl.disabled=false;
+    }
+  }
+
+  async function updateShippingQuote(requireQuote=false){
+    const governorate=String(governorateEl?.value||'').trim();
+    const area=currentAreaValue();
+    if(!governorate){
+      checkoutShippingFee=null;
+      if(deliveryHint) deliveryHint.textContent='Select your governorate to calculate delivery.';
+      renderCheckoutTotals();
+      return false;
+    }
+    if(!area){
+      checkoutShippingFee=null;
+      if(deliveryHint) deliveryHint.textContent=String(areaEl?.value||'')===OTHER_AREA_VALUE?'Enter your area / district to calculate delivery.':'Select your area / district to calculate delivery.';
+      renderCheckoutTotals();
+      return false;
+    }
+    const requestId=++shippingQuoteRequest;
+    if(deliveryHint) deliveryHint.textContent='Calculating delivery…';
+    try{
+      const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_delivery_quote`,{
+        method:'POST',
+        headers:{'apikey':SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json','Accept':'application/json'},
+        body:JSON.stringify({p_governorate:governorate,p_area:area||null})
+      });
+      const result=await response.json().catch(()=>null);
+      if(requestId!==shippingQuoteRequest) return checkoutShippingFee!==null;
+      if(!response.ok || result?.fee===undefined || result?.fee===null) throw new Error(result?.message || 'Could not calculate delivery.');
+      checkoutShippingFee=Number(result.fee);
+      if(!Number.isFinite(checkoutShippingFee) || checkoutShippingFee<0) throw new Error('Invalid delivery fee.');
+      if(deliveryHint){
+        const areaText=result?.matched_area ? ` for ${result.matched_area}` : '';
+        deliveryHint.textContent=`Delivery${areaText}: ${money(checkoutShippingFee)}`;
+      }
+      renderCheckoutTotals();
+      return true;
+    }catch(err){
+      if(requestId!==shippingQuoteRequest) return false;
+      checkoutShippingFee=null;
+      if(deliveryHint) deliveryHint.textContent=requireQuote ? (err.message||'Could not calculate delivery.') : 'Delivery will be calculated when your location is available.';
+      renderCheckoutTotals();
+      if(requireQuote) checkoutError.textContent=err.message || 'Could not calculate delivery for this location.';
+      return false;
+    }
+  }
+
+  if(governorateEl){
+    governorateEl.addEventListener('change',async()=>{
+      await loadAreaOptions(governorateEl.value);
+      await updateShippingQuote(false);
+    });
+  }
+  if(areaEl){
+    areaEl.addEventListener('change',()=>{
+      syncOtherAreaField();
+      updateShippingQuote(false);
+    });
+  }
+  if(areaOtherEl){
+    areaOtherEl.addEventListener('input',()=>{
+      clearTimeout(shippingQuoteTimer);
+      shippingQuoteTimer=setTimeout(()=>updateShippingQuote(false),350);
+    });
+    areaOtherEl.addEventListener('change',()=>updateShippingQuote(false));
+  }
+  if(governorateEl?.value){ loadAreaOptions(governorateEl.value); }
 
   async function applyCoupon(){
     const code=(couponInput?.value || '').trim().toUpperCase();
@@ -637,7 +752,6 @@ function renderCheckout(){
       ['last-name','Please enter your last name.'],
       ['phone','Please enter your mobile number.'],
       ['governorate','Please select your governorate.'],
-      ['area','Please enter your area or district.'],
       ['address','Please enter your detailed delivery address.']
     ];
 
@@ -648,6 +762,17 @@ function renderCheckout(){
         el?.focus();
         return false;
       }
+    }
+
+    if(!String(areaEl?.value||'').trim()){
+      checkoutError.textContent='Please select your area or district.';
+      areaEl?.focus();
+      return false;
+    }
+    if(!currentAreaValue()){
+      checkoutError.textContent='Please enter your area or district.';
+      areaOtherEl?.focus();
+      return false;
     }
 
     if(!isValidEgyptPhone(fieldValue('phone'))){
@@ -677,7 +802,7 @@ function renderCheckout(){
       p_last_name: fieldValue('last-name'),
       p_phone: fieldValue('phone').replace(/\s+/g,''),
       p_governorate: document.getElementById('governorate').value,
-      p_area: fieldValue('area'),
+      p_area: currentAreaValue(),
       p_building: fieldValue('building'),
       p_address: fieldValue('address'),
       p_notes: fieldValue('notes'),
@@ -716,7 +841,7 @@ function renderCheckout(){
         <div class="review-totals">
           <div><span>Subtotal</span><b>${money(subtotal)}</b></div>
           ${currentDiscount()>0 ? `<div class="review-discount"><span>Discount ${appliedCoupon ? `(${escapeTrackHtml(appliedCoupon.code)})` : ''}</span><b>− ${money(currentDiscount())}</b></div>` : ''}
-          <div><span>Shipping</span><b>${money(SHIPPING_FEE)}</b></div>
+          <div><span>Shipping</span><b>${money(checkoutShippingFee)}</b></div>
           <div class="review-grand"><span>Total</span><b>${money(currentTotal())}</b></div>
         </div>
       </div>
@@ -742,9 +867,17 @@ function renderCheckout(){
     if(e.key==='Escape' && reviewModal && !reviewModal.hidden) closeReview();
   });
 
-  form.addEventListener('submit',e=>{
+  form.addEventListener('submit',async e=>{
     e.preventDefault();
     if(!validateCheckout()) return;
+    checkoutError.textContent='';
+    placeBtn.disabled=true;
+    const originalText=placeBtn.textContent;
+    placeBtn.textContent='CALCULATING DELIVERY…';
+    const quoted=await updateShippingQuote(true);
+    placeBtn.disabled=hasUnavailable;
+    placeBtn.textContent=originalText;
+    if(!quoted) return;
     openReview(buildPayload());
   });
 

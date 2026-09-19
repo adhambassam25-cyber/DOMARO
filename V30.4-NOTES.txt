@@ -1,0 +1,25 @@
+DOMARO V30.4 — SMART DELIVERY ZONES
+
+What changed
+- Delivery is no longer a single flat fee.
+- Owner can manage a default delivery fee for every Egyptian governorate.
+- Owner can add optional Area / District overrides inside any governorate.
+- Checkout calculates delivery automatically from Governorate + Area.
+- New-order backend calculates the same delivery fee server-side, so the browser cannot override it.
+- Cart shows "Calculated at checkout" until a delivery location is selected.
+- Checkout suggests configured area overrides while still allowing any district name.
+- A disabled governorate default makes delivery unavailable to that governorate.
+- Delivery-zone changes are added to the owner Audit Log.
+- Backup / Restore now includes delivery zones.
+
+Admin path
+Admin > STORE > DELIVERY ZONES
+
+How pricing works
+1) Exact active Area Override (if the customer enters/selects a configured area)
+2) Governorate Default Fee
+3) Fallback Delivery Fee only if a governorate has no configured default row
+
+Migration
+Run SUPABASE-V30.4-SHIPPING-ZONES.sql once before deploying V30.4.
+The migration seeds all 27 governorates using your current V30.3 shipping fee, so nothing changes until you edit the zone prices.

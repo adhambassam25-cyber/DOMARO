@@ -7,6 +7,8 @@ let v30Profile=null;
 let v30CurrentProductId=null;
 let v30VariantRows=[];
 let v30GalleryRows=[];
+let v304DeliveryZones=[];
+const V304_GOVERNORATES=['Cairo','Giza','Alexandria','Qalyubia','Sharqia','Dakahlia','Gharbia','Monufia','Beheira','Kafr El Sheikh','Damietta','Port Said','Ismailia','Suez','Fayoum','Beni Suef','Minya','Assiut','Sohag','Qena','Luxor','Aswan','Red Sea','New Valley','Matrouh','North Sinai','South Sinai'];
 
 function v30Token(){ return sessionStorage.getItem('domaro_admin_access_token')||''; }
 function v30AH(extra={}){ const t=v30Token(); return {'apikey':V30A_KEY,...(t?{'Authorization':`Bearer ${t}`}:{ }),...extra}; }
@@ -133,6 +135,86 @@ async function loadAbandoned(){
   try{const rows=await v30Json(`${V30A_URL}/rest/v1/checkout_sessions?select=*&status=eq.active&order=last_seen_at.desc&limit=100`);const now=Date.now();const abandoned=rows.filter(r=>now-new Date(r.last_seen_at).getTime()>=30*60*1000);host.innerHTML=abandoned.length?abandoned.map(r=>{const count=Array.isArray(r.cart_items)?r.cart_items.reduce((a,x)=>a+Number(x.qty||0),0):0;return `<article class="v30-abandoned-card"><div><span>LAST ACTIVE ${v30Esc(new Date(r.last_seen_at).toLocaleString('en-EG'))}</span><h3>${v30Esc([r.first_name,r.last_name].filter(Boolean).join(' ')||'UNIDENTIFIED CUSTOMER')}</h3><p>${v30Esc(r.phone||'No phone captured')} · ${count} item${count===1?'':'s'} in cart</p></div>${r.phone?`<a class="admin-primary-btn" href="https://wa.me/20${v30Esc(String(r.phone).replace(/^0/,''))}" target="_blank" rel="noopener">WHATSAPP</a>`:''}</article>`}).join(''):'<div class="admin-empty">No checkout sessions abandoned for 30+ minutes.</div>';}catch(e){err.textContent=e.message;}
 }
 
+function v304GovernorateOptions(selected=''){
+  return V304_GOVERNORATES.map(g=>`<option value="${v30Esc(g)}" ${g===selected?'selected':''}>${v30Esc(g)}</option>`).join('');
+}
+
+async function loadDeliveryZones(){
+  const host=document.getElementById('v304-delivery-zones-list');
+  const err=document.getElementById('v304-delivery-zones-error');
+  if(!host) return;
+  if(err) err.textContent='';
+  host.innerHTML='<div class="admin-loading">Loading delivery zones…</div>';
+  try{
+    v304DeliveryZones=await v30Json(`${V30A_URL}/rest/v1/shipping_zones?select=*&order=governorate.asc,area.asc.nullsfirst`);
+    renderDeliveryZones();
+  }catch(e){
+    host.innerHTML='';
+    if(err) err.textContent=e.message;
+  }
+}
+
+function renderDeliveryZones(){
+  const host=document.getElementById('v304-delivery-zones-list');
+  if(!host) return;
+  if(!v304DeliveryZones.length){
+    host.innerHTML='<div class="admin-empty">No delivery zones configured.</div>';
+    return;
+  }
+  host.innerHTML=v304DeliveryZones.map(z=>{
+    const isDefault=!String(z.area||'').trim();
+    return `<article class="v304-zone-row" data-zone-id="${v30Esc(z.id)}">
+      <div class="v304-zone-location"><span>${isDefault?'GOVERNORATE DEFAULT':'AREA OVERRIDE'}</span><b>${v30Esc(z.governorate)}</b><small>${isDefault?'All other areas':v30Esc(z.area)}</small></div>
+      <label>FEE (EGP)<input data-zone-fee type="number" min="0" step="1" value="${v30Esc(z.fee)}"></label>
+      <label class="v304-zone-active"><input data-zone-active type="checkbox" ${z.active?'checked':''}><span>ACTIVE</span></label>
+      <div class="v30-row-actions"><button type="button" class="admin-primary-btn" data-zone-save>SAVE</button>${isDefault?'':`<button type="button" class="admin-secondary-btn admin-danger-btn" data-zone-delete>DELETE</button>`}</div>
+    </article>`;
+  }).join('');
+  host.querySelectorAll('[data-zone-save]').forEach(btn=>btn.onclick=async()=>{
+    const row=btn.closest('[data-zone-id]');
+    const id=row?.dataset.zoneId;
+    const fee=Number(row?.querySelector('[data-zone-fee]')?.value);
+    const active=Boolean(row?.querySelector('[data-zone-active]')?.checked);
+    const err=document.getElementById('v304-delivery-zones-error');
+    if(!Number.isFinite(fee)||fee<0){if(err)err.textContent='Enter a valid delivery fee.';return;}
+    btn.disabled=true;
+    try{
+      await v30Json(`${V30A_URL}/rest/v1/shipping_zones?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({fee,active,updated_at:new Date().toISOString()})});
+      if(err){err.className='coupon-message coupon-message-success';err.textContent='Delivery zone saved.';}
+      await loadDeliveryZones();
+    }catch(e){if(err){err.className='admin-error';err.textContent=e.message;}}finally{btn.disabled=false;}
+  });
+  host.querySelectorAll('[data-zone-delete]').forEach(btn=>btn.onclick=async()=>{
+    const row=btn.closest('[data-zone-id]');
+    const id=row?.dataset.zoneId;
+    const z=v304DeliveryZones.find(x=>String(x.id)===String(id));
+    if(!z||!confirm(`Delete delivery override for ${z.area}, ${z.governorate}?`)) return;
+    const err=document.getElementById('v304-delivery-zones-error');
+    try{await v30Json(`${V30A_URL}/rest/v1/shipping_zones?id=eq.${encodeURIComponent(id)}`,{method:'DELETE',headers:{'Prefer':'return=representation'}});await loadDeliveryZones();}
+    catch(e){if(err)err.textContent=e.message;}
+  });
+}
+
+async function addDeliveryZone(e){
+  e.preventDefault();
+  const err=document.getElementById('v304-delivery-zones-error');
+  if(err){err.className='admin-error';err.textContent='';}
+  const fd=new FormData(e.currentTarget);
+  const governorate=String(fd.get('zone_governorate')||'').trim();
+  const area=String(fd.get('zone_area')||'').trim();
+  const fee=Number(fd.get('zone_fee'));
+  if(!governorate||!area){if(err)err.textContent='Choose a governorate and enter the area/district name.';return;}
+  if(!Number.isFinite(fee)||fee<0){if(err)err.textContent='Enter a valid delivery fee.';return;}
+  const btn=e.currentTarget.querySelector('button[type="submit"]'); if(btn)btn.disabled=true;
+  try{
+    await v30Json(`${V30A_URL}/rest/v1/shipping_zones`,{method:'POST',headers:{'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({governorate,area,fee,active:true})});
+    e.currentTarget.reset();
+    if(err){err.className='coupon-message coupon-message-success';err.textContent='Area override added.';}
+    await loadDeliveryZones();
+  }catch(ex){if(err){err.className='admin-error';err.textContent=ex.message.includes('duplicate')?'This area override already exists for that governorate.':ex.message;}}
+  finally{if(btn)btn.disabled=false;}
+}
+
 async function loadStoreSettings(){
   const err=document.getElementById('v30-store-error');err.textContent='';try{const rows=await v30Json(`${V30A_URL}/rest/v1/store_settings?select=*&id=eq.1&limit=1`);const s=rows?.[0]||{};['hero_eyebrow','hero_title','hero_subtitle','hero_cta_label','hero_cta_href','announcement','promo_title','promo_text','promo_link_label','promo_link_href','monthly_sales_goal','shipping_fee','ga4_id','meta_pixel_id','tiktok_pixel_id'].forEach(k=>{const el=document.querySelector(`[name="${k}"]`);if(el)el.value=s[k]??'';});}catch(e){err.textContent=e.message;}
 }
@@ -164,7 +246,7 @@ async function initV30Admin(){
     const at=addV30Tab('abandoned','ABANDONED');const ap=addV30Panel('v30-abandoned-panel','<div class="admin-dashboard-head"><div><div class="eyebrow" style="color:#766b5d">CHECKOUT RECOVERY</div><h1>ABANDONED CARTS</h1><p class="admin-panel-intro">Shows active checkout sessions untouched for at least 30 minutes.</p></div><button id="v30-refresh-abandoned" class="admin-secondary-btn">REFRESH</button></div><div id="v30-abandoned-error" class="admin-error"></div><div id="v30-abandoned-list" class="v30-admin-list"></div>');at.onclick=()=>{v30OpenCustom(ap.id,at);loadAbandoned()};ap.querySelector('#v30-refresh-abandoned').onclick=loadAbandoned;
   }
   if(owner){
-    const st=addV30Tab('store','STORE',true);const sp=addV30Panel('v30-store-panel',`<div class="admin-dashboard-head"><div><div class="eyebrow" style="color:#766b5d">OWNER CONTROL</div><h1>STORE MANAGER</h1><p class="admin-panel-intro">Homepage, sales goal, analytics IDs and backup tools.</p></div></div><form id="v30-store-form" class="v30-store-form"><div class="v30-form-section"><h3>HOMEPAGE</h3><div class="form-row"><label>Hero eyebrow<input name="hero_eyebrow"></label><label>Hero title<input name="hero_title"></label></div><label>Hero subtitle<textarea name="hero_subtitle" class="small-textarea"></textarea></label><div class="form-row"><label>CTA label<input name="hero_cta_label"></label><label>CTA link<input name="hero_cta_href"></label></div><label>Announcement bar<input name="announcement" placeholder="Optional"></label><div class="form-row"><label>Promo title<input name="promo_title"></label><label>Promo link label<input name="promo_link_label"></label></div><label>Promo text<textarea name="promo_text" class="small-textarea"></textarea></label><label>Promo link<input name="promo_link_href"></label></div><div class="v30-form-section"><h3>BUSINESS</h3><div class="form-row"><label>Monthly delivered sales goal (EGP)<input name="monthly_sales_goal" type="number" min="0" step="1"></label><label>Shipping fee across Egypt (EGP)<input name="shipping_fee" type="number" min="0" step="1"><span class="field-help">Used automatically in cart, checkout and every new order.</span></label></div></div><div class="v30-form-section"><h3>ANALYTICS</h3><p class="field-help">Optional. Leave blank to send no analytics traffic.</p><div class="form-row"><label>Google Analytics 4 ID<input name="ga4_id" placeholder="G-XXXXXXXXXX"></label><label>Meta Pixel ID<input name="meta_pixel_id"></label></div><label>TikTok Pixel ID<input name="tiktok_pixel_id"></label></div><div class="v30-integration-status"><h3>EXTERNAL INTEGRATIONS</h3><div><b>ONLINE PAYMENT</b><span>Prepared for future provider connection — COD remains the live payment method until provider credentials are supplied.</span></div><div><b>CUSTOMER EMAILS</b><span>Requires a verified sending domain before emails can be sent safely to all customers.</span></div><div><b>CUSTOM DOMAIN</b><span>Connect through Vercel when you decide to purchase/use a domain.</span></div></div><div id="v30-store-error" class="admin-error"></div><button class="admin-primary-btn" type="submit">SAVE STORE SETTINGS</button></form><section class="v30-backup-card"><div><span>OWNER TOOLS</span><h3>BACKUP / RESTORE</h3><p>Backup includes catalog, variants, galleries, coupons and store settings. Restore is a safe merge and never overwrites orders.</p></div><div class="v30-row-actions"><button id="v30-export-backup" class="admin-secondary-btn">EXPORT BACKUP</button><label class="admin-secondary-btn v30-file-label">RESTORE BACKUP<input id="v30-restore-backup" type="file" accept="application/json" hidden></label></div></section>`);st.onclick=()=>{v30OpenCustom(sp.id,st);loadStoreSettings()};sp.querySelector('#v30-store-form').onsubmit=saveStoreSettings;sp.querySelector('#v30-export-backup').onclick=()=>exportBackup().catch(e=>sp.querySelector('#v30-store-error').textContent=e.message);sp.querySelector('#v30-restore-backup').onchange=e=>restoreBackup(e.target.files?.[0]).catch(er=>sp.querySelector('#v30-store-error').textContent=er.message);
+    const st=addV30Tab('store','STORE',true);const sp=addV30Panel('v30-store-panel',`<div class="admin-dashboard-head"><div><div class="eyebrow" style="color:#766b5d">OWNER CONTROL</div><h1>STORE MANAGER</h1><p class="admin-panel-intro">Homepage, sales goal, analytics IDs and backup tools.</p></div></div><form id="v30-store-form" class="v30-store-form"><div class="v30-form-section"><h3>HOMEPAGE</h3><div class="form-row"><label>Hero eyebrow<input name="hero_eyebrow"></label><label>Hero title<input name="hero_title"></label></div><label>Hero subtitle<textarea name="hero_subtitle" class="small-textarea"></textarea></label><div class="form-row"><label>CTA label<input name="hero_cta_label"></label><label>CTA link<input name="hero_cta_href"></label></div><label>Announcement bar<input name="announcement" placeholder="Optional"></label><div class="form-row"><label>Promo title<input name="promo_title"></label><label>Promo link label<input name="promo_link_label"></label></div><label>Promo text<textarea name="promo_text" class="small-textarea"></textarea></label><label>Promo link<input name="promo_link_href"></label></div><div class="v30-form-section"><h3>BUSINESS</h3><div class="form-row"><label>Monthly delivered sales goal (EGP)<input name="monthly_sales_goal" type="number" min="0" step="1"></label><label>Fallback delivery fee (EGP)<input name="shipping_fee" type="number" min="0" step="1"><span class="field-help">Safety fallback only. Normal checkout rates come from Delivery Zones below.</span></label></div></div><div class="v30-form-section"><h3>ANALYTICS</h3><p class="field-help">Optional. Leave blank to send no analytics traffic.</p><div class="form-row"><label>Google Analytics 4 ID<input name="ga4_id" placeholder="G-XXXXXXXXXX"></label><label>Meta Pixel ID<input name="meta_pixel_id"></label></div><label>TikTok Pixel ID<input name="tiktok_pixel_id"></label></div><div class="v30-integration-status"><h3>EXTERNAL INTEGRATIONS</h3><div><b>ONLINE PAYMENT</b><span>Prepared for future provider connection — COD remains the live payment method until provider credentials are supplied.</span></div><div><b>CUSTOMER EMAILS</b><span>Requires a verified sending domain before emails can be sent safely to all customers.</span></div><div><b>CUSTOM DOMAIN</b><span>Connect through Vercel when you decide to purchase/use a domain.</span></div></div><div id="v30-store-error" class="admin-error"></div><button class="admin-primary-btn" type="submit">SAVE STORE SETTINGS</button></form><section class="v30-form-section v304-delivery-zones"><div class="v304-zone-head"><div><span class="eyebrow" style="color:#766b5d">SMART DELIVERY</span><h3>DELIVERY ZONES</h3><p class="field-help">Each governorate has a default fee. Add optional area overrides when a district needs a different price. Checkout calculates the fee automatically.</p></div><button id="v304-refresh-zones" class="admin-secondary-btn" type="button">REFRESH</button></div><div id="v304-delivery-zones-error" class="admin-error"></div><div id="v304-delivery-zones-list" class="v304-delivery-zones-list"></div><form id="v304-add-zone-form" class="v30-inline-form v304-add-zone-form"><h3>ADD AREA OVERRIDE</h3><div class="form-row"><label>Governorate<select name="zone_governorate" required><option value="">Select governorate</option>${v304GovernorateOptions()}</select></label><label>Area / District<input name="zone_area" required placeholder="e.g. Sheikh Zayed"></label></div><div class="form-row"><label>Delivery fee (EGP)<input name="zone_fee" type="number" min="0" step="1" required></label><div class="v304-zone-add-action"><button class="admin-primary-btn" type="submit">ADD OVERRIDE</button></div></div></form></section><section class="v30-backup-card"><div><span>OWNER TOOLS</span><h3>BACKUP / RESTORE</h3><p>Backup includes catalog, variants, galleries, coupons, store settings and delivery zones. Restore is a safe merge and never overwrites orders.</p></div><div class="v30-row-actions"><button id="v30-export-backup" class="admin-secondary-btn">EXPORT BACKUP</button><label class="admin-secondary-btn v30-file-label">RESTORE BACKUP<input id="v30-restore-backup" type="file" accept="application/json" hidden></label></div></section>`);st.onclick=()=>{v30OpenCustom(sp.id,st);loadStoreSettings();loadDeliveryZones()};sp.querySelector('#v30-store-form').onsubmit=saveStoreSettings;sp.querySelector('#v304-refresh-zones').onclick=loadDeliveryZones;sp.querySelector('#v304-add-zone-form').onsubmit=addDeliveryZone;sp.querySelector('#v30-export-backup').onclick=()=>exportBackup().catch(e=>sp.querySelector('#v30-store-error').textContent=e.message);sp.querySelector('#v30-restore-backup').onchange=e=>restoreBackup(e.target.files?.[0]).catch(er=>sp.querySelector('#v30-store-error').textContent=er.message);
     const audt=addV30Tab('audit','AUDIT',true);const audp=addV30Panel('v30-audit-panel','<div class="admin-dashboard-head"><div><div class="eyebrow" style="color:#766b5d">OWNER SECURITY</div><h1>AUDIT LOG</h1></div><button id="v30-refresh-audit" class="admin-secondary-btn">REFRESH</button></div><div id="v30-audit-error" class="admin-error"></div><div id="v30-audit-list" class="v30-audit-list"></div>');audt.onclick=()=>{v30OpenCustom(audp.id,audt);loadAudit()};audp.querySelector('#v30-refresh-audit').onclick=loadAudit;
   }
   document.querySelectorAll('.admin-tab:not(.v30-admin-tab)').forEach(t=>t.addEventListener('click',v30HideCustomPanels));
