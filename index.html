@@ -20,7 +20,7 @@
 <meta name="application-name" content="DOMARO">
 <meta name="theme-color" content="#0b0b0b">
 
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css?v=30.1">
 <script type="application/ld+json">
 {
   "@context":"https://schema.org",
@@ -73,6 +73,7 @@
       <a href="contact.html">CONTACT</a>
     </nav>
     <div class="navicons">
+      <button class="nav-action nav-lang-toggle" type="button" aria-label="Switch language" title="العربية / English"><span class="nav-lang-text">AR</span></button>
       <button class="nav-action nav-search-trigger" type="button" aria-label="Search products or brands" title="Search products or brands">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
         <span class="nav-action-label nav-search-label">SEARCH</span>
@@ -81,6 +82,8 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7.5h14v11H5z"></path><path d="M8 7.5V5.8A2.8 2.8 0 0 1 10.8 3h2.4A2.8 2.8 0 0 1 16 5.8v1.7"></path><path d="M8.5 12h7"></path></svg>
         <span class="nav-action-label">TRACK</span>
       </a>
+      <a class="nav-action nav-wishlist-action" href="account.html#wishlist" aria-label="Wishlist" title="Wishlist"><span class="nav-heart-icon">♡</span><span class="nav-action-label">WISHLIST</span><span class="cart-pill wishlist-pill" data-wishlist-count>0</span></a>
+      <a class="nav-action nav-account-action" href="account.html" aria-label="My account" title="My account"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5.5 20c.8-4 3-6 6.5-6s5.7 2 6.5 6"></path></svg><span class="nav-action-label">ACCOUNT</span></a>
       <a class="nav-action nav-cart-action" href="cart.html" aria-label="Cart" title="Cart">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l-1 11h-9z"></path><path d="M9 9V6.5a3 3 0 0 1 6 0V9"></path></svg>
         <span class="nav-action-label">CART</span>
@@ -177,4 +180,4 @@
     <div class="copyright"><span>© 2026 DOMARO. ALL RIGHTS RESERVED.</span><span>A SCENT THAT BECOMES YOU.</span></div>
   </div>
 </footer>
-<script src="app.js"></script><script src="v30.js"></script></body></html>
+<script src="app.js?v=30.1"></script><script src="v30-customer.js?v=30.1"></script></body></html>
