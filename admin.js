@@ -29,6 +29,10 @@ const ordersLoading = document.getElementById('orders-loading');
 const refreshBtn = document.getElementById('refresh-orders');
 const searchInput = document.getElementById('order-search');
 const statusFilter = document.getElementById('status-filter');
+const ordersDateFrom = document.getElementById('orders-date-from');
+const ordersDateTo = document.getElementById('orders-date-to');
+const clearOrderFiltersBtn = document.getElementById('clear-order-filters');
+const exportOrdersCsvBtn = document.getElementById('export-orders-csv');
 const ordersCountLabel = document.getElementById('orders-count-label');
 const ordersPagination = document.getElementById('orders-pagination');
 const ordersPrevPage = document.getElementById('orders-prev-page');
@@ -37,6 +41,8 @@ const ordersPageLabel = document.getElementById('orders-page-label');
 const orderDetailsModal = document.getElementById('order-details-modal');
 const orderDetailsTitle = document.getElementById('order-details-title');
 const orderDetailsContent = document.getElementById('order-details-content');
+const copyOrderSummaryBtn = document.getElementById('copy-order-summary');
+const printOrderBtn = document.getElementById('print-order');
 
 const productsList = document.getElementById('products-list');
 const productsError = document.getElementById('products-error');
@@ -80,6 +86,7 @@ let adminEmail = sessionStorage.getItem('domaro_admin_email') || '';
 let allOrders = [];
 let orderItems = [];
 let ordersPage = 1;
+let currentDetailOrderId = null;
 const ordersPerPage = 8;
 let allProducts = [];
 let allCoupons = [];
@@ -407,11 +414,118 @@ function renderStats(){
 function filteredOrders(){
   const q=searchInput.value.trim().toLowerCase();
   const status=statusFilter.value;
+  const fromValue=ordersDateFrom?.value || '';
+  const toValue=ordersDateTo?.value || '';
+  const fromDate=fromValue ? new Date(`${fromValue}T00:00:00`) : null;
+  const toDate=toValue ? new Date(`${toValue}T23:59:59.999`) : null;
+
   return allOrders.filter(o=>{
     const matchesStatus=status==='all' || o.status===status;
     const haystack=[o.order_number,o.first_name,o.last_name,o.phone,o.governorate,o.area].join(' ').toLowerCase();
-    return matchesStatus && (!q || haystack.includes(q));
+    const created=o.created_at ? new Date(o.created_at) : null;
+    const matchesFrom=!fromDate || (created && created>=fromDate);
+    const matchesTo=!toDate || (created && created<=toDate);
+    return matchesStatus && matchesFrom && matchesTo && (!q || haystack.includes(q));
   });
+}
+
+function csvSafe(value){
+  let text=String(value ?? '');
+  if(/^[=+\-@]/.test(text)) text=`'${text}`;
+  return `"${text.replaceAll('"','""')}"`;
+}
+
+function formatOrderItemsForExport(orderId){
+  return orderItems
+    .filter(i=>i.order_id===orderId)
+    .map(i=>`${i.product_name} ${i.size_ml || ''}ML x${i.quantity}`.replace(/\s+/g,' ').trim())
+    .join(' | ');
+}
+
+function exportFilteredOrdersCsv(){
+  const rows=filteredOrders();
+  if(!rows.length){
+    ordersError.textContent='There are no matching orders to export.';
+    return;
+  }
+  ordersError.textContent='';
+  const headers=['Order Number','Created At','Status','First Name','Last Name','Phone','Governorate','Area','Building','Address','Items','Subtotal','Shipping','Discount','Coupon','Total','Payment Method','Notes'];
+  const data=rows.map(o=>[
+    o.order_number,fmtDate(o.created_at),prettyStatus(o.status),o.first_name,o.last_name,o.phone,o.governorate,o.area,o.building,o.address,
+    formatOrderItemsForExport(o.id),o.subtotal,o.shipping,o.discount,o.coupon_code,o.total,o.payment_method,o.notes
+  ]);
+  const csv='\uFEFF'+[headers,...data].map(row=>row.map(csvSafe).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const today=new Date().toISOString().slice(0,10);
+  a.href=url;
+  a.download=`DOMARO-orders-${today}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),500);
+}
+
+function orderSummaryText(order){
+  const items=orderItems.filter(i=>i.order_id===order.id);
+  const lines=items.map(i=>`- ${i.product_name} · ${i.size_ml} ML · Qty ${i.quantity} · ${money(i.line_total)}`);
+  return [
+    `DOMARO ORDER ${order.order_number}`,
+    `Date: ${fmtDate(order.created_at)}`,
+    `Status: ${prettyStatus(order.status)}`,
+    '',
+    `Customer: ${(order.first_name || '')} ${(order.last_name || '')}`.trim(),
+    `Phone: ${order.phone || ''}`,
+    `Delivery: ${[order.governorate,order.area,order.building,order.address].filter(Boolean).join(' · ')}`,
+    '',
+    'Items:',
+    ...(lines.length?lines:['- No items found']),
+    '',
+    `Subtotal: ${money(order.subtotal)}`,
+    Number(order.discount||0)>0 ? `Discount${order.coupon_code?` (${order.coupon_code})`:''}: -${money(order.discount)}` : null,
+    `Shipping: ${money(order.shipping)}`,
+    `Total: ${money(order.total)}`,
+    `Payment: ${order.payment_method || ''}`,
+    order.notes ? `Note: ${order.notes}` : null
+  ].filter(v=>v!==null).join('\n');
+}
+
+async function copyCurrentOrderSummary(){
+  const order=allOrders.find(o=>o.id===currentDetailOrderId);
+  if(!order) return;
+  const text=orderSummaryText(order);
+  try{
+    await navigator.clipboard.writeText(text);
+  }catch(_){
+    const ta=document.createElement('textarea');
+    ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  if(copyOrderSummaryBtn){
+    const old=copyOrderSummaryBtn.textContent;
+    copyOrderSummaryBtn.textContent='COPIED';
+    setTimeout(()=>{copyOrderSummaryBtn.textContent=old;},1200);
+  }
+}
+
+function printCurrentOrder(){
+  const order=allOrders.find(o=>o.id===currentDetailOrderId);
+  if(!order) return;
+  const items=orderItems.filter(i=>i.order_id===order.id);
+  const itemsHtml=items.map(i=>`<tr><td>${esc(i.product_name)}</td><td>${esc(i.size_ml)} ML</td><td>${esc(i.quantity)}</td><td>${money(i.line_total)}</td></tr>`).join('');
+  const popup=window.open('','_blank','width=900,height=700');
+  if(!popup){ ordersError.textContent='Please allow pop-ups to print this order.'; return; }
+  popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(order.order_number)}</title><style>
+    body{font-family:Arial,sans-serif;color:#17130f;margin:36px}h1{font-size:24px;letter-spacing:2px;margin:0 0 4px}.brand{font-size:12px;letter-spacing:4px}.muted{color:#6f665d;font-size:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:28px 0}.box{border-top:1px solid #bbb;padding-top:12px}h3{font-size:10px;letter-spacing:1.5px}.box p{margin:5px 0;font-size:13px}table{width:100%;border-collapse:collapse;margin-top:22px}th,td{text-align:left;padding:10px;border-bottom:1px solid #ddd;font-size:12px}th{font-size:9px;letter-spacing:1px}.totals{margin-left:auto;width:320px;margin-top:24px}.row{display:flex;justify-content:space-between;padding:6px 0}.total{font-size:18px;font-weight:700;border-top:2px solid #17130f;margin-top:6px;padding-top:10px}.note{margin-top:25px;padding:14px;background:#f5f1ea}@media print{body{margin:18mm}}
+  </style></head><body>
+    <div class="brand">DOMARO</div><h1>${esc(order.order_number)}</h1><div class="muted">${esc(fmtDate(order.created_at))} · ${esc(prettyStatus(order.status))}</div>
+    <div class="grid"><div class="box"><h3>CUSTOMER</h3><p><b>${esc(order.first_name)} ${esc(order.last_name)}</b></p><p>${esc(order.phone)}</p></div><div class="box"><h3>DELIVERY</h3><p>${esc([order.governorate,order.area].filter(Boolean).join(' · '))}</p><p>${esc([order.building,order.address].filter(Boolean).join(' · '))}</p></div></div>
+    <table><thead><tr><th>PRODUCT</th><th>SIZE</th><th>QTY</th><th>TOTAL</th></tr></thead><tbody>${itemsHtml || '<tr><td colspan="4">No items found.</td></tr>'}</tbody></table>
+    <div class="totals"><div class="row"><span>Subtotal</span><b>${money(order.subtotal)}</b></div>${Number(order.discount||0)>0?`<div class="row"><span>Discount${order.coupon_code?` (${esc(order.coupon_code)})`:''}</span><b>− ${money(order.discount)}</b></div>`:''}<div class="row"><span>Shipping</span><b>${money(order.shipping)}</b></div><div class="row total"><span>Total</span><b>${money(order.total)}</b></div><div class="row"><span>Payment</span><span>${esc(order.payment_method || '')}</span></div></div>
+    ${order.notes?`<div class="note"><b>Customer note:</b> ${esc(order.notes)}</div>`:''}
+    <script>window.onload=()=>{window.print();};<\/script></body></html>`);
+  popup.document.close();
 }
 function orderItemCount(orderId){
   return orderItems
@@ -494,6 +608,7 @@ function renderOrders(){
 function openOrderDetails(orderId){
   const order=allOrders.find(o=>o.id===orderId);
   if(!order || !orderDetailsModal || !orderDetailsContent) return;
+  currentDetailOrderId=orderId;
 
   const items=orderItems.filter(i=>i.order_id===order.id);
   const productsHtml=items.map(i=>`
@@ -527,6 +642,7 @@ function openOrderDetails(orderId){
 function closeOrderDetails(){
   if(!orderDetailsModal) return;
   orderDetailsModal.hidden=true;
+  currentDetailOrderId=null;
   document.body.style.overflow='';
 }
 
@@ -1388,6 +1504,17 @@ refreshDashboardBtn.addEventListener('click',loadDashboardStats);
 refreshBtn.addEventListener('click',loadOrders);
 searchInput.addEventListener('input',()=>{ordersPage=1;renderOrders();});
 statusFilter.addEventListener('change',()=>{ordersPage=1;renderOrders();});
+ordersDateFrom?.addEventListener('change',()=>{ordersPage=1;renderOrders();});
+ordersDateTo?.addEventListener('change',()=>{ordersPage=1;renderOrders();});
+clearOrderFiltersBtn?.addEventListener('click',()=>{
+  searchInput.value=''; statusFilter.value='all';
+  if(ordersDateFrom) ordersDateFrom.value='';
+  if(ordersDateTo) ordersDateTo.value='';
+  ordersPage=1; renderOrders();
+});
+exportOrdersCsvBtn?.addEventListener('click',exportFilteredOrdersCsv);
+copyOrderSummaryBtn?.addEventListener('click',copyCurrentOrderSummary);
+printOrderBtn?.addEventListener('click',printCurrentOrder);
 ordersPrevPage?.addEventListener('click',()=>{if(ordersPage>1){ordersPage-=1;renderOrders();ordersPanel.scrollIntoView({behavior:'smooth',block:'start'});}});
 ordersNextPage?.addEventListener('click',()=>{const pages=Math.max(1,Math.ceil(filteredOrders().length/ordersPerPage));if(ordersPage<pages){ordersPage+=1;renderOrders();ordersPanel.scrollIntoView({behavior:'smooth',block:'start'});}});
 document.querySelectorAll('[data-close-order-modal]').forEach(el=>el.addEventListener('click',closeOrderDetails));

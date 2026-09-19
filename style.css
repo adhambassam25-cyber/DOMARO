@@ -1504,3 +1504,29 @@ body.entry-gate-open{
   .orders-pagination{gap:8px}
   .orders-pagination .admin-secondary-btn{padding:10px 11px}
 }
+
+
+/* DOMARO V22 — order tools: date filters, CSV export, copy + print */
+.orders-controls-v22{
+  grid-template-columns:minmax(210px,1.6fr) minmax(145px,.75fr) minmax(150px,.72fr) minmax(150px,.72fr) auto auto;
+  align-items:end;
+}
+.orders-date-filter{display:flex;flex-direction:column;gap:6px;min-width:0}
+.orders-date-filter span{font-size:8px;font-weight:700;letter-spacing:1.35px;color:#7e7469}
+.orders-date-filter input{width:100%;height:42px;border:1px solid #cfc5b8;background:#fff;padding:0 11px;color:#27211c;font:inherit}
+.orders-controls-v22 .admin-primary-btn,.orders-controls-v22 .admin-secondary-btn{height:42px;white-space:nowrap}
+.order-modal-head-v22{gap:18px}
+.order-modal-tools{display:flex;align-items:center;gap:8px;margin-left:auto}
+.order-modal-tools .admin-secondary-btn{padding:9px 13px}
+@media(max-width:1150px){
+  .orders-controls-v22{grid-template-columns:1fr 1fr 1fr 1fr}
+  .orders-controls-v22 #order-search{grid-column:span 2}
+}
+@media(max-width:720px){
+  .orders-controls-v22{grid-template-columns:1fr 1fr}
+  .orders-controls-v22 #order-search,.orders-controls-v22 #status-filter{grid-column:span 2}
+  .orders-controls-v22 .admin-primary-btn,.orders-controls-v22 .admin-secondary-btn{width:100%}
+  .order-modal-head-v22{align-items:flex-start}
+  .order-modal-tools{flex-wrap:wrap;justify-content:flex-end}
+  .order-modal-tools .admin-secondary-btn{font-size:8px;padding:8px 10px}
+}

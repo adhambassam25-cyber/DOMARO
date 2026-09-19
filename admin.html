@@ -153,7 +153,7 @@
       <div class="admin-stat"><span>DELIVERED</span><b id="stat-delivered">0</b></div>
     </div>
 
-    <div class="admin-controls">
+    <div class="admin-controls orders-controls-v22">
       <input id="order-search" type="search" placeholder="Search order number, customer or phone">
       <select id="status-filter">
         <option value="all">All statuses</option>
@@ -163,6 +163,10 @@
         <option value="delivered">Delivered</option>
         <option value="cancelled">Cancelled</option>
       </select>
+      <label class="orders-date-filter"><span>FROM</span><input id="orders-date-from" type="date" aria-label="Orders from date"></label>
+      <label class="orders-date-filter"><span>TO</span><input id="orders-date-to" type="date" aria-label="Orders to date"></label>
+      <button id="clear-order-filters" class="admin-secondary-btn" type="button">CLEAR</button>
+      <button id="export-orders-csv" class="admin-primary-btn" type="button">EXPORT CSV</button>
     </div>
 
     <div class="orders-results-bar">
@@ -271,12 +275,16 @@
 <section id="order-details-modal" class="product-modal" hidden>
   <div class="product-modal-backdrop" data-close-order-modal></div>
   <div class="product-modal-card order-details-modal-card">
-    <div class="product-modal-head">
+    <div class="product-modal-head order-modal-head-v22">
       <div>
         <div class="eyebrow" style="color:#766b5d">ORDER DETAILS</div>
         <h2 id="order-details-title">ORDER</h2>
       </div>
-      <button class="product-modal-close" type="button" data-close-order-modal>×</button>
+      <div class="order-modal-tools">
+        <button id="copy-order-summary" class="admin-secondary-btn" type="button">COPY</button>
+        <button id="print-order" class="admin-secondary-btn" type="button">PRINT</button>
+        <button class="product-modal-close" type="button" data-close-order-modal>×</button>
+      </div>
     </div>
     <div id="order-details-content"></div>
   </div>

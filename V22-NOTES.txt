@@ -1,0 +1,14 @@
+DOMARO V22 — ORDER TOOLS
+
+Frontend-only update. No Supabase migration is required.
+
+Added:
+- Orders date range filters (FROM / TO).
+- Clear filters button.
+- Export the currently filtered orders to UTF-8 CSV.
+- CSV formula-injection protection for customer-entered fields.
+- COPY action in Order Details for a clean order summary.
+- PRINT action in Order Details for a print-friendly order / packing sheet.
+- Mobile responsive controls.
+
+Existing V21 pagination, search, status filter, permissions and security remain unchanged.
