@@ -2076,3 +2076,74 @@ body.entry-gate-open{
   .brand-ribbon-track::-webkit-scrollbar{display:none}
   .brand-ribbon-track strong{font-size:15px;letter-spacing:1.8px}
 }
+
+/* DOMARO V30.5.1 — mobile header width / horizontal overflow fix */
+html,body{max-width:100%;overflow-x:hidden}
+.nav{min-width:0}
+.logo{flex:0 1 auto;min-width:0}
+.navicons{min-width:0;flex:0 0 auto}
+
+@media(max-width:640px){
+  header .container.nav{
+    width:100%;
+    max-width:none;
+    padding-left:14px;
+    padding-right:14px;
+  }
+  .nav{
+    gap:6px;
+    justify-content:flex-start;
+  }
+  .logo{
+    font-size:21px;
+    letter-spacing:5px;
+    line-height:.9;
+    margin-right:auto;
+    white-space:nowrap;
+  }
+  .logo small{
+    font-size:7px;
+    letter-spacing:3.8px;
+    margin-top:7px;
+  }
+  .mobile-menu-toggle{
+    width:32px;
+    height:32px;
+    min-width:32px;
+    padding:5px;
+    flex:0 0 32px;
+  }
+  .mobile-menu-toggle span{width:20px}
+  .navicons{gap:3px;flex:0 0 auto}
+  .nav-action{
+    width:32px;
+    height:32px;
+    min-width:32px;
+    min-height:32px;
+    padding:0;
+  }
+  .nav-action svg{width:14px;height:14px}
+  .nav-heart-icon{font-size:19px}
+  .nav-lang-text{font-size:9px;letter-spacing:1px}
+  .nav-account-action{display:none!important}
+  .navlinks .mobile-account-link{display:block}
+  .cart-pill,.wishlist-pill{transform:scale(.92);transform-origin:center}
+}
+
+@media(min-width:641px){
+  .navlinks .mobile-account-link{display:none}
+}
+
+@media(max-width:390px){
+  header .container.nav{padding-left:10px;padding-right:10px}
+  .logo{font-size:19px;letter-spacing:4.2px}
+  .logo small{font-size:6.5px;letter-spacing:3.2px}
+  .nav{gap:4px}
+  .navicons{gap:2px}
+  .nav-action,.mobile-menu-toggle{
+    width:30px;
+    height:30px;
+    min-width:30px;
+    min-height:30px;
+  }
+}
