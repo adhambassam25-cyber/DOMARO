@@ -1,0 +1,8 @@
+DOMARO V30.5 — Header & Homepage Cleanup
+
+- Replaced the five-card editorial/lookbook block with one slim luxury signature ribbon.
+- Removed the TRACK action from the top header.
+- TRACK ORDER is now added as a mobile-only item inside the hamburger (three-line) navigation.
+- Desktop users can still access Track Order from the footer and direct tracking page.
+- Added Arabic translation for the new signature ribbon.
+- No database/SQL changes required.

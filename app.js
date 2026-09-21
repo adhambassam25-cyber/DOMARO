@@ -1255,6 +1255,16 @@ function initMobileNavigation(){
   const icons=document.querySelector('.navicons');
   if(!nav || !links || !icons || nav.querySelector('.mobile-menu-toggle')) return;
 
+  // Track Order now lives inside the hamburger menu instead of the top action bar.
+  let trackLink=links.querySelector('a[href="track.html"]');
+  if(!trackLink){
+    trackLink=document.createElement('a');
+    trackLink.href='track.html';
+    trackLink.textContent='TRACK ORDER';
+    links.appendChild(trackLink);
+  }
+  trackLink.classList.add('mobile-track-link');
+
   const button=document.createElement('button');
   button.type='button';
   button.className='mobile-menu-toggle';
