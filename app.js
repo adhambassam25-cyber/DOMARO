@@ -1265,6 +1265,17 @@ function initMobileNavigation(){
   }
   trackLink.classList.add('mobile-track-link');
 
+  // Keep account access available on mobile while removing the top account icon
+  // so the header always fits narrow phone screens without horizontal overflow.
+  let accountLink=links.querySelector('.mobile-account-link');
+  if(!accountLink){
+    accountLink=document.createElement('a');
+    accountLink.href='account.html';
+    accountLink.textContent='MY ACCOUNT';
+    accountLink.classList.add('mobile-account-link');
+    links.appendChild(accountLink);
+  }
+
   const button=document.createElement('button');
   button.type='button';
   button.className='mobile-menu-toggle';

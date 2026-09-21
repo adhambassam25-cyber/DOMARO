@@ -1,0 +1,8 @@
+DOMARO V30.5.1 — Mobile Width Fix
+
+- Fixes horizontal overflow / right-side clipping on mobile.
+- Tightens mobile header spacing and icon sizes.
+- Keeps SEARCH, WISHLIST, CART and AR visible.
+- Moves MY ACCOUNT into the hamburger menu on small screens so the header fits reliably.
+- Adds global overflow protection without changing desktop layout.
+- No SQL changes.
