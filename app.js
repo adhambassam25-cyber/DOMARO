@@ -73,7 +73,7 @@ function customerAuthHeaders(extra={}){
 async function loadCatalog(){
   try{
     const [productsRes,variantsRes,imagesRes,settingsRes]=await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/products?select=id,name,category,size_ml,price,cost_price,has_variants,image_path,description,brand,story,top_notes,heart_notes,base_notes,in_stock,stock_quantity,active&active=eq.true&order=created_at.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
+      fetch(`${SUPABASE_URL}/rest/v1/products?select=id,name,category,size_ml,price,cost_price,has_variants,image_path,description,brand,story,top_notes,heart_notes,base_notes,key_notes,in_stock,stock_quantity,active&active=eq.true&order=created_at.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
       fetch(`${SUPABASE_URL}/rest/v1/product_variants?select=id,product_id,sku,label,size_ml,price,stock_quantity,in_stock,active,is_default,sort_order&active=eq.true&order=product_id.asc,sort_order.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
       fetch(`${SUPABASE_URL}/rest/v1/product_images?select=id,product_id,image_path,alt_text,sort_order&order=product_id.asc,sort_order.asc,id.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
       fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_store_settings`,{method:'POST',headers:{'apikey':SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},body:'{}'})
@@ -100,7 +100,7 @@ async function loadCatalog(){
       const minPrice=Math.min(...variants.filter(v=>v.active!==false).map(v=>v.price));
       return {
         id:p.id,name:p.name,type:'Eau de Parfum',price:Number.isFinite(minPrice)?minPrice:Number(p.price),size:defaultVariant?.size || `${p.size_ml} ML`,size_ml:defaultVariant?.size_ml || Number(p.size_ml),img:p.image_path || 'assets/hero.svg',cat:p.category,
-        badge:availableVariants.length ? String(p.category).toUpperCase() : 'OUT OF STOCK',stockQuantity:p.stock_quantity===null?null:Number(p.stock_quantity),inStock:availableVariants.length>0,active:Boolean(p.active),brand:String(p.brand||'').trim(),story:String(p.story||'').trim(),topNotes:String(p.top_notes||'').trim(),heartNotes:String(p.heart_notes||'').trim(),baseNotes:String(p.base_notes||'').trim(),desc:p.description||'',hasVariants:Boolean(p.has_variants)||variants.length>1,variants,gallery
+        badge:availableVariants.length ? String(p.category).toUpperCase() : 'OUT OF STOCK',stockQuantity:p.stock_quantity===null?null:Number(p.stock_quantity),inStock:availableVariants.length>0,active:Boolean(p.active),brand:String(p.brand||'').trim(),story:String(p.story||'').trim(),topNotes:String(p.top_notes||'').trim(),heartNotes:String(p.heart_notes||'').trim(),baseNotes:String(p.base_notes||'').trim(),keyNotes:String(p.key_notes||'').trim(),desc:p.description||'',hasVariants:Boolean(p.has_variants)||variants.length>1,variants,gallery
       };
     });
     window.DOMARO_CATALOG_UNAVAILABLE=false;
@@ -329,17 +329,22 @@ function renderProductDetail(){
   const initialVariant=variantForProduct(p,null);
   const brandLabel=p.brand ? escapeTrackHtml(p.brand) : 'DOMARO EDIT';
   const storyText=p.story || p.desc || '';
-  const hasNotes=Boolean(p.topNotes || p.heartNotes || p.baseNotes);
+  const hasSplitNotes=Boolean(p.topNotes || p.heartNotes || p.baseNotes);
+  const hasKeyNotes=Boolean(p.keyNotes);
   const gallery=[{path:p.img,alt:p.name},...(p.gallery||[]).filter(g=>g.path && g.path!==p.img)];
-  const notesHtml=hasNotes ? `
+  const notesHtml=(hasKeyNotes || hasSplitNotes) ? `
     <section class="scent-notes-section">
       <div class="editorial-kicker">THE SCENT</div>
       <h2>THE COMPOSITION</h2>
-      <div class="scent-notes-grid">
-        <div class="scent-note-card"><span>01</span><b>TOP NOTES</b><p>${escapeTrackHtml(p.topNotes || 'To be added')}</p></div>
-        <div class="scent-note-card"><span>02</span><b>HEART NOTES</b><p>${escapeTrackHtml(p.heartNotes || 'To be added')}</p></div>
-        <div class="scent-note-card"><span>03</span><b>BASE NOTES</b><p>${escapeTrackHtml(p.baseNotes || 'To be added')}</p></div>
-      </div>
+      ${hasKeyNotes ? `
+        <div class="scent-notes-grid scent-notes-grid-single">
+          <div class="scent-note-card scent-note-card-key"><span>01</span><b>KEY NOTES</b><p>${escapeTrackHtml(p.keyNotes)}</p></div>
+        </div>` : `
+        <div class="scent-notes-grid">
+          ${p.topNotes ? `<div class="scent-note-card"><span>01</span><b>TOP NOTES</b><p>${escapeTrackHtml(p.topNotes)}</p></div>` : ''}
+          ${p.heartNotes ? `<div class="scent-note-card"><span>02</span><b>HEART NOTES</b><p>${escapeTrackHtml(p.heartNotes)}</p></div>` : ''}
+          ${p.baseNotes ? `<div class="scent-note-card"><span>03</span><b>BASE NOTES</b><p>${escapeTrackHtml(p.baseNotes)}</p></div>` : ''}
+        </div>`}
     </section>` : '';
 
   const variantButtons=variants.length>1 ? `<div class="variant-selector-wrap">

@@ -1,0 +1,7 @@
+DOMARO V30.6 — Key Notes Support
+
+- Adds optional Key Notes field to products.
+- If Key Notes has a value, customer product page shows one KEY NOTES composition card and hides Top/Heart/Base.
+- If Key Notes is empty, normal Top/Heart/Base layout remains.
+- Backup restore updated to preserve key_notes.
+- Includes all V30.5.1 mobile-width fixes.

@@ -1668,6 +1668,7 @@ function openProductModal(product=null){
   document.getElementById('product-top-notes').value=product?.top_notes || '';
   document.getElementById('product-heart-notes').value=product?.heart_notes || '';
   document.getElementById('product-base-notes').value=product?.base_notes || '';
+  document.getElementById('product-key-notes').value=product?.key_notes || '';
   document.getElementById('product-stock-quantity').value=product?.stock_quantity ?? '';
   document.getElementById('product-stock').checked=product ? Boolean(product.in_stock) : true;
   document.getElementById('product-active').checked=product ? Boolean(product.active) : true;
@@ -1737,6 +1738,7 @@ productForm.addEventListener('submit',async e=>{
   const top_notes=document.getElementById('product-top-notes').value.trim();
   const heart_notes=document.getElementById('product-heart-notes').value.trim();
   const base_notes=document.getElementById('product-base-notes').value.trim();
+  const key_notes=document.getElementById('product-key-notes').value.trim();
   const stockRaw=document.getElementById('product-stock-quantity').value.trim();
   const stock_quantity=stockRaw==='' ? null : Number(stockRaw);
   let in_stock=document.getElementById('product-stock').checked;
@@ -1782,6 +1784,7 @@ productForm.addEventListener('submit',async e=>{
       top_notes:top_notes || null,
       heart_notes:heart_notes || null,
       base_notes:base_notes || null,
+      key_notes:key_notes || null,
       active,
       image_path,
       updated_at:new Date().toISOString()
