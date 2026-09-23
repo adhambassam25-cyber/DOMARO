@@ -2147,3 +2147,6 @@ html,body{max-width:100%;overflow-x:hidden}
     min-height:30px;
   }
 }
+
+.scent-notes-grid-single{grid-template-columns:1fr}
+.scent-note-card-key{max-width:760px;margin:0 auto;width:100%}

@@ -129,7 +129,7 @@ const V30_TRANSLATIONS={
   'MEN':'رجالي','WOMEN':'حريمي','UNISEX':'للجنسين','BRANDS':'الماركات','SHOP ALL':'تسوق الكل','ABOUT':'عن دومارو','CONTACT':'تواصل معنا','HOME':'الرئيسية','SHOP':'المتجر','COLLECTIONS':'المجموعات','TRACK ORDER':'تتبع الطلب',
   'SHOP COLLECTION →':'تسوق المجموعة ←','OUR FAVORITES':'اختياراتنا','CURRENT COLLECTION':'المجموعة الحالية','FOR MEN':'للرجال','FOR WOMEN':'للنساء','DISCOVER →':'اكتشف ←',
   'SHOP FRAGRANCES':'تسوق العطور','SHOP BY BRAND':'تسوق حسب الماركة','ALL':'الكل','VIEW':'العرض','THUMBNAILS':'صور','LIST':'قائمة',
-  'ADD TO CART':'أضف للسلة','OUT OF STOCK':'غير متوفر','AVAILABLE':'متوفر','SELECT SIZE':'اختر الحجم','THE STORY':'القصة','THE SCENT':'الرائحة','THE COMPOSITION':'التركيبة','TOP NOTES':'المقدمة','HEART NOTES':'القلب','BASE NOTES':'القاعدة','PRODUCT INFORMATION':'معلومات المنتج','DELIVERY':'التوصيل',
+  'ADD TO CART':'أضف للسلة','OUT OF STOCK':'غير متوفر','AVAILABLE':'متوفر','SELECT SIZE':'اختر الحجم','THE STORY':'القصة','THE SCENT':'الرائحة','THE COMPOSITION':'التركيبة','TOP NOTES':'المقدمة','HEART NOTES':'القلب','BASE NOTES':'القاعدة','KEY NOTES':'النوتات الأساسية','PRODUCT INFORMATION':'معلومات المنتج','DELIVERY':'التوصيل',
   'YOUR CART':'سلة التسوق','Subtotal':'الإجمالي الفرعي','Shipping':'الشحن','Total':'الإجمالي','CHECKOUT':'إتمام الطلب','REMOVE':'حذف',
   'CHECKOUT':'إتمام الطلب','REVIEW ORDER':'مراجعة الطلب','Cash on Delivery':'الدفع عند الاستلام','Pay when your order arrives.':'ادفع عند استلام طلبك.','ORDER SUMMARY':'ملخص الطلب','DISCOUNT CODE':'كود الخصم','APPLY':'تطبيق',
   'TRACK YOUR ORDER':'تتبع طلبك','ORDER STATUS':'حالة الطلب','Mobile number':'رقم الموبايل','Order number':'رقم الطلب','TRACK ORDER':'تتبع الطلب',
