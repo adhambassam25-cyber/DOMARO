@@ -944,8 +944,7 @@ function renderCheckout(){
 
         localStorage.removeItem('domaro_cart');
         sessionStorage.removeItem('domaro_checkout_token');
-        initQuickAdd();
-  updateCartCount();
+        updateCartCount();
         closeReview();
 
         const newOrderNumber=result?.orderNumber || 'Order received';
@@ -1349,6 +1348,7 @@ function initMobileNavigation(){
 async function initStore(){
   initEntryGate();
   initMobileNavigation();
+  initQuickAdd();
   updateCartCount();
   await loadCatalog();
   initGlobalSearch();
