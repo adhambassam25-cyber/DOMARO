@@ -99,7 +99,7 @@ async function loadCatalog(){
       const availableVariants=variants.filter(variantAvailable);
       const minPrice=Math.min(...variants.filter(v=>v.active!==false).map(v=>v.price));
       return {
-        id:p.id,name:p.name,type:'Eau de Parfum',price:Number.isFinite(minPrice)?minPrice:Number(p.price),size:defaultVariant?.size || `${p.size_ml} ML`,size_ml:defaultVariant?.size_ml || Number(p.size_ml),img:p.image_path || 'assets/hero.svg',cat:p.category,
+        id:p.id,name:p.name,type:String(p.category||'').toLowerCase()==='boxes'?'Gift Box':'Eau de Parfum',price:Number.isFinite(minPrice)?minPrice:Number(p.price),size:defaultVariant?.size || `${p.size_ml} ML`,size_ml:defaultVariant?.size_ml || Number(p.size_ml),img:p.image_path || 'assets/hero.svg',cat:p.category,
         badge:availableVariants.length ? String(p.category).toUpperCase() : 'OUT OF STOCK',stockQuantity:p.stock_quantity===null?null:Number(p.stock_quantity),inStock:availableVariants.length>0,active:Boolean(p.active),brand:String(p.brand||'').trim(),story:String(p.story||'').trim(),topNotes:String(p.top_notes||'').trim(),heartNotes:String(p.heart_notes||'').trim(),baseNotes:String(p.base_notes||'').trim(),keyNotes:String(p.key_notes||'').trim(),desc:p.description||'',hasVariants:Boolean(p.has_variants)||variants.length>1,variants,gallery
       };
     });
@@ -116,20 +116,49 @@ async function loadCatalog(){
 function productCard(p){
   const brandLine=p.brand ? `<div class="product-brand">${escapeTrackHtml(p.brand)}</div>` : '';
   const activeVariants=(p.variants||[]).filter(v=>v.active!==false);
+  const availableVariants=activeVariants.filter(variantAvailable);
   const prices=[...new Set(activeVariants.map(v=>Number(v.price)))];
   const priceLabel=prices.length>1 ? `FROM ${money(Math.min(...prices))}` : money(p.price);
-  return `<a class="product-card" href="product.html?id=${encodeURIComponent(p.id)}" data-product-id="${escapeTrackHtml(p.id)}">
-    <div class="product-img real-photo">
-      <span class="badge ${p.inStock ? '' : 'badge-out'}">${p.inStock ? p.badge : 'OUT OF STOCK'}</span>
-      <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy" decoding="async">
-    </div>
-    <div class="product-info">
-      ${brandLine}
-      <h3>${escapeTrackHtml(p.name)}</h3>
-      <div class="meta">${escapeTrackHtml(p.type)} · ${activeVariants.length>1 ? `${activeVariants.length} SIZES` : escapeTrackHtml(p.size)}</div>
-      <div class="price-row"><span class="price">${priceLabel}</span><span class="meta">${escapeTrackHtml(String(p.cat || '').toUpperCase())}</span></div>
-    </div>
-  </a>`;
+  const productUrl=`product.html?id=${encodeURIComponent(p.id)}`;
+  const quickLabel=!p.inStock ? 'OUT OF STOCK' : availableVariants.length>1 ? 'SELECT SIZE' : 'ADD TO CART';
+  return `<article class="product-card" data-product-id="${escapeTrackHtml(p.id)}">
+    <a class="product-card-link" href="${productUrl}">
+      <div class="product-img real-photo">
+        <span class="badge ${p.inStock ? '' : 'badge-out'}">${p.inStock ? p.badge : 'OUT OF STOCK'}</span>
+        <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy" decoding="async">
+      </div>
+      <div class="product-info">
+        ${brandLine}
+        <h3>${escapeTrackHtml(p.name)}</h3>
+        <div class="meta">${escapeTrackHtml(p.type)} · ${activeVariants.length>1 ? `${activeVariants.length} SIZES` : escapeTrackHtml(p.size)}</div>
+        <div class="price-row"><span class="price">${priceLabel}</span><span class="meta">${escapeTrackHtml(String(p.cat || '').toUpperCase())}</span></div>
+      </div>
+    </a>
+    <button class="quick-add-btn" type="button" data-quick-add="${escapeTrackHtml(p.id)}" ${p.inStock ? '' : 'disabled'}>${quickLabel}</button>
+  </article>`;
+}
+
+function initQuickAdd(){
+  if(window.__domaroQuickAddReady) return;
+  window.__domaroQuickAddReady=true;
+  document.addEventListener('click',event=>{
+    const button=event.target.closest('[data-quick-add]');
+    if(!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const id=button.dataset.quickAdd;
+    const product=products.find(item=>item.id===id);
+    if(!product || !product.inStock) return;
+    const available=(product.variants||[]).filter(variantAvailable);
+    if(available.length!==1){
+      window.location.href=`product.html?id=${encodeURIComponent(id)}`;
+      return;
+    }
+    addToCart(id,1,available[0].id || null);
+    button.textContent='ADDED ✓';
+    clearTimeout(button.__resetTimer);
+    button.__resetTimer=setTimeout(()=>{ button.textContent='ADD TO CART'; },1200);
+  });
 }
 
 function normalizeBrand(value){
@@ -231,7 +260,7 @@ function initShopView(){
 }
 
 function initFilters(){
-  const allowedFilters=['all','men','women','unisex'];
+  const allowedFilters=['all','men','women','unisex','boxes'];
   const params=new URLSearchParams(location.search);
   const urlFilter=(params.get('category') || 'all').toLowerCase();
   let activeCategory=allowedFilters.includes(urlFilter) ? urlFilter : 'all';
@@ -256,6 +285,7 @@ function initFilters(){
     if(title){
       if(activeSearch) title.textContent='SEARCH RESULTS';
       else if(activeBrand) title.textContent=activeBrand;
+      else if(activeCategory==='boxes') title.textContent='GIFT BOXES';
       else if(activeCategory!=='all') title.textContent=activeCategory.toUpperCase()+' FRAGRANCES';
       else title.textContent='SHOP FRAGRANCES';
     }
@@ -264,9 +294,11 @@ function initFilters(){
         ? `Products matching “${activeSearch}” by fragrance name or brand.`
         : activeBrand
           ? `Explore every ${activeBrand} fragrance currently available at DOMARO.`
-          : activeCategory!=='all'
-            ? `Explore the ${activeCategory} collection.`
-            : 'Browse the currently available DOMARO collection.';
+          : activeCategory==='boxes'
+            ? 'Explore DOMARO gift boxes and fragrance sets.'
+            : activeCategory!=='all'
+              ? `Explore the ${activeCategory} collection.`
+              : 'Browse the currently available DOMARO collection.';
     }
   };
 
@@ -1319,6 +1351,7 @@ function initMobileNavigation(){
 async function initStore(){
   initEntryGate();
   initMobileNavigation();
+  initQuickAdd();
   updateCartCount();
   await loadCatalog();
   initGlobalSearch();

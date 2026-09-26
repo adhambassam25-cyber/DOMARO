@@ -28,7 +28,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=30.7">
 </head>
 <body class="admin-body">
   <header class="admin-topbar">
@@ -517,6 +517,14 @@
       </div>
       <div class="form-row">
         <div>
+          <label>Maximum discount (EGP)</label>
+          <input id="coupon-max-discount" type="number" min="0.01" step="0.01" placeholder="Blank = no cap">
+          <small class="field-help">Optional. Mainly useful for percentage coupons.</small>
+        </div>
+        <div></div>
+      </div>
+      <div class="form-row">
+        <div>
           <label>Usage limit</label>
           <input id="coupon-usage-limit" type="number" min="1" step="1" placeholder="Blank = unlimited">
         </div>
@@ -567,6 +575,7 @@
             <option value="men">Men</option>
             <option value="women">Women</option>
             <option value="unisex">Unisex</option>
+            <option value="boxes">Boxes</option>
           </select>
         </div>
         <div></div>
@@ -664,6 +673,6 @@
       SUPABASE_KEY: "sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c"
     };
   </script>
-  <script src="admin.js"></script><script src="v30-admin.js?v=30.4"></script>
+  <script src="admin.js?v=30.7"></script><script src="v30-admin.js?v=30.4"></script>
 </body>
 </html>

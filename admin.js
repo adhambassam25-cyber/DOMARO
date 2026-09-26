@@ -1891,7 +1891,7 @@ function renderCouponsAdmin(){
       <div class="admin-coupon-code">${esc(c.code)}</div>
       <div class="admin-coupon-main">
         <div class="admin-coupon-title-row">
-          <div><strong>${esc(couponDiscountLabel(c))}</strong><span>MINIMUM ORDER: ${money(c.min_order_amount)}</span></div>
+          <div><strong>${esc(couponDiscountLabel(c))}</strong><span>MINIMUM ORDER: ${money(c.min_order_amount)}${c.max_discount_amount!=null ? ` · MAX DISCOUNT: ${money(c.max_discount_amount)}` : ''}</span></div>
           <span class="mini-status ${statusClass}">${status}</span>
         </div>
         <div class="admin-coupon-meta">
@@ -1929,6 +1929,7 @@ function openCouponModal(coupon=null){
   document.getElementById('coupon-type').value=coupon?.discount_type || 'percent';
   document.getElementById('coupon-value').value=coupon?.discount_value ?? '';
   document.getElementById('coupon-min-order').value=coupon?.min_order_amount ?? 0;
+  document.getElementById('coupon-max-discount').value=coupon?.max_discount_amount ?? '';
   document.getElementById('coupon-usage-limit').value=coupon?.usage_limit ?? '';
   document.getElementById('coupon-expiry').value=toDatetimeLocal(coupon?.expires_at);
   document.getElementById('coupon-active').checked=coupon ? Boolean(coupon.active) : true;
@@ -1949,6 +1950,7 @@ async function saveCoupon(event){
   const type=document.getElementById('coupon-type').value;
   const value=Number(document.getElementById('coupon-value').value);
   const minOrder=Number(document.getElementById('coupon-min-order').value || 0);
+  const maxDiscountRaw=document.getElementById('coupon-max-discount').value.trim();
   const usageRaw=document.getElementById('coupon-usage-limit').value.trim();
   const expiryRaw=document.getElementById('coupon-expiry').value;
   const active=document.getElementById('coupon-active').checked;
@@ -1956,11 +1958,13 @@ async function saveCoupon(event){
   if(!code){couponFormError.textContent='Coupon code is required.';return;}
   if(!(value>0)){couponFormError.textContent='Discount value must be greater than zero.';return;}
   if(type==='percent' && value>100){couponFormError.textContent='Percentage discount cannot exceed 100%.';return;}
+  if(maxDiscountRaw && !(Number(maxDiscountRaw)>0)){couponFormError.textContent='Maximum discount must be greater than zero or left blank.';return;}
 
   const payload={
     code,
     discount_type:type,
     discount_value:value,
+    max_discount_amount:maxDiscountRaw ? Number(maxDiscountRaw) : null,
     min_order_amount:Math.max(0,minOrder),
     usage_limit:usageRaw ? Number(usageRaw) : null,
     expires_at:expiryRaw ? new Date(expiryRaw).toISOString() : null,
