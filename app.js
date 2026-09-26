@@ -285,6 +285,7 @@ function initFilters(){
     if(title){
       if(activeSearch) title.textContent='SEARCH RESULTS';
       else if(activeBrand) title.textContent=activeBrand;
+      else if(activeCategory==='boxes') title.textContent='GIFT BOXES';
       else if(activeCategory!=='all') title.textContent=activeCategory.toUpperCase()+' FRAGRANCES';
       else title.textContent='SHOP FRAGRANCES';
     }
@@ -293,9 +294,11 @@ function initFilters(){
         ? `Products matching “${activeSearch}” by fragrance name or brand.`
         : activeBrand
           ? `Explore every ${activeBrand} fragrance currently available at DOMARO.`
-          : activeCategory!=='all'
-            ? `Explore the ${activeCategory} collection.`
-            : 'Browse the currently available DOMARO collection.';
+          : activeCategory==='boxes'
+            ? 'Explore DOMARO gift boxes and fragrance sets.'
+            : activeCategory!=='all'
+              ? `Explore the ${activeCategory} collection.`
+              : 'Browse the currently available DOMARO collection.';
     }
   };
 
