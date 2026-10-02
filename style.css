@@ -2170,23 +2170,13 @@ html,body{max-width:100%;overflow-x:hidden}
 }
 
 
-/* DOMARO V30.8 — stronger typography, availability filters, perfume-inspired home hero */
-.navlinks a,
-.nav-action-label,
-.filter-btn,
-.brand-filter-btn,
-.availability-filter-btn,
-.shop-view-btn,
-.quick-add-btn,
-.btn,
-.add-btn,
-.product-info h3,
-.product-brand,
-.brand-filter-title,
-.page-hero h1,
-.section-head h2{
-  font-weight:600;
-}
+/* DOMARO V30.8 — product card typography only */
+.product-card .product-brand{font-weight:600}
+.product-card .product-info h3{font-weight:600}
+.product-card .product-info .meta{font-weight:500}
+.product-card .product-info .price{font-weight:700}
+.product-card .badge{font-weight:700}
+.product-card .quick-add-btn{font-weight:700}
 
 .shop-filter-groups{
   display:grid;
