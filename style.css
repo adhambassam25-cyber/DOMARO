@@ -2413,7 +2413,7 @@ body.shop-filter-open{overflow:hidden}
   .entry-gate.has-custom-wallpaper{
     background:
       linear-gradient(rgba(8,8,8,.34),rgba(8,8,8,.52)),
-      var(--entry-wallpaper) left center / auto 100% no-repeat !important;
+      var(--entry-wallpaper) 72% center / cover no-repeat !important;
   }
   .entry-gate-inner{
     width:min(calc(100% - 24px),520px);
@@ -2483,4 +2483,12 @@ body.shop-filter-open{overflow:hidden}
   .entry-gate-options{gap:8px;padding-top:18px}
   .entry-choice{min-height:84px;padding:13px 16px}
   .entry-choice strong{font-size:26px}
+}
+
+
+/* DOMARO V30.8 — fine-tune mobile wallpaper focus */
+@media(max-width:430px){
+  .entry-gate.has-custom-wallpaper{
+    background-position:78% center !important;
+  }
 }
