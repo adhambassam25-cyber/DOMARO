@@ -105,11 +105,25 @@ async function loadCatalog(){
     });
     window.DOMARO_CATALOG_UNAVAILABLE=false;
     window.DOMARO_STORE_SETTINGS=storeSettings;
+    applyEntryGateWallpaper();
     window.dispatchEvent(new CustomEvent('domaro:catalog-ready',{detail:{products,storeSettings}}));
   }catch(err){
     console.error('DOMARO catalog unavailable:', err);
     products=[]; productVariants=[]; productImages=[]; storeSettings={};
     window.DOMARO_CATALOG_UNAVAILABLE = true;
+  }
+}
+
+function applyEntryGateWallpaper(){
+  const gate=document.querySelector('.entry-gate');
+  if(!gate) return;
+  const url=String(storeSettings?.entry_gate_wallpaper_url||'').trim();
+  if(url){
+    gate.style.setProperty('--entry-wallpaper',`url("${url.replace(/"/g,'%22')}")`);
+    gate.classList.add('has-custom-wallpaper');
+  }else{
+    gate.style.removeProperty('--entry-wallpaper');
+    gate.classList.remove('has-custom-wallpaper');
   }
 }
 
