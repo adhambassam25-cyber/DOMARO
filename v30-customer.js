@@ -240,26 +240,133 @@ function initCheckoutCapture(){
 }
 
 // ---------- Tracking return request ----------
+
+function v30AfterSalesItemLabel(item){
+  const name=String(item?.product_name||'').trim();
+  const variant=String(item?.variant_label||'').trim();
+  const size=item?.size_ml ? String(item.size_ml).trim()+' ML' : '';
+  return [name,variant||size].filter(Boolean).join(' · ');
+}
+
+async function v30UploadReturnEvidence(orderNumber,file){
+  if(!file) return null;
+  if(file.size>5*1024*1024) throw new Error(file.name+' is larger than 5 MB.');
+  if(!/^image\/(jpeg|png|webp)$/i.test(file.type||'')) throw new Error('Use JPG, PNG or WebP photos only.');
+  const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+  const safeOrder=String(orderNumber||'order').toLowerCase().replace(/[^a-z0-9-]/g,'-');
+  const objectName=safeOrder+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,7)+'.'+ext;
+  const r=await fetch(V30_SUPABASE_URL+'/storage/v1/object/return-evidence/'+objectName.split('/').map(encodeURIComponent).join('/'),{
+    method:'POST',
+    headers:{'apikey':V30_SUPABASE_KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'false'},
+    body:file
+  });
+  const data=await r.json().catch(()=>null);
+  if(!r.ok) throw new Error(data?.message||'Could not upload evidence photo.');
+  return V30_SUPABASE_URL+'/storage/v1/object/public/return-evidence/'+objectName.split('/').map(encodeURIComponent).join('/');
+}
+
 function initReturnRequestEnhancement(){
-  const result=document.getElementById('track-result'); const form=document.getElementById('track-order-form'); if(!result||!form) return;
+  const result=document.getElementById('track-result');
+  const form=document.getElementById('track-order-form');
+  if(!result||!form) return;
+
   const observer=new MutationObserver(()=>{
     if(result.hidden || result.querySelector('.v30-return-box')) return;
-    const status=(result.querySelector('.track-status')?.textContent||result.textContent||'').toLowerCase();
-    if(!status.includes('delivered')) return;
-    const box=document.createElement('div'); box.className='v30-return-box';
-    box.innerHTML=`<div><span>AFTER-SALES</span><h3>REQUEST A RETURN</h3><p>Submit a return request for this delivered order. DOMARO will review it before any refund is approved.</p></div><select id="v30-return-reason"><option value="">Select reason</option><option>Wrong item received</option><option>Item damaged</option><option>Changed my mind</option><option>Other</option></select><textarea id="v30-return-details" placeholder="Optional details"></textarea><button class="btn dark" id="v30-return-submit" type="button">SUBMIT RETURN REQUEST</button><div class="checkout-error" id="v30-return-message"></div>`;
+    const order=window.DOMARO_LAST_TRACKED_ORDER;
+    const status=String(order?.status||result.querySelector('.track-status')?.textContent||'').toLowerCase();
+    if(status!=='delivered' && !status.includes('delivered')) return;
+
+    const items=Array.isArray(order?.items)?order.items:[];
+    const itemOptions=items.map((item,index)=>{
+      const label=v30AfterSalesItemLabel(item) || ('Item '+(index+1));
+      return '<option value="'+escapeTrackHtml(label)+'">'+escapeTrackHtml(label)+'</option>';
+    }).join('');
+
+    const box=document.createElement('div');
+    box.className='v30-return-box v308-after-sales-box';
+    box.innerHTML=
+      '<div class="v308-after-sales-head">'+
+        '<div><span>AFTER-SALES</span><h3>RETURN OR EXCHANGE</h3><p>Choose the item and request type. DOMARO will review the request before approval.</p></div>'+
+        '<a href="returns.html" class="v308-policy-link">VIEW POLICY →</a>'+
+      '</div>'+
+      '<div class="v308-after-sales-grid">'+
+        '<label>Request type<select id="v30-return-type"><option value="return">Return</option><option value="exchange">Exchange</option></select></label>'+
+        '<label>Item<select id="v30-return-item" '+(itemOptions?'':'disabled')+'><option value="">Select item</option>'+itemOptions+'</select></label>'+
+      '</div>'+
+      '<label>Reason<select id="v30-return-reason"><option value="">Select reason</option><option>Wrong item received</option><option>Item damaged</option><option>Manufacturing defect</option><option>Changed my mind</option><option>Other</option></select></label>'+
+      '<label>Details <span class="field-optional">optional</span><textarea id="v30-return-details" placeholder="Tell us what happened or what you would like to exchange it for."></textarea></label>'+
+      '<label class="v308-evidence-label">Photos <span class="field-optional">optional · up to 3</span><input id="v30-return-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple><small>Useful for damaged, defective or incorrect items. Maximum 5 MB per photo.</small></label>'+
+      '<div id="v30-return-photo-preview" class="v308-evidence-preview"></div>'+
+      '<button class="btn dark" id="v30-return-submit" type="button">SUBMIT REQUEST</button>'+
+      '<div class="checkout-error" id="v30-return-message" aria-live="polite"></div>';
+
     result.appendChild(box);
+
+    const photos=box.querySelector('#v30-return-photos');
+    const preview=box.querySelector('#v30-return-photo-preview');
+    photos.addEventListener('change',()=>{
+      const files=[...(photos.files||[])].slice(0,3);
+      const message=box.querySelector('#v30-return-message');
+      message.textContent=(photos.files||[]).length>3?'You can upload up to 3 photos.':'';
+      preview.innerHTML=files.map(file=>'<div><img src="'+URL.createObjectURL(file)+'" alt="Evidence preview"><span>'+escapeTrackHtml(file.name)+'</span></div>').join('');
+    });
+
     box.querySelector('#v30-return-submit').onclick=async()=>{
-      const reason=box.querySelector('#v30-return-reason').value; const msg=box.querySelector('#v30-return-message');
+      const type=box.querySelector('#v30-return-type').value;
+      const item=box.querySelector('#v30-return-item').value;
+      const reason=box.querySelector('#v30-return-reason').value;
+      const details=box.querySelector('#v30-return-details').value.trim();
+      const msg=box.querySelector('#v30-return-message');
+      const btn=box.querySelector('#v30-return-submit');
+
+      msg.className='checkout-error';
+      msg.textContent='';
+      if(!item){msg.textContent='Please select the item.';return;}
       if(!reason){msg.textContent='Please select a reason.';return;}
-      const btn=box.querySelector('#v30-return-submit'); btn.disabled=true;
+
+      const files=[...(photos.files||[])];
+      if(files.length>3){msg.textContent='You can upload up to 3 photos.';return;}
+
+      btn.disabled=true;
+      const oldText=btn.textContent;
+      btn.textContent='SUBMITTING…';
+
       try{
-        const r=await fetch(`${V30_SUPABASE_URL}/rest/v1/rpc/request_return`,{method:'POST',headers:{'apikey':V30_SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_order_number:document.getElementById('track-order-number').value.trim(),p_phone:document.getElementById('track-phone').value.trim(),p_reason:reason,p_details:box.querySelector('#v30-return-details').value.trim()||null})});
-        const data=await r.json().catch(()=>null); if(!r.ok) throw new Error(data?.message||'Could not submit return request.');
-        msg.className='coupon-message coupon-message-success'; msg.textContent='Return request submitted successfully.'; btn.remove();
-      }catch(err){ msg.textContent=err.message||'Could not submit return request.'; btn.disabled=false; }
+        const orderNumber=document.getElementById('track-order-number').value.trim();
+        const urls=[];
+        for(const file of files){
+          const url=await v30UploadReturnEvidence(orderNumber,file);
+          if(url) urls.push(url);
+        }
+
+        const r=await fetch(V30_SUPABASE_URL+'/rest/v1/rpc/request_after_sales',{
+          method:'POST',
+          headers:{'apikey':V30_SUPABASE_KEY,'Content-Type':'application/json'},
+          body:JSON.stringify({
+            p_order_number:orderNumber,
+            p_phone:document.getElementById('track-phone').value.trim(),
+            p_request_type:type,
+            p_item_label:item,
+            p_reason:reason,
+            p_details:details||null,
+            p_evidence_urls:urls
+          })
+        });
+        const data=await r.json().catch(()=>null);
+        if(!r.ok) throw new Error(data?.message||'Could not submit request.');
+
+        msg.className='coupon-message coupon-message-success';
+        msg.textContent=(type==='exchange'?'Exchange':'Return')+' request submitted successfully.';
+        btn.remove();
+        box.querySelectorAll('select,textarea,input').forEach(el=>el.disabled=true);
+      }catch(err){
+        msg.textContent=err.message||'Could not submit request.';
+        btn.disabled=false;
+        btn.textContent=oldText;
+      }
     };
   });
+
   observer.observe(result,{childList:true,subtree:true,attributes:true});
 }
 
