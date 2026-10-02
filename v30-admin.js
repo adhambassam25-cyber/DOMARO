@@ -126,6 +126,22 @@ function addV30Tab(key,label,ownerOnly=false){
 function addV30Panel(id,html){ if(document.getElementById(id))return document.getElementById(id);const p=document.createElement('section');p.id=id;p.className='admin-panel v30-admin-panel';p.hidden=true;p.innerHTML=html;document.getElementById('admin-dashboard').appendChild(p);return p; }
 
 
+
+async function v308SignedReturnEvidence(path){
+  const clean=String(path||'').trim();
+  if(!clean) return '';
+  try{
+    const data=await v30Json(V30A_URL+'/storage/v1/object/sign/return-evidence/'+clean.split('/').map(encodeURIComponent).join('/'),{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({expiresIn:3600})
+    });
+    const signed=String(data?.signedURL||data?.signedUrl||'').trim();
+    if(!signed) return '';
+    return signed.startsWith('http') ? signed : V30A_URL+'/storage/v1'+signed;
+  }catch(_){ return ''; }
+}
+
 async function loadReturns(){
   const host=document.getElementById('v30-returns-list');
   const err=document.getElementById('v30-returns-error');
@@ -134,9 +150,13 @@ async function loadReturns(){
   host.innerHTML='<div class="admin-loading">Loading after-sales requests…</div>';
   try{
     const rows=await v30Json(`${V30A_URL}/rest/v1/returns?select=*&order=created_at.desc&limit=100`);
+    await Promise.all(rows.map(async r=>{
+      const paths=Array.isArray(r.evidence_urls)?r.evidence_urls:[];
+      r._evidence_urls=(await Promise.all(paths.map(v308SignedReturnEvidence))).filter(Boolean);
+    }));
     host.innerHTML=rows.length?rows.map(r=>{
       const type=String(r.request_type||'return').toLowerCase();
-      const evidence=Array.isArray(r.evidence_urls)?r.evidence_urls:[];
+      const evidence=Array.isArray(r._evidence_urls)?r._evidence_urls:[];
       const evidenceHtml=evidence.length
         ? '<div class="v308-return-evidence">'+evidence.map((url,i)=>'<a href="'+v30Esc(url)+'" target="_blank" rel="noopener"><img src="'+v30Esc(url)+'" alt="Evidence photo '+(i+1)+'"></a>').join('')+'</div>'
         : '';
