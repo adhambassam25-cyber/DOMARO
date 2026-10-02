@@ -73,8 +73,8 @@ function customerAuthHeaders(extra={}){
 async function loadCatalog(){
   try{
     const [productsRes,variantsRes,imagesRes,settingsRes]=await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/products?select=id,name,category,size_ml,price,cost_price,has_variants,image_path,description,brand,story,top_notes,heart_notes,base_notes,key_notes,in_stock,stock_quantity,active&active=eq.true&order=created_at.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
-      fetch(`${SUPABASE_URL}/rest/v1/product_variants?select=id,product_id,sku,label,size_ml,price,stock_quantity,in_stock,active,is_default,sort_order&active=eq.true&order=product_id.asc,sort_order.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
+      fetch(`${SUPABASE_URL}/rest/v1/products?select=id,name,category,size_ml,price,compare_at_price,cost_price,has_variants,image_path,description,brand,story,top_notes,heart_notes,base_notes,key_notes,in_stock,stock_quantity,active&active=eq.true&order=created_at.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
+      fetch(`${SUPABASE_URL}/rest/v1/product_variants?select=id,product_id,sku,label,size_ml,price,compare_at_price,stock_quantity,in_stock,active,is_default,sort_order&active=eq.true&order=product_id.asc,sort_order.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
       fetch(`${SUPABASE_URL}/rest/v1/product_images?select=id,product_id,image_path,alt_text,sort_order&order=product_id.asc,sort_order.asc,id.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
       fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_store_settings`,{method:'POST',headers:{'apikey':SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},body:'{}'})
     ]);
@@ -89,17 +89,17 @@ async function loadCatalog(){
 
     products=data.map(p=>{
       const variants=(Array.isArray(productVariants)?productVariants:[]).filter(v=>v.product_id===p.id).map(v=>({
-        id:v.id,sku:String(v.sku||''),label:String(v.label||`${v.size_ml} ML`),size_ml:Number(v.size_ml),size:`${Number(v.size_ml)} ML`,price:Number(v.price),stockQuantity:v.stock_quantity===null?null:Number(v.stock_quantity),inStock:Boolean(v.in_stock),active:Boolean(v.active),isDefault:Boolean(v.is_default),sortOrder:Number(v.sort_order||0)
+        id:v.id,sku:String(v.sku||''),label:String(v.label||`${v.size_ml} ML`),size_ml:Number(v.size_ml),size:`${Number(v.size_ml)} ML`,price:Number(v.price),compareAtPrice:v.compare_at_price==null?null:Number(v.compare_at_price),stockQuantity:v.stock_quantity===null?null:Number(v.stock_quantity),inStock:Boolean(v.in_stock),active:Boolean(v.active),isDefault:Boolean(v.is_default),sortOrder:Number(v.sort_order||0)
       }));
       if(!variants.length){
-        variants.push({id:null,sku:'',label:`${Number(p.size_ml)} ML`,size_ml:Number(p.size_ml),size:`${Number(p.size_ml)} ML`,price:Number(p.price),stockQuantity:p.stock_quantity===null?null:Number(p.stock_quantity),inStock:Boolean(p.in_stock),active:true,isDefault:true,sortOrder:0});
+        variants.push({id:null,sku:'',label:`${Number(p.size_ml)} ML`,size_ml:Number(p.size_ml),size:`${Number(p.size_ml)} ML`,price:Number(p.price),compareAtPrice:p.compare_at_price==null?null:Number(p.compare_at_price),stockQuantity:p.stock_quantity===null?null:Number(p.stock_quantity),inStock:Boolean(p.in_stock),active:true,isDefault:true,sortOrder:0});
       }
       const defaultVariant=variants.find(v=>v.isDefault) || variants[0];
       const gallery=(Array.isArray(productImages)?productImages:[]).filter(i=>i.product_id===p.id).map(i=>({id:i.id,path:i.image_path,alt:i.alt_text||p.name,sortOrder:Number(i.sort_order||0)}));
       const availableVariants=variants.filter(variantAvailable);
       const minPrice=Math.min(...variants.filter(v=>v.active!==false).map(v=>v.price));
       return {
-        id:p.id,name:p.name,type:String(p.category||'').toLowerCase()==='boxes'?'Gift Box':'Eau de Parfum',price:Number.isFinite(minPrice)?minPrice:Number(p.price),size:defaultVariant?.size || `${p.size_ml} ML`,size_ml:defaultVariant?.size_ml || Number(p.size_ml),img:p.image_path || 'assets/hero.svg',cat:p.category,
+        id:p.id,name:p.name,type:String(p.category||'').toLowerCase()==='boxes'?'Gift Box':'Eau de Parfum',price:Number.isFinite(minPrice)?minPrice:Number(p.price),compareAtPrice:p.compare_at_price==null?null:Number(p.compare_at_price),size:defaultVariant?.size || `${p.size_ml} ML`,size_ml:defaultVariant?.size_ml || Number(p.size_ml),img:p.image_path || 'assets/hero.svg',cat:p.category,
         badge:availableVariants.length ? String(p.category).toUpperCase() : 'OUT OF STOCK',stockQuantity:p.stock_quantity===null?null:Number(p.stock_quantity),inStock:availableVariants.length>0,active:Boolean(p.active),brand:String(p.brand||'').trim(),story:String(p.story||'').trim(),topNotes:String(p.top_notes||'').trim(),heartNotes:String(p.heart_notes||'').trim(),baseNotes:String(p.base_notes||'').trim(),keyNotes:String(p.key_notes||'').trim(),desc:p.description||'',hasVariants:Boolean(p.has_variants)||variants.length>1,variants,gallery
       };
     });
@@ -133,6 +133,12 @@ function productCard(p){
   const availableVariants=activeVariants.filter(variantAvailable);
   const prices=[...new Set(activeVariants.map(v=>Number(v.price)))];
   const priceLabel=prices.length>1 ? `FROM ${money(Math.min(...prices))}` : money(p.price);
+  const singleVariant=activeVariants.length===1 ? activeVariants[0] : null;
+  const comparePrice=singleVariant?.compareAtPrice ?? p.compareAtPrice;
+  const discounted=Number(comparePrice)>Number(singleVariant?.price ?? p.price);
+  const priceHtml=discounted
+    ? `<span class="old-price">${money(comparePrice)}</span><span class="price sale-price">${priceLabel}</span>`
+    : `<span class="price">${priceLabel}</span>`;
   const productUrl=`product.html?id=${encodeURIComponent(p.id)}`;
   const quickLabel=!p.inStock ? 'OUT OF STOCK' : availableVariants.length>1 ? 'SELECT SIZE' : 'ADD TO CART';
   return `<article class="product-card" data-product-id="${escapeTrackHtml(p.id)}">
@@ -145,7 +151,7 @@ function productCard(p){
         ${brandLine}
         <h3>${escapeTrackHtml(p.name)}</h3>
         <div class="meta">${escapeTrackHtml(p.type)} · ${activeVariants.length>1 ? `${activeVariants.length} SIZES` : escapeTrackHtml(p.size)}</div>
-        <div class="price-row"><span class="price">${priceLabel}</span><span class="meta">${escapeTrackHtml(String(p.cat || '').toUpperCase())}</span></div>
+        <div class="price-row"><span class="product-price-stack">${priceHtml}</span><span class="meta">${escapeTrackHtml(String(p.cat || '').toUpperCase())}</span></div>
       </div>
     </a>
     <button class="quick-add-btn" type="button" data-quick-add="${escapeTrackHtml(p.id)}" ${p.inStock ? '' : 'disabled'}>${quickLabel}</button>
@@ -496,7 +502,7 @@ function renderProductDetail(){
           <span id="product-selected-size">${escapeTrackHtml(initialVariant?.size || p.size)}</span>
           <span>${escapeTrackHtml(p.type)}</span>
         </div>
-        <div class="price" id="product-selected-price" style="font-size:22px;margin:18px 0">${money(initialVariant?.price ?? p.price)}</div>
+        <div class="price product-detail-price" id="product-selected-price" style="font-size:22px;margin:18px 0">${Number(initialVariant?.compareAtPrice ?? p.compareAtPrice)>Number(initialVariant?.price ?? p.price)?`<span class="old-price">${money(initialVariant?.compareAtPrice ?? p.compareAtPrice)}</span><span class="sale-price">${money(initialVariant?.price ?? p.price)}</span>`:money(initialVariant?.price ?? p.price)}</div>
         <div class="stock-line" id="product-selected-stock"><span class="stock-dot ${variantAvailable(initialVariant) ? '' : 'stock-dot-out'}"></span>${variantAvailable(initialVariant) ? (initialVariant.stockQuantity === null ? 'AVAILABLE' : `${initialVariant.stockQuantity} IN STOCK`) : 'OUT OF STOCK'}</div>
         ${variantButtons}
         ${p.desc ? `<p class="product-short-desc">${escapeTrackHtml(p.desc)}</p>` : ''}
@@ -530,7 +536,7 @@ function renderProductDetail(){
   const updateVariantUi=variant=>{
     selectedVariant=variant;
     document.querySelectorAll('.variant-option').forEach(btn=>btn.classList.toggle('active',btn.dataset.variantId===(variant?.id||'')));
-    const priceEl=document.getElementById('product-selected-price'); if(priceEl) priceEl.textContent=money(variant?.price ?? p.price);
+    const priceEl=document.getElementById('product-selected-price'); if(priceEl){ const cp=variant?.compareAtPrice ?? p.compareAtPrice; const sp=variant?.price ?? p.price; priceEl.innerHTML=Number(cp)>Number(sp)?`<span class="old-price">${money(cp)}</span><span class="sale-price">${money(sp)}</span>`:money(sp); }
     const sizeEl=document.getElementById('product-selected-size'); if(sizeEl) sizeEl.textContent=variant?.size || p.size;
     const infoSize=document.getElementById('product-info-size'); if(infoSize) infoSize.textContent=variant?.size || p.size;
     const infoPrice=document.getElementById('product-info-price'); if(infoPrice) infoPrice.textContent=money(variant?.price ?? p.price);
