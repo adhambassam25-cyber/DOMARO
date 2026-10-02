@@ -587,9 +587,14 @@
           <input id="product-size" required type="number" min="1" step="1" placeholder="200">
         </div>
         <div>
-          <label>Price (EGP)</label>
+          <label>Current selling price (EGP)</label>
           <input id="product-price" required type="number" min="0" step="1" placeholder="2000">
         </div>
+      </div>
+      <div>
+        <label>Original price before discount (EGP) <span class="field-optional">optional</span></label>
+        <input id="product-compare-price" type="number" min="0" step="1" placeholder="e.g. 2500">
+        <small class="field-help">Leave blank for no discount. If higher than the current selling price, customers will see the original price crossed out.</small>
       </div>
 
       <div>
