@@ -2362,9 +2362,13 @@ body.shop-filter-open{overflow:hidden}
 
 /* DOMARO V30.8 — user-selected luxury entry background */
 .entry-gate{
-  background:
-    linear-gradient(rgba(8,8,8,.28),rgba(8,8,8,.46)),
-    url("assets/entry-gate-user-photo.webp") center center / cover no-repeat !important;
+  background-color:#080808 !important;
+  background-image:
+    linear-gradient(rgba(8,8,8,.26),rgba(8,8,8,.44)),
+    url("https://raw.githubusercontent.com/adhambassam25-cyber/DOMARO/v30-8-shop-filters-policy-style-preview/assets/entry-gate-user-photo.webp") !important;
+  background-position:center center !important;
+  background-size:cover !important;
+  background-repeat:no-repeat !important;
 }
 .entry-gate::before,
 .entry-gate::after{
@@ -2392,9 +2396,7 @@ body.shop-filter-open{overflow:hidden}
 }
 @media(max-width:760px){
   .entry-gate{
-    background:
-      linear-gradient(rgba(8,8,8,.34),rgba(8,8,8,.52)),
-      url("assets/entry-gate-user-photo.webp") 38% center / cover no-repeat !important;
+    background-position:38% center !important;
   }
   .entry-choice{background:rgba(10,10,10,.64)}
 }
