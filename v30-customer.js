@@ -262,7 +262,7 @@ async function v30UploadReturnEvidence(orderNumber,file){
   });
   const data=await r.json().catch(()=>null);
   if(!r.ok) throw new Error(data?.message||'Could not upload evidence photo.');
-  return V30_SUPABASE_URL+'/storage/v1/object/public/return-evidence/'+objectName.split('/').map(encodeURIComponent).join('/');
+  return objectName;
 }
 
 function initReturnRequestEnhancement(){
