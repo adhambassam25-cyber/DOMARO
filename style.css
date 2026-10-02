@@ -2258,3 +2258,144 @@ html,body{max-width:100%;overflow-x:hidden}
     background:url("assets/hook-blue.png") 50% 55% / 70% auto no-repeat;
   }
 }
+
+
+/* DOMARO V30.8 compact filter drawer */
+.shop-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:22px;
+}
+.shop-filter-trigger{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  border:1px solid #171411;
+  background:#fff;
+  color:#171411;
+  min-height:42px;
+  padding:0 16px;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:1.5px;
+  cursor:pointer;
+}
+.shop-filter-trigger svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6}
+.shop-filter-trigger b{
+  min-width:19px;height:19px;border-radius:999px;background:#111;color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;font-size:9px;
+}
+.shop-filter-trigger b[hidden]{display:none}
+.shop-toolbar .shop-view-toolbar{margin:0}
+
+.shop-filter-drawer{
+  position:fixed;
+  inset:0;
+  z-index:1200;
+  pointer-events:none;
+  visibility:hidden;
+}
+.shop-filter-drawer.open{pointer-events:auto;visibility:visible}
+.shop-filter-backdrop{
+  position:absolute;inset:0;border:0;background:rgba(0,0,0,.48);opacity:0;transition:.22s;
+}
+.shop-filter-drawer.open .shop-filter-backdrop{opacity:1}
+.shop-filter-panel{
+  position:absolute;
+  top:0;right:0;
+  width:min(430px,94vw);
+  height:100%;
+  background:#f8f4ee;
+  box-shadow:-18px 0 40px rgba(0,0,0,.18);
+  padding:26px 24px 22px;
+  overflow:auto;
+  transform:translateX(102%);
+  transition:transform .25s ease;
+}
+.shop-filter-drawer.open .shop-filter-panel{transform:translateX(0)}
+.shop-filter-panel-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:20px;
+  padding-bottom:20px;
+  border-bottom:1px solid var(--line);
+}
+.shop-filter-panel-head span{
+  display:block;
+  font-size:8px;
+  letter-spacing:2.3px;
+  color:#776f66;
+  margin-bottom:5px;
+}
+.shop-filter-panel-head h2{
+  margin:0;
+  font:600 34px "Cormorant Garamond",Georgia,serif;
+}
+.shop-filter-close{
+  border:0;background:transparent;font-size:30px;line-height:1;cursor:pointer;color:#171411;
+}
+.shop-filter-section{
+  padding:22px 0;
+  border-bottom:1px solid var(--line);
+}
+.shop-filter-section-title{
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:1.7px;
+  margin-bottom:12px;
+}
+.shop-drawer-options{display:flex;flex-wrap:wrap;gap:8px}
+.shop-filter-panel .filters,
+.shop-filter-panel .brand-filters,
+.shop-filter-panel .availability-filters{margin:0}
+.shop-filter-panel .filter-btn,
+.shop-filter-panel .brand-filter-btn,
+.shop-filter-panel .availability-filter-btn{
+  background:#fff;
+  border:1px solid var(--line);
+  color:#171411;
+  min-height:38px;
+  padding:0 13px;
+}
+.shop-filter-panel .filter-btn.active,
+.shop-filter-panel .brand-filter-btn.active,
+.shop-filter-panel .availability-filter-btn.active{
+  background:#111;
+  border-color:#111;
+  color:#fff;
+}
+.shop-filter-panel-actions{
+  position:sticky;
+  bottom:-22px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  background:#f8f4ee;
+  padding:18px 0 0;
+  margin-top:22px;
+}
+.shop-filter-reset,.shop-filter-done{
+  min-height:44px;
+  border:1px solid #111;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:1.4px;
+  cursor:pointer;
+}
+.shop-filter-reset{background:#fff;color:#111}
+.shop-filter-done{background:#111;color:#fff}
+body.shop-filter-open{overflow:hidden}
+
+/* keep the shop page visually clean: filters live inside the drawer only */
+.shop-filter-groups{display:none!important}
+.section>.container>.filters{display:none!important}
+
+@media(max-width:640px){
+  .shop-toolbar{align-items:flex-start;flex-direction:column}
+  .shop-toolbar .shop-view-toolbar{width:100%}
+  .shop-filter-trigger{width:100%;justify-content:center}
+  .shop-filter-panel{width:100vw;max-width:none}
+}
