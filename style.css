@@ -2411,7 +2411,6 @@ body.shop-filter-open{overflow:hidden}
     overscroll-behavior:none;
   }
 
-  /* Keep the perfume bottle visible on the right side on phones */
   .entry-gate.has-custom-wallpaper{
     background:
       linear-gradient(rgba(8,8,8,.38),rgba(8,8,8,.56)),
@@ -2454,7 +2453,7 @@ body.shop-filter-open{overflow:hidden}
   }
 
   .entry-gate>div>p{
-    margin:11px 0 16px;
+    margin:11px 0 24px;
     font-size:9px;
     letter-spacing:.8px;
     color:#d5cdc2;
@@ -2463,6 +2462,7 @@ body.shop-filter-open{overflow:hidden}
   .entry-gate-options{
     grid-template-columns:1fr;
     gap:8px;
+    margin-top:20px;
   }
 
   .entry-choice{
@@ -2498,7 +2498,8 @@ body.shop-filter-open{overflow:hidden}
   .entry-gate-logo{margin-bottom:10px;font-size:19px}
   .entry-gate-kicker{margin-bottom:6px}
   .entry-gate h1{font-size:34px;max-width:94%}
-  .entry-gate>div>p{margin:8px 0 12px}
+  .entry-gate>div>p{margin:8px 0 18px}
+  .entry-gate-options{margin-top:14px}
   .entry-choice{min-height:90px;padding:13px 16px}
   .entry-choice strong{font-size:26px}
 }
