@@ -73,8 +73,8 @@ function customerAuthHeaders(extra={}){
 async function loadCatalog(){
   try{
     const [productsRes,variantsRes,imagesRes,settingsRes]=await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/products?select=id,name,category,size_ml,price,cost_price,has_variants,image_path,description,brand,story,top_notes,heart_notes,base_notes,key_notes,in_stock,stock_quantity,active&active=eq.true&order=created_at.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
-      fetch(`${SUPABASE_URL}/rest/v1/product_variants?select=id,product_id,sku,label,size_ml,price,stock_quantity,in_stock,active,is_default,sort_order&active=eq.true&order=product_id.asc,sort_order.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
+      fetch(`${SUPABASE_URL}/rest/v1/products?select=id,name,category,size_ml,price,compare_at_price,cost_price,has_variants,image_path,description,brand,story,top_notes,heart_notes,base_notes,key_notes,in_stock,stock_quantity,active&active=eq.true&order=created_at.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
+      fetch(`${SUPABASE_URL}/rest/v1/product_variants?select=id,product_id,sku,label,size_ml,price,compare_at_price,stock_quantity,in_stock,active,is_default,sort_order&active=eq.true&order=product_id.asc,sort_order.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
       fetch(`${SUPABASE_URL}/rest/v1/product_images?select=id,product_id,image_path,alt_text,sort_order&order=product_id.asc,sort_order.asc,id.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
       fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_store_settings`,{method:'POST',headers:{'apikey':SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},body:'{}'})
     ]);
@@ -89,27 +89,41 @@ async function loadCatalog(){
 
     products=data.map(p=>{
       const variants=(Array.isArray(productVariants)?productVariants:[]).filter(v=>v.product_id===p.id).map(v=>({
-        id:v.id,sku:String(v.sku||''),label:String(v.label||`${v.size_ml} ML`),size_ml:Number(v.size_ml),size:`${Number(v.size_ml)} ML`,price:Number(v.price),stockQuantity:v.stock_quantity===null?null:Number(v.stock_quantity),inStock:Boolean(v.in_stock),active:Boolean(v.active),isDefault:Boolean(v.is_default),sortOrder:Number(v.sort_order||0)
+        id:v.id,sku:String(v.sku||''),label:String(v.label||`${v.size_ml} ML`),size_ml:Number(v.size_ml),size:`${Number(v.size_ml)} ML`,price:Number(v.price),compareAtPrice:v.compare_at_price==null?null:Number(v.compare_at_price),stockQuantity:v.stock_quantity===null?null:Number(v.stock_quantity),inStock:Boolean(v.in_stock),active:Boolean(v.active),isDefault:Boolean(v.is_default),sortOrder:Number(v.sort_order||0)
       }));
       if(!variants.length){
-        variants.push({id:null,sku:'',label:`${Number(p.size_ml)} ML`,size_ml:Number(p.size_ml),size:`${Number(p.size_ml)} ML`,price:Number(p.price),stockQuantity:p.stock_quantity===null?null:Number(p.stock_quantity),inStock:Boolean(p.in_stock),active:true,isDefault:true,sortOrder:0});
+        variants.push({id:null,sku:'',label:`${Number(p.size_ml)} ML`,size_ml:Number(p.size_ml),size:`${Number(p.size_ml)} ML`,price:Number(p.price),compareAtPrice:p.compare_at_price==null?null:Number(p.compare_at_price),stockQuantity:p.stock_quantity===null?null:Number(p.stock_quantity),inStock:Boolean(p.in_stock),active:true,isDefault:true,sortOrder:0});
       }
       const defaultVariant=variants.find(v=>v.isDefault) || variants[0];
       const gallery=(Array.isArray(productImages)?productImages:[]).filter(i=>i.product_id===p.id).map(i=>({id:i.id,path:i.image_path,alt:i.alt_text||p.name,sortOrder:Number(i.sort_order||0)}));
       const availableVariants=variants.filter(variantAvailable);
       const minPrice=Math.min(...variants.filter(v=>v.active!==false).map(v=>v.price));
       return {
-        id:p.id,name:p.name,type:String(p.category||'').toLowerCase()==='boxes'?'Gift Box':'Eau de Parfum',price:Number.isFinite(minPrice)?minPrice:Number(p.price),size:defaultVariant?.size || `${p.size_ml} ML`,size_ml:defaultVariant?.size_ml || Number(p.size_ml),img:p.image_path || 'assets/hero.svg',cat:p.category,
+        id:p.id,name:p.name,type:String(p.category||'').toLowerCase()==='boxes'?'Gift Box':'Eau de Parfum',price:Number.isFinite(minPrice)?minPrice:Number(p.price),compareAtPrice:p.compare_at_price==null?null:Number(p.compare_at_price),size:defaultVariant?.size || `${p.size_ml} ML`,size_ml:defaultVariant?.size_ml || Number(p.size_ml),img:p.image_path || 'assets/hero.svg',cat:p.category,
         badge:availableVariants.length ? String(p.category).toUpperCase() : 'OUT OF STOCK',stockQuantity:p.stock_quantity===null?null:Number(p.stock_quantity),inStock:availableVariants.length>0,active:Boolean(p.active),brand:String(p.brand||'').trim(),story:String(p.story||'').trim(),topNotes:String(p.top_notes||'').trim(),heartNotes:String(p.heart_notes||'').trim(),baseNotes:String(p.base_notes||'').trim(),keyNotes:String(p.key_notes||'').trim(),desc:p.description||'',hasVariants:Boolean(p.has_variants)||variants.length>1,variants,gallery
       };
     });
     window.DOMARO_CATALOG_UNAVAILABLE=false;
     window.DOMARO_STORE_SETTINGS=storeSettings;
+    applyEntryGateWallpaper();
     window.dispatchEvent(new CustomEvent('domaro:catalog-ready',{detail:{products,storeSettings}}));
   }catch(err){
     console.error('DOMARO catalog unavailable:', err);
     products=[]; productVariants=[]; productImages=[]; storeSettings={};
     window.DOMARO_CATALOG_UNAVAILABLE = true;
+  }
+}
+
+function applyEntryGateWallpaper(){
+  const gate=document.querySelector('.entry-gate');
+  if(!gate) return;
+  const url=String(storeSettings?.entry_gate_wallpaper_url||'').trim();
+  if(url){
+    gate.style.setProperty('--entry-wallpaper',`url("${url.replace(/"/g,'%22')}")`);
+    gate.classList.add('has-custom-wallpaper');
+  }else{
+    gate.style.removeProperty('--entry-wallpaper');
+    gate.classList.remove('has-custom-wallpaper');
   }
 }
 
@@ -119,6 +133,12 @@ function productCard(p){
   const availableVariants=activeVariants.filter(variantAvailable);
   const prices=[...new Set(activeVariants.map(v=>Number(v.price)))];
   const priceLabel=prices.length>1 ? `FROM ${money(Math.min(...prices))}` : money(p.price);
+  const singleVariant=activeVariants.length===1 ? activeVariants[0] : null;
+  const comparePrice=singleVariant?.compareAtPrice ?? p.compareAtPrice;
+  const discounted=Number(comparePrice)>Number(singleVariant?.price ?? p.price);
+  const priceHtml=discounted
+    ? `<span class="old-price">${money(comparePrice)}</span><span class="price sale-price">${priceLabel}</span>`
+    : `<span class="price">${priceLabel}</span>`;
   const productUrl=`product.html?id=${encodeURIComponent(p.id)}`;
   const quickLabel=!p.inStock ? 'OUT OF STOCK' : availableVariants.length>1 ? 'SELECT SIZE' : 'ADD TO CART';
   return `<article class="product-card" data-product-id="${escapeTrackHtml(p.id)}">
@@ -131,7 +151,7 @@ function productCard(p){
         ${brandLine}
         <h3>${escapeTrackHtml(p.name)}</h3>
         <div class="meta">${escapeTrackHtml(p.type)} · ${activeVariants.length>1 ? `${activeVariants.length} SIZES` : escapeTrackHtml(p.size)}</div>
-        <div class="price-row"><span class="price">${priceLabel}</span><span class="meta">${escapeTrackHtml(String(p.cat || '').toUpperCase())}</span></div>
+        <div class="price-row"><span class="product-price-stack">${priceHtml}</span><span class="meta">${escapeTrackHtml(String(p.cat || '').toUpperCase())}</span></div>
       </div>
     </a>
     <button class="quick-add-btn" type="button" data-quick-add="${escapeTrackHtml(p.id)}" ${p.inStock ? '' : 'disabled'}>${quickLabel}</button>
@@ -165,20 +185,22 @@ function normalizeBrand(value){
   return String(value || '').trim().toLowerCase();
 }
 
-function filteredCatalog(category='all', brand='', query=''){
+function filteredCatalog(category='all', brand='', query='', availability='all'){
   const q=String(query || '').trim().toLowerCase();
+  const stock=String(availability || 'all').toLowerCase();
   return products.filter(p=>{
     const categoryMatch=category==='all' || p.cat===category;
     const brandMatch=!brand || normalizeBrand(p.brand)===normalizeBrand(brand);
     const searchMatch=!q || [p.name,p.brand,p.cat,p.desc].join(' ').toLowerCase().includes(q);
-    return categoryMatch && brandMatch && searchMatch;
+    const availabilityMatch=stock==='all' || (stock==='in-stock' ? Boolean(p.inStock) : stock==='out-of-stock' ? !p.inStock : true);
+    return categoryMatch && brandMatch && searchMatch && availabilityMatch;
   });
 }
 
-function renderProducts(targetId, filter='all', limit=null, brand='', query=''){
+function renderProducts(targetId, filter='all', limit=null, brand='', query='', availability='all'){
   const el=document.getElementById(targetId);
   if(!el) return;
-  let list=filteredCatalog(filter,brand,query);
+  let list=filteredCatalog(filter,brand,query,availability);
   if(limit) list=list.slice(0,limit);
   el.innerHTML=list.length
     ? list.map(productCard).join('')
@@ -261,15 +283,23 @@ function initShopView(){
 
 function initFilters(){
   const allowedFilters=['all','men','women','unisex','boxes'];
+  const allowedAvailability=['all','in-stock','out-of-stock'];
   const params=new URLSearchParams(location.search);
   const urlFilter=(params.get('category') || 'all').toLowerCase();
+  const urlAvailability=(params.get('availability') || 'all').toLowerCase();
   let activeCategory=allowedFilters.includes(urlFilter) ? urlFilter : 'all';
+  let activeAvailability=allowedAvailability.includes(urlAvailability) ? urlAvailability : 'all';
   let activeBrand=String(params.get('brand') || '').trim();
   let activeSearch=String(params.get('search') || '').trim();
 
   const updateShop=()=>{
     document.querySelectorAll('.filter-btn').forEach(btn=>{
       btn.classList.toggle('active',btn.dataset.filter===activeCategory);
+    });
+    document.querySelectorAll('.availability-filter-btn').forEach(btn=>{
+      const active=btn.dataset.availability===activeAvailability;
+      btn.classList.toggle('active',active);
+      btn.setAttribute('aria-pressed',active ? 'true' : 'false');
     });
     renderShopBrandFilters(activeBrand);
     document.querySelectorAll('.brand-filter-btn').forEach(btn=>{
@@ -279,7 +309,7 @@ function initFilters(){
         updateShop();
       });
     });
-    renderProducts('shop-products',activeCategory,null,activeBrand,activeSearch);
+    renderProducts('shop-products',activeCategory,null,activeBrand,activeSearch,activeAvailability);
     const title=document.getElementById('shop-context-title');
     const sub=document.getElementById('shop-context-sub');
     if(title){
@@ -290,7 +320,12 @@ function initFilters(){
       else title.textContent='SHOP FRAGRANCES';
     }
     if(sub){
-      sub.textContent=activeSearch
+      const availabilityText=activeAvailability==='in-stock'
+        ? ' Showing products currently in stock.'
+        : activeAvailability==='out-of-stock'
+          ? ' Showing products currently out of stock.'
+          : '';
+      const baseText=activeSearch
         ? `Products matching “${activeSearch}” by fragrance name or brand.`
         : activeBrand
           ? `Explore every ${activeBrand} fragrance currently available at DOMARO.`
@@ -298,7 +333,8 @@ function initFilters(){
             ? 'Explore DOMARO gift boxes and fragrance sets.'
             : activeCategory!=='all'
               ? `Explore the ${activeCategory} collection.`
-              : 'Browse the currently available DOMARO collection.';
+              : 'Browse the DOMARO fragrance collection.';
+      sub.textContent=baseText + availabilityText;
     }
   };
 
@@ -310,6 +346,8 @@ function initFilters(){
     else url.searchParams.delete('brand');
     if(activeSearch) url.searchParams.set('search',activeSearch);
     else url.searchParams.delete('search');
+    if(activeAvailability==='all') url.searchParams.delete('availability');
+    else url.searchParams.set('availability',activeAvailability);
     history.replaceState({},'',url);
   };
 
@@ -321,7 +359,69 @@ function initFilters(){
     });
   });
 
+  document.querySelectorAll('.availability-filter-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      activeAvailability=btn.dataset.availability || 'all';
+      updateShopUrl();
+      updateShop();
+    });
+  });
+
   updateShop();
+}
+
+
+function initShopFilterDrawer(){
+  const trigger=document.getElementById('shop-filter-trigger');
+  const drawer=document.getElementById('shop-filter-drawer');
+  if(!trigger || !drawer) return;
+
+  const count=document.getElementById('shop-filter-count');
+  const reset=document.getElementById('shop-filter-reset');
+
+  const syncCount=()=>{
+    const params=new URLSearchParams(location.search);
+    let n=0;
+    if((params.get('category') || 'all')!=='all') n++;
+    if(String(params.get('brand') || '').trim()) n++;
+    if((params.get('availability') || 'all')!=='all') n++;
+    if(count){
+      count.textContent=String(n);
+      count.hidden=n===0;
+    }
+  };
+
+  const open=()=>{
+    drawer.classList.add('open');
+    drawer.setAttribute('aria-hidden','false');
+    trigger.setAttribute('aria-expanded','true');
+    document.body.classList.add('shop-filter-open');
+  };
+  const close=()=>{
+    drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden','true');
+    trigger.setAttribute('aria-expanded','false');
+    document.body.classList.remove('shop-filter-open');
+    syncCount();
+  };
+
+  trigger.addEventListener('click',open);
+  drawer.querySelectorAll('[data-filter-close]').forEach(btn=>btn.addEventListener('click',close));
+
+  reset?.addEventListener('click',()=>{
+    const allCategory=drawer.querySelector('[data-filter="all"]');
+    const allAvailability=drawer.querySelector('[data-availability="all"]');
+    const allBrand=drawer.querySelector('[data-brand=""]');
+    allCategory?.click();
+    allAvailability?.click();
+    allBrand?.click();
+    syncCount();
+  });
+
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape' && drawer.classList.contains('open')) close(); });
+  window.addEventListener('popstate',syncCount);
+  drawer.addEventListener('click',()=>setTimeout(syncCount,0));
+  syncCount();
 }
 
 function safeImageSrc(value){
@@ -402,7 +502,7 @@ function renderProductDetail(){
           <span id="product-selected-size">${escapeTrackHtml(initialVariant?.size || p.size)}</span>
           <span>${escapeTrackHtml(p.type)}</span>
         </div>
-        <div class="price" id="product-selected-price" style="font-size:22px;margin:18px 0">${money(initialVariant?.price ?? p.price)}</div>
+        <div class="price product-detail-price" id="product-selected-price" style="font-size:22px;margin:18px 0">${Number(initialVariant?.compareAtPrice ?? p.compareAtPrice)>Number(initialVariant?.price ?? p.price)?`<span class="old-price">${money(initialVariant?.compareAtPrice ?? p.compareAtPrice)}</span><span class="sale-price">${money(initialVariant?.price ?? p.price)}</span>`:money(initialVariant?.price ?? p.price)}</div>
         <div class="stock-line" id="product-selected-stock"><span class="stock-dot ${variantAvailable(initialVariant) ? '' : 'stock-dot-out'}"></span>${variantAvailable(initialVariant) ? (initialVariant.stockQuantity === null ? 'AVAILABLE' : `${initialVariant.stockQuantity} IN STOCK`) : 'OUT OF STOCK'}</div>
         ${variantButtons}
         ${p.desc ? `<p class="product-short-desc">${escapeTrackHtml(p.desc)}</p>` : ''}
@@ -436,7 +536,7 @@ function renderProductDetail(){
   const updateVariantUi=variant=>{
     selectedVariant=variant;
     document.querySelectorAll('.variant-option').forEach(btn=>btn.classList.toggle('active',btn.dataset.variantId===(variant?.id||'')));
-    const priceEl=document.getElementById('product-selected-price'); if(priceEl) priceEl.textContent=money(variant?.price ?? p.price);
+    const priceEl=document.getElementById('product-selected-price'); if(priceEl){ const cp=variant?.compareAtPrice ?? p.compareAtPrice; const sp=variant?.price ?? p.price; priceEl.innerHTML=Number(cp)>Number(sp)?`<span class="old-price">${money(cp)}</span><span class="sale-price">${money(sp)}</span>`:money(sp); }
     const sizeEl=document.getElementById('product-selected-size'); if(sizeEl) sizeEl.textContent=variant?.size || p.size;
     const infoSize=document.getElementById('product-info-size'); if(infoSize) infoSize.textContent=variant?.size || p.size;
     const infoPrice=document.getElementById('product-info-price'); if(infoPrice) infoPrice.textContent=money(variant?.price ?? p.price);
@@ -1037,6 +1137,7 @@ function trackingStatusLabel(status){
 }
 
 function renderTrackingResult(order){
+  window.DOMARO_LAST_TRACKED_ORDER=order;
   const box=document.getElementById('track-result');
   if(!box) return;
 
@@ -1272,6 +1373,8 @@ function initEntryGate(){
   document.documentElement.classList.add('entry-gate-open');
   document.body.classList.add('entry-gate-open');
   gate.setAttribute('aria-hidden','false');
+  gate.scrollTop=0;
+  requestAnimationFrame(()=>{ gate.scrollTop=0; });
 
   gate.querySelectorAll('[data-entry-category]').forEach(btn=>{
     btn.addEventListener('click',()=>{
@@ -1358,6 +1461,7 @@ async function initStore(){
   renderProducts('best-products','all',4);
   renderBrandDirectory();
   initFilters();
+  initShopFilterDrawer();
   initShopView();
   renderProductDetail();
   renderCart();

@@ -28,7 +28,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=30.7">
+  <link rel="stylesheet" href="style.css?v=30.8.5">
 </head>
 <body class="admin-body">
   <header class="admin-topbar">
@@ -587,9 +587,14 @@
           <input id="product-size" required type="number" min="1" step="1" placeholder="200">
         </div>
         <div>
-          <label>Price (EGP)</label>
+          <label>Current selling price (EGP)</label>
           <input id="product-price" required type="number" min="0" step="1" placeholder="2000">
         </div>
+      </div>
+      <div>
+        <label>Original price before discount (EGP) <span class="field-optional">optional</span></label>
+        <input id="product-compare-price" type="number" min="0" step="1" placeholder="e.g. 2500">
+        <small class="field-help">Leave blank for no discount. If higher than the current selling price, customers will see the original price crossed out.</small>
       </div>
 
       <div>
@@ -673,6 +678,6 @@
       SUPABASE_KEY: "sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c"
     };
   </script>
-  <script src="admin.js?v=30.7"></script><script src="v30-admin.js?v=30.4"></script>
+  <script src="admin.js?v=30.8.5"></script><script src="v30-admin.js?v=30.8.5"></script>
 </body>
 </html>

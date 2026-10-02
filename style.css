@@ -2168,3 +2168,479 @@ html,body{max-width:100%;overflow-x:hidden}
   .navlinks{gap:24px}
   .navicons{gap:12px}
 }
+
+
+/* DOMARO V30.8 — product card typography only */
+.product-card .product-brand{font-weight:700;letter-spacing:3px}
+.product-card .product-info h3{font-weight:700}
+.product-card .product-info .meta{font-weight:600}
+.product-card .product-info .price{font-weight:800}
+.product-card .badge{font-weight:800}
+.product-card .quick-add-btn{font-weight:800}
+
+.shop-filter-groups{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:28px;
+  align-items:end;
+  margin-bottom:20px;
+}
+.availability-filter-wrap{min-width:320px}
+.availability-filters{display:flex;flex-wrap:wrap;gap:8px}
+.availability-filter-btn{
+  border:1px solid var(--line);
+  background:#fff;
+  color:#171411;
+  padding:10px 14px;
+  font-size:9px;
+  letter-spacing:1.3px;
+  cursor:pointer;
+  transition:.2s;
+}
+.availability-filter-btn:hover,
+.availability-filter-btn.active{
+  border-color:#111;
+  background:#111;
+  color:#fff;
+}
+
+.policy-page{max-width:920px;margin:0 auto}
+.policy-intro{font-size:14px;line-height:1.8;color:#5f5851;margin-bottom:34px}
+.policy-grid{display:grid;gap:16px}
+.policy-card{border:1px solid var(--line);background:#faf7f2;padding:24px}
+.policy-card h2{font:600 28px "Cormorant Garamond",Georgia,serif;margin:0 0 10px}
+.policy-card p,.policy-card li{font-size:12px;line-height:1.8;color:#655e57}
+.policy-card ul{margin:10px 0 0;padding-left:18px}
+.policy-note{margin-top:24px;padding:16px 18px;background:#111;color:#f6efe6;font-size:11px;line-height:1.7}
+
+@media(max-width:860px){
+  .shop-filter-groups{grid-template-columns:1fr}
+  .availability-filter-wrap{min-width:0}
+}
+
+
+/* DOMARO V30.8 compact filter drawer */
+.shop-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:22px;
+}
+.shop-filter-trigger{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  border:1px solid #171411;
+  background:#fff;
+  color:#171411;
+  min-height:42px;
+  padding:0 16px;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:1.5px;
+  cursor:pointer;
+}
+.shop-filter-trigger svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6}
+.shop-filter-trigger b{
+  min-width:19px;height:19px;border-radius:999px;background:#111;color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;font-size:9px;
+}
+.shop-filter-trigger b[hidden]{display:none}
+.shop-toolbar .shop-view-toolbar{margin:0}
+
+.shop-filter-drawer{
+  position:fixed;
+  inset:0;
+  z-index:1200;
+  pointer-events:none;
+  visibility:hidden;
+}
+.shop-filter-drawer.open{pointer-events:auto;visibility:visible}
+.shop-filter-backdrop{
+  position:absolute;inset:0;border:0;background:rgba(0,0,0,.48);opacity:0;transition:.22s;
+}
+.shop-filter-drawer.open .shop-filter-backdrop{opacity:1}
+.shop-filter-panel{
+  position:absolute;
+  top:0;right:0;
+  width:min(430px,94vw);
+  height:100%;
+  background:#f8f4ee;
+  box-shadow:-18px 0 40px rgba(0,0,0,.18);
+  padding:26px 24px 22px;
+  overflow:auto;
+  transform:translateX(102%);
+  transition:transform .25s ease;
+}
+.shop-filter-drawer.open .shop-filter-panel{transform:translateX(0)}
+.shop-filter-panel-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:20px;
+  padding-bottom:20px;
+  border-bottom:1px solid var(--line);
+}
+.shop-filter-panel-head span{
+  display:block;
+  font-size:8px;
+  letter-spacing:2.3px;
+  color:#776f66;
+  margin-bottom:5px;
+}
+.shop-filter-panel-head h2{
+  margin:0;
+  font:600 34px "Cormorant Garamond",Georgia,serif;
+}
+.shop-filter-close{
+  border:0;background:transparent;font-size:30px;line-height:1;cursor:pointer;color:#171411;
+}
+.shop-filter-section{
+  padding:22px 0;
+  border-bottom:1px solid var(--line);
+}
+.shop-filter-section-title{
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:1.7px;
+  margin-bottom:12px;
+}
+.shop-drawer-options{display:flex;flex-wrap:wrap;gap:8px}
+.shop-filter-panel .filters,
+.shop-filter-panel .brand-filters,
+.shop-filter-panel .availability-filters{margin:0}
+.shop-filter-panel .filter-btn,
+.shop-filter-panel .brand-filter-btn,
+.shop-filter-panel .availability-filter-btn{
+  background:#fff;
+  border:1px solid var(--line);
+  color:#171411;
+  min-height:38px;
+  padding:0 13px;
+}
+.shop-filter-panel .filter-btn.active,
+.shop-filter-panel .brand-filter-btn.active,
+.shop-filter-panel .availability-filter-btn.active{
+  background:#111;
+  border-color:#111;
+  color:#fff;
+}
+.shop-filter-panel-actions{
+  position:sticky;
+  bottom:-22px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  background:#f8f4ee;
+  padding:18px 0 0;
+  margin-top:22px;
+}
+.shop-filter-reset,.shop-filter-done{
+  min-height:44px;
+  border:1px solid #111;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:1.4px;
+  cursor:pointer;
+}
+.shop-filter-reset{background:#fff;color:#111}
+.shop-filter-done{background:#111;color:#fff}
+body.shop-filter-open{overflow:hidden}
+
+/* keep the shop page visually clean: filters live inside the drawer only */
+.shop-filter-groups{display:none!important}
+.section>.container>.filters{display:none!important}
+
+@media(max-width:640px){
+  .shop-toolbar{align-items:flex-start;flex-direction:column}
+  .shop-toolbar .shop-view-toolbar{width:100%}
+  .shop-filter-trigger{width:100%;justify-content:center}
+  .shop-filter-panel{width:100vw;max-width:none}
+}
+
+
+/* DOMARO V30.8 — admin-managed entry background */
+.entry-gate{
+  background:#080808 !important;
+}
+.entry-gate.has-custom-wallpaper{
+  background:
+    linear-gradient(rgba(8,8,8,.26),rgba(8,8,8,.44)),
+    var(--entry-wallpaper) center center / cover no-repeat !important;
+}
+.entry-gate::before,
+.entry-gate::after{
+  display:none !important;
+}
+.entry-gate-inner{position:relative;z-index:1}
+.entry-choice{
+  background:rgba(10,10,10,.56);
+  border-color:rgba(190,151,99,.28);
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+}
+.entry-choice:hover{
+  background:rgba(18,16,14,.68);
+  border-color:#9c7d57;
+}
+.entry-gate h1,
+.entry-gate-logo,
+.entry-gate-kicker,
+.entry-gate>div>p{
+  text-shadow:0 2px 18px rgba(0,0,0,.52);
+}
+@media(max-width:760px){
+  .entry-gate.has-custom-wallpaper{
+    background:
+      linear-gradient(rgba(8,8,8,.34),rgba(8,8,8,.52)),
+      var(--entry-wallpaper) 38% center / cover no-repeat !important;
+  }
+  .entry-choice{background:rgba(10,10,10,.64)}
+}
+
+
+/* DOMARO V30.8 — mobile entry gate refinement */
+@media(max-width:760px){
+  .entry-gate{
+    height:100dvh;
+    min-height:100dvh;
+    overflow-y:auto;
+    overflow-x:hidden;
+    align-items:flex-start;
+    overscroll-behavior:none;
+  }
+  .entry-gate.has-custom-wallpaper{
+    background:
+      linear-gradient(rgba(8,8,8,.34),rgba(8,8,8,.52)),
+      var(--entry-wallpaper) 72% center / cover no-repeat !important;
+  }
+  .entry-gate-inner{
+    width:min(100% - 28px,560px);
+    min-height:100dvh;
+    box-sizing:border-box;
+    padding:30px 0 36px;
+    text-align:center;
+  }
+  .entry-gate-logo{
+    margin-bottom:32px;
+    font-size:23px;
+    letter-spacing:7px;
+  }
+  .entry-gate-logo small{
+    margin-top:3px;
+    font-size:7px;
+    letter-spacing:4px;
+  }
+  .entry-gate-kicker{
+    margin-bottom:13px;
+    font-size:8px;
+    letter-spacing:3.2px;
+  }
+  .entry-gate h1{
+    font-size:48px;
+    line-height:.94;
+    letter-spacing:1px;
+  }
+  .entry-gate>div>p{
+    margin:14px 0 25px;
+    font-size:11px;
+    letter-spacing:1px;
+  }
+  .entry-gate-options{
+    grid-template-columns:1fr;
+    gap:8px;
+    margin-top:0;
+    padding-top:0;
+  }
+  .entry-choice{
+    min-height:112px;
+    padding:18px 20px;
+    background:rgba(10,10,10,.64);
+  }
+  .entry-choice>span{
+    top:18px;
+    left:auto;
+    right:20px;
+    font-size:18px;
+  }
+  .entry-choice strong{
+    font-size:31px;
+    letter-spacing:2px;
+  }
+  .entry-choice em{
+    margin-top:10px;
+    font-size:8px;
+    letter-spacing:1.5px;
+  }
+}
+@media(max-width:430px){
+  .entry-gate.has-custom-wallpaper{
+    background-position:78% center !important;
+  }
+}
+
+
+/* DOMARO V30.8 — sale pricing */
+.product-price-stack{display:inline-flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.old-price{text-decoration:line-through;text-decoration-thickness:1.4px;color:#9a9188;font-weight:500!important;opacity:.9}
+.sale-price{font-weight:800!important;color:#17120e}
+.product-detail-price{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.variant-option s{color:#9a9188;margin-right:5px;font-weight:500}
+.admin-old-price{text-decoration:line-through;color:#8f857b;font-weight:500;margin-right:8px}
+
+/* DOMARO V30.8 — mobile admin overhaul */
+@media(max-width:760px){
+  .admin-body{overflow-x:hidden}
+  .admin-topbar-inner{min-height:72px;height:auto;padding:12px 0;align-items:center;gap:10px}
+  .admin-topbar .logo{font-size:20px;letter-spacing:5px;flex:0 0 auto}
+  .admin-top-actions{gap:7px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+  .admin-user-label{max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+  .admin-logout,.admin-secondary-btn,.admin-primary-btn{min-height:38px;padding:9px 11px;font-size:8.5px}
+  .admin-shell{width:min(94%,1220px);padding:24px 0 54px}
+  .admin-tabs{overflow-x:auto;overflow-y:hidden;gap:4px;margin-bottom:22px;padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .admin-tabs::-webkit-scrollbar{display:none}
+  .admin-tab{flex:0 0 auto;padding:12px 13px;font-size:9px;white-space:nowrap}
+  .admin-panel{min-width:0}
+  .admin-dashboard-head{gap:14px}
+  .admin-dashboard-head h1{font-size:34px}
+  .dashboard-v26-actions{width:100%;display:grid!important;grid-template-columns:1.25fr 1fr 1fr!important;gap:7px!important}
+  .dashboard-v26-actions>*{width:100%!important;min-width:0!important}
+  .admin-controls,.admin-product-controls{
+    width:100%;
+    display:grid!important;
+    grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)!important;
+    gap:8px!important;
+  }
+  .admin-controls>*,.admin-product-controls>*{width:100%!important;min-width:0!important}
+  .sales-kpis,.admin-product-stats,.admin-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .sales-kpi,.admin-stat{padding:14px!important;min-width:0}
+  .sales-kpi b,.admin-stat b{font-size:19px!important}
+  .sales-kpi span,.admin-stat span{font-size:8px!important}
+  .admin-product-card{grid-template-columns:104px minmax(0,1fr);align-items:stretch}
+  .admin-product-image{min-height:132px}
+  .admin-product-image img{min-height:132px;padding:7px}
+  .admin-product-main{padding:13px;min-width:0}
+  .admin-product-title-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:start}
+  .admin-product-title-row h3{font-size:20px;line-height:1.05}
+  .admin-product-badges{justify-content:flex-end;max-width:106px}
+  .admin-product-main p{font-size:10px;line-height:1.45;margin:9px 0}
+  .admin-product-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .admin-product-actions .admin-secondary-btn{width:100%;padding:8px 6px;font-size:7.5px;min-height:34px}
+  .admin-product-price{margin-top:8px;font-size:12px}
+  .inventory-stock-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .quick-stock-adjuster{width:auto;justify-content:flex-start}
+  .product-modal{align-items:end;padding:0}
+  .product-modal-card,.v30-modal-card{
+    width:100vw!important;
+    max-width:none!important;
+    max-height:92dvh!important;
+    border-radius:18px 18px 0 0;
+    padding:20px 16px calc(22px + env(safe-area-inset-bottom))!important;
+  }
+  .product-modal-head h2{font-size:30px}
+  .product-modal .form-row,.v30-inline-form .form-row,.v30-store-form .form-row{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:10px!important;
+  }
+  .product-modal .form-row>div,.v30-inline-form .form-row>label,.v30-store-form .form-row>div{min-width:0}
+  .product-switch-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .v30-variant-row,.v30-gallery-item,.v30-audit-row{
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:10px!important;
+    align-items:center!important;
+  }
+  .v30-row-actions{width:auto;flex-wrap:wrap;justify-content:flex-end}
+  .v30-row-actions>*{flex:0 1 auto}
+  .v30-form-section{padding:16px!important}
+}
+@media(max-width:520px){
+  .admin-shell{width:min(96%,1220px)}
+  .admin-topbar-inner{gap:7px}
+  .admin-topbar .logo{font-size:18px;letter-spacing:4px}
+  .admin-user-label{display:none}
+  .dashboard-v26-actions{grid-template-columns:1fr 1fr!important}
+  .dashboard-v26-actions>*:first-child{grid-column:1/-1}
+  .admin-controls,.admin-product-controls{grid-template-columns:1fr 1fr!important}
+  .sales-kpis,.admin-product-stats,.admin-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .admin-product-card{grid-template-columns:90px minmax(0,1fr)}
+  .admin-product-image,.admin-product-image img{min-height:122px}
+  .admin-product-title-row{grid-template-columns:1fr}
+  .admin-product-badges{justify-content:flex-start;max-width:none}
+  .product-modal .form-row,.v30-inline-form .form-row,.v30-store-form .form-row{grid-template-columns:1fr 1fr!important}
+  .product-switch-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:390px){
+  .admin-tab{padding:11px 10px;font-size:8px}
+  .admin-product-card{grid-template-columns:82px minmax(0,1fr)}
+  .admin-product-main{padding:11px}
+  .admin-product-actions{grid-template-columns:1fr 1fr}
+  .product-modal .form-row,.v30-inline-form .form-row,.v30-store-form .form-row{grid-template-columns:1fr!important}
+}
+
+
+/* DOMARO V30.8 — after-sales request workflow */
+.v308-after-sales-box{display:grid;gap:16px;margin-top:24px;padding:24px;border:1px solid #d9cec0;background:#f7f2eb}
+.v308-after-sales-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.v308-after-sales-head>div>span,.v308-return-item span{display:block;font-size:8px;font-weight:700;letter-spacing:1.8px;color:#8b7b68}
+.v308-after-sales-head h3{margin:5px 0 7px;font:600 27px "Cormorant Garamond",Georgia,serif}
+.v308-after-sales-head p{margin:0;max-width:650px;color:#6b625a;font-size:11px;line-height:1.6}
+.v308-policy-link{font-size:9px;font-weight:700;letter-spacing:1px;color:#1a1714;text-decoration:none;white-space:nowrap}
+.v308-after-sales-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.v308-after-sales-box label{display:grid;gap:7px;font-size:9px;font-weight:700;letter-spacing:1px;color:#5f574f}
+.v308-after-sales-box select,.v308-after-sales-box textarea,.v308-after-sales-box input[type="file"]{width:100%;border:1px solid #cfc3b5;background:#fff;padding:12px}
+.v308-after-sales-box textarea{min-height:100px}
+.v308-evidence-label small{font-size:9px;font-weight:400;letter-spacing:0;color:#81776e;line-height:1.5}
+.v308-evidence-preview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.v308-evidence-preview>div{min-width:0;border:1px solid #ddd2c5;background:#fff;padding:6px}
+.v308-evidence-preview img{width:100%;height:94px;object-fit:cover}
+.v308-evidence-preview span{display:block;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:8px;color:#746a61}
+.v308-return-heading{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.v308-return-heading h3{margin:3px 0}
+.v308-request-type{padding:5px 7px;border:1px solid #cdbfae;font-size:8px;letter-spacing:1.2px}
+.v308-request-return{background:#f0e8dc}
+.v308-request-exchange{background:#e8edf0}
+.v308-return-item{margin:9px 0}
+.v308-return-item b{display:block;margin-top:3px;font-size:11px}
+.v308-return-evidence{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.v308-return-evidence a{display:block;width:58px;height:58px;border:1px solid #d5cabd;background:#fff}
+.v308-return-evidence img{width:100%;height:100%;object-fit:cover}
+.returns-request-cta{margin-top:26px;padding:24px;border:1px solid var(--line);background:#f4eee6;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.returns-request-cta span{font-size:8px;font-weight:700;letter-spacing:1.8px;color:#8a7b68}
+.returns-request-cta h2{margin:5px 0 7px;font:600 29px "Cormorant Garamond",Georgia,serif}
+.returns-request-cta p{margin:0;max-width:600px;font-size:11px;line-height:1.6;color:#6b625a}
+@media(max-width:700px){
+  .v308-after-sales-head,.returns-request-cta{display:grid}
+  .v308-after-sales-grid{grid-template-columns:1fr}
+  .v308-evidence-preview{grid-template-columns:repeat(3,1fr)}
+  .returns-request-cta .btn{width:100%;text-align:center}
+}
+
+
+/* DOMARO V30.8 customer after-sales status */
+.v308-status-history{margin:0 0 22px;padding:22px;border:1px solid #d8cdc0;background:#fbf8f4}
+.v308-status-history-head span{display:block;font-size:8px;font-weight:700;letter-spacing:1.8px;color:#8b7b68}
+.v308-status-history-head h3{margin:5px 0 14px;font:600 27px "Cormorant Garamond",Georgia,serif}
+.v308-status-list{display:grid;gap:12px}
+.v308-status-card{border:1px solid #ddd2c5;background:#fff;padding:16px}
+.v308-status-card-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.v308-status-card-head b{font-size:8px;letter-spacing:1.4px;color:#8a7b68}
+.v308-status-card-head h4{margin:3px 0 0;font-size:14px}
+.v308-customer-status{padding:6px 8px;border:1px solid #cfc4b8;font-size:8px;font-weight:700;letter-spacing:1px;white-space:nowrap}
+.v308-status-card>p{margin:11px 0;color:#6b625a;font-size:10px}
+.v308-status-card>small{display:block;margin-top:10px;color:#8b8177;font-size:8px}
+.v308-status-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:12px}
+.v308-status-step{position:relative;text-align:center;color:#9a9188;font-size:7px;line-height:1.3}
+.v308-status-step:before{content:"";position:absolute;top:10px;left:-50%;right:50%;height:1px;background:#ddd3c8;z-index:0}
+.v308-status-step:first-child:before{display:none}
+.v308-status-step i{position:relative;z-index:1;display:grid;place-items:center;width:21px;height:21px;margin:0 auto 5px;border:1px solid #cfc4b8;border-radius:50%;background:#fff;font-style:normal;font-size:8px}
+.v308-status-step.done{color:#2f2a25;font-weight:700}
+.v308-status-step.done i{background:#171412;color:#fff;border-color:#171412}
+.v308-status-terminal{grid-column:1/-1;margin-top:6px;padding:7px 9px;text-align:center;border:1px solid #d7c9bd;background:#f6ece8;font-size:8px;font-weight:700;letter-spacing:1px}
+@media(max-width:640px){
+  .v308-status-card-head{display:grid}
+  .v308-customer-status{justify-self:start}
+  .v308-status-steps{gap:3px}
+  .v308-status-step{font-size:6px}
+  .v308-status-step i{width:18px;height:18px}
+}

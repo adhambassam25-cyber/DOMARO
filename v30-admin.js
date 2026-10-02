@@ -40,12 +40,12 @@ function renderVariantRows(modal){
 }
 function showVariantForm(modal,variant=null){
   const wrap=modal.querySelector('#v30-variant-form-wrap'); wrap.hidden=false;
-  wrap.innerHTML=`<form id="v30-variant-form" class="v30-inline-form"><h3>${variant?'EDIT':'ADD'} VARIANT</h3><input name="id" type="hidden" value="${v30Esc(variant?.id||'')}"><div class="form-row"><label>Label<input name="label" required value="${v30Esc(variant?.label||'')}" placeholder="100 ML"></label><label>SKU<input name="sku" value="${v30Esc(variant?.sku||'')}" placeholder="DOM-100-BLUE"></label></div><div class="form-row"><label>Size (ML)<input name="size_ml" type="number" min="1" required value="${v30Esc(variant?.size_ml||'')}"></label><label>Price (EGP)<input name="price" type="number" min="0" step="0.01" required value="${v30Esc(variant?.price??'')}"></label></div><div class="form-row"><label>Cost price<input name="cost_price" type="number" min="0" step="0.01" value="${v30Esc(variant?.cost_price??'')}"></label><label>Stock quantity<input name="stock_quantity" type="number" min="0" step="1" value="${v30Esc(variant?.stock_quantity??'')}"></label></div><div class="product-switch-grid"><label class="product-toggle"><input name="active" type="checkbox" ${variant?.active!==false?'checked':''}><span>LIVE</span></label><label class="product-toggle"><input name="in_stock" type="checkbox" ${variant?.in_stock!==false?'checked':''}><span>IN STOCK</span></label><label class="product-toggle"><input name="is_default" type="checkbox" ${variant?.is_default?'checked':''}><span>DEFAULT</span></label></div><div class="v30-row-actions"><button class="admin-primary-btn" type="submit">SAVE VARIANT</button><button id="v30-cancel-variant" class="admin-secondary-btn" type="button">CANCEL</button></div></form>`;
+  wrap.innerHTML=`<form id="v30-variant-form" class="v30-inline-form"><h3>${variant?'EDIT':'ADD'} VARIANT</h3><input name="id" type="hidden" value="${v30Esc(variant?.id||'')}"><div class="form-row"><label>Label<input name="label" required value="${v30Esc(variant?.label||'')}" placeholder="100 ML"></label><label>SKU<input name="sku" value="${v30Esc(variant?.sku||'')}" placeholder="DOM-100-BLUE"></label></div><div class="form-row"><label>Size (ML)<input name="size_ml" type="number" min="1" required value="${v30Esc(variant?.size_ml||'')}"></label><label>Current selling price (EGP)<input name="price" type="number" min="0" step="0.01" required value="${v30Esc(variant?.price??'')}"></label></div><div class="form-row"><label>Original price before discount<input name="compare_at_price" type="number" min="0" step="0.01" value="${v30Esc(variant?.compare_at_price??'')}" placeholder="Optional"></label><label>Cost price<input name="cost_price" type="number" min="0" step="0.01" value="${v30Esc(variant?.cost_price??'')}"></label><label>Stock quantity<input name="stock_quantity" type="number" min="0" step="1" value="${v30Esc(variant?.stock_quantity??'')}"></label></div><div class="product-switch-grid"><label class="product-toggle"><input name="active" type="checkbox" ${variant?.active!==false?'checked':''}><span>LIVE</span></label><label class="product-toggle"><input name="in_stock" type="checkbox" ${variant?.in_stock!==false?'checked':''}><span>IN STOCK</span></label><label class="product-toggle"><input name="is_default" type="checkbox" ${variant?.is_default?'checked':''}><span>DEFAULT</span></label></div><div class="v30-row-actions"><button class="admin-primary-btn" type="submit">SAVE VARIANT</button><button id="v30-cancel-variant" class="admin-secondary-btn" type="button">CANCEL</button></div></form>`;
   wrap.querySelector('#v30-cancel-variant').onclick=()=>{wrap.hidden=true;wrap.innerHTML=''};
   wrap.querySelector('#v30-variant-form').onsubmit=async e=>{
-    e.preventDefault(); const fd=new FormData(e.currentTarget); const msg=modal.querySelector('#v30-variant-message'); msg.textContent='';
+    e.preventDefault(); const fd=new FormData(form); const msg=modal.querySelector('#v30-variant-message'); msg.textContent='';
     const stockRaw=String(fd.get('stock_quantity')||'').trim();
-    const payload={product_id:v30CurrentProductId,label:String(fd.get('label')).trim(),sku:String(fd.get('sku')||'').trim()||null,size_ml:Number(fd.get('size_ml')),price:Number(fd.get('price')),cost_price:String(fd.get('cost_price')||'').trim()===''?null:Number(fd.get('cost_price')),stock_quantity:stockRaw===''?null:Number(stockRaw),active:fd.get('active')==='on',in_stock:fd.get('in_stock')==='on',is_default:fd.get('is_default')==='on',updated_at:new Date().toISOString()};
+    const payload={product_id:v30CurrentProductId,label:String(fd.get('label')).trim(),sku:String(fd.get('sku')||'').trim()||null,size_ml:Number(fd.get('size_ml')),price:Number(fd.get('price')),compare_at_price:String(fd.get('compare_at_price')||'').trim()===''?null:Number(fd.get('compare_at_price')),cost_price:String(fd.get('cost_price')||'').trim()===''?null:Number(fd.get('cost_price')),stock_quantity:stockRaw===''?null:Number(stockRaw),active:fd.get('active')==='on',in_stock:fd.get('in_stock')==='on',is_default:fd.get('is_default')==='on',updated_at:new Date().toISOString()};
     if(payload.stock_quantity!==null) payload.in_stock=payload.stock_quantity>0;
     try{
       const id=String(fd.get('id')||'');
@@ -125,9 +125,78 @@ function addV30Tab(key,label,ownerOnly=false){
 }
 function addV30Panel(id,html){ if(document.getElementById(id))return document.getElementById(id);const p=document.createElement('section');p.id=id;p.className='admin-panel v30-admin-panel';p.hidden=true;p.innerHTML=html;document.getElementById('admin-dashboard').appendChild(p);return p; }
 
+
+
+async function v308SignedReturnEvidence(path){
+  const clean=String(path||'').trim();
+  if(!clean) return '';
+  try{
+    const data=await v30Json(V30A_URL+'/storage/v1/object/sign/return-evidence/'+clean.split('/').map(encodeURIComponent).join('/'),{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({expiresIn:3600})
+    });
+    const signed=String(data?.signedURL||data?.signedUrl||'').trim();
+    if(!signed) return '';
+    return signed.startsWith('http') ? signed : V30A_URL+'/storage/v1'+signed;
+  }catch(_){ return ''; }
+}
+
 async function loadReturns(){
-  const host=document.getElementById('v30-returns-list'); const err=document.getElementById('v30-returns-error'); if(!host)return; err.textContent='';host.innerHTML='<div class="admin-loading">Loading returns…</div>';
-  try{const rows=await v30Json(`${V30A_URL}/rest/v1/returns?select=*&order=created_at.desc&limit=100`);host.innerHTML=rows.length?rows.map(r=>`<article class="v30-return-admin-card"><div><span>${v30Esc(new Date(r.created_at).toLocaleString('en-EG'))}</span><h3>${v30Esc(r.order_number)}</h3><p>${v30Esc(r.phone)} · ${v30Esc(r.reason)}</p>${r.details?`<small>${v30Esc(r.details)}</small>`:''}</div><div class="v30-return-controls"><select data-return-status="${r.id}">${['requested','approved','rejected','received','refunded','closed'].map(s=>`<option value="${s}" ${r.status===s?'selected':''}>${s.toUpperCase()}</option>`).join('')}</select><input data-return-refund="${r.id}" type="number" min="0" step="0.01" placeholder="Refund amount" value="${r.refund_amount??''}"><input data-return-note="${r.id}" placeholder="Admin note" value="${v30Esc(r.admin_note||'')}"><button class="admin-primary-btn" data-return-save="${r.id}">SAVE</button></div></article>`).join(''):'<div class="admin-empty">No return requests.</div>';host.querySelectorAll('[data-return-save]').forEach(btn=>btn.onclick=async()=>{try{const id=btn.dataset.returnSave;const status=host.querySelector(`[data-return-status="${id}"]`).value;const raw=host.querySelector(`[data-return-refund="${id}"]`).value;const note=host.querySelector(`[data-return-note="${id}"]`).value;await v30Json(`${V30A_URL}/rest/v1/rpc/update_return_status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({p_return_id:id,p_status:status,p_refund_amount:raw===''?null:Number(raw),p_admin_note:note||null})});await loadReturns();}catch(e){err.textContent=e.message;}});}catch(e){err.textContent=e.message;host.innerHTML='';}
+  const host=document.getElementById('v30-returns-list');
+  const err=document.getElementById('v30-returns-error');
+  if(!host) return;
+  err.textContent='';
+  host.innerHTML='<div class="admin-loading">Loading after-sales requests…</div>';
+  try{
+    const rows=await v30Json(`${V30A_URL}/rest/v1/returns?select=*&order=created_at.desc&limit=100`);
+    await Promise.all(rows.map(async r=>{
+      const paths=Array.isArray(r.evidence_urls)?r.evidence_urls:[];
+      r._evidence_urls=(await Promise.all(paths.map(v308SignedReturnEvidence))).filter(Boolean);
+    }));
+    host.innerHTML=rows.length?rows.map(r=>{
+      const type=String(r.request_type||'return').toLowerCase();
+      const evidence=Array.isArray(r._evidence_urls)?r._evidence_urls:[];
+      const evidenceHtml=evidence.length
+        ? '<div class="v308-return-evidence">'+evidence.map((url,i)=>'<a href="'+v30Esc(url)+'" target="_blank" rel="noopener"><img src="'+v30Esc(url)+'" alt="Evidence photo '+(i+1)+'"></a>').join('')+'</div>'
+        : '';
+      const item=r.item_label?'<div class="v308-return-item"><span>ITEM</span><b>'+v30Esc(r.item_label)+'</b></div>':'';
+      return '<article class="v30-return-admin-card">'+
+        '<div>'+
+          '<span>'+v30Esc(new Date(r.created_at).toLocaleString('en-EG'))+'</span>'+
+          '<div class="v308-return-heading"><h3>'+v30Esc(r.order_number)+'</h3><b class="v308-request-type v308-request-'+v30Esc(type)+'">'+v30Esc(type.toUpperCase())+'</b></div>'+
+          '<p>'+v30Esc(r.phone)+' · '+v30Esc(r.reason)+'</p>'+
+          item+
+          (r.details?'<small>'+v30Esc(r.details)+'</small>':'')+
+          evidenceHtml+
+        '</div>'+
+        '<div class="v30-return-controls">'+
+          '<select data-return-status="'+r.id+'">'+['requested','under_review','approved','rejected','received','refunded','completed','closed'].map(s=>'<option value="'+s+'" '+(r.status===s?'selected':'')+'>'+s.replaceAll('_',' ').toUpperCase()+'</option>').join('')+'</select>'+
+          '<input data-return-refund="'+r.id+'" type="number" min="0" step="0.01" placeholder="Refund amount" value="'+(r.refund_amount??'')+'">'+
+          '<input data-return-note="'+r.id+'" placeholder="Admin note" value="'+v30Esc(r.admin_note||'')+'">'+
+          '<button class="admin-primary-btn" data-return-save="'+r.id+'">SAVE</button>'+
+        '</div>'+
+      '</article>';
+    }).join(''):'<div class="admin-empty">No return or exchange requests.</div>';
+
+    host.querySelectorAll('[data-return-save]').forEach(btn=>btn.onclick=async()=>{
+      try{
+        const id=btn.dataset.returnSave;
+        const status=host.querySelector('[data-return-status="'+id+'"]').value;
+        const raw=host.querySelector('[data-return-refund="'+id+'"]').value;
+        const note=host.querySelector('[data-return-note="'+id+'"]').value;
+        await v30Json(`${V30A_URL}/rest/v1/rpc/update_return_status`,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({p_return_id:id,p_status:status,p_refund_amount:raw===''?null:Number(raw),p_admin_note:note||null})
+        });
+        await loadReturns();
+      }catch(e){ err.textContent=e.message; }
+    });
+  }catch(e){
+    err.textContent=e.message;
+    host.innerHTML='';
+  }
 }
 
 async function loadAbandoned(){
@@ -215,12 +284,66 @@ async function addDeliveryZone(e){
   finally{if(btn)btn.disabled=false;}
 }
 
+async function uploadEntryGateWallpaper(file){
+  if(!file) return null;
+  if(file.size>8*1024*1024) throw new Error('Wallpaper is too large. Maximum size is 8 MB.');
+  if(!/^image\/(jpeg|png|webp)$/i.test(file.type||'')) throw new Error('Use JPG, PNG or WebP only.');
+  const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'') || 'jpg';
+  const objectName=`site/entry-gate-${Date.now()}.${ext}`;
+  const r=await fetch(`${V30A_URL}/storage/v1/object/products/${objectName.split('/').map(encodeURIComponent).join('/')}`,{
+    method:'POST',
+    headers:v30AH({'Content-Type':file.type||'application/octet-stream','x-upsert':'true'}),
+    body:file
+  });
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(data?.message||data?.error||'Could not upload wallpaper.');
+  return `${V30A_URL}/storage/v1/object/public/products/${objectName.split('/').map(encodeURIComponent).join('/')}`;
+}
+
 async function loadStoreSettings(){
-  const err=document.getElementById('v30-store-error');err.textContent='';try{const rows=await v30Json(`${V30A_URL}/rest/v1/store_settings?select=*&id=eq.1&limit=1`);const s=rows?.[0]||{};['hero_eyebrow','hero_title','hero_subtitle','hero_cta_label','hero_cta_href','announcement','promo_title','promo_text','promo_link_label','promo_link_href','monthly_sales_goal','shipping_fee','ga4_id','meta_pixel_id','tiktok_pixel_id'].forEach(k=>{const el=document.querySelector(`[name="${k}"]`);if(el)el.value=s[k]??'';});}catch(e){err.textContent=e.message;}
+  const err=document.getElementById('v30-store-error');if(!err)return;err.textContent='';try{const rows=await v30Json(`${V30A_URL}/rest/v1/store_settings?select=*&id=eq.1&limit=1`);const s=rows?.[0]||{};['hero_eyebrow','hero_title','hero_subtitle','hero_cta_label','hero_cta_href','announcement','promo_title','promo_text','promo_link_label','promo_link_href','entry_gate_wallpaper_url','returns_intro','returns_eligible','returns_opened','returns_condition','returns_shipping_refunds','returns_how_to','returns_note','monthly_sales_goal','shipping_fee','ga4_id','meta_pixel_id','tiktok_pixel_id'].forEach(k=>{const el=document.querySelector(`[name="${k}"]`);if(el)el.value=s[k]??'';});}catch(e){err.textContent=e.message;}
 }
 async function saveStoreSettings(e){
-  e.preventDefault();const err=document.getElementById('v30-store-error');err.textContent='';const fd=new FormData(e.currentTarget);const payload={};for(const [k,v] of fd.entries())payload[k]=String(v).trim()===''?null:String(v).trim();payload.monthly_sales_goal=Number(payload.monthly_sales_goal||0);payload.shipping_fee=Number(payload.shipping_fee||0);payload.updated_at=new Date().toISOString();try{await v30Json(`${V30A_URL}/rest/v1/store_settings?id=eq.1`,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(payload)});err.className='coupon-message coupon-message-success';err.textContent='Store settings saved.';loadV30Metrics();}catch(e2){err.className='admin-error';err.textContent=e2.message;}
+  e.preventDefault();
+  const form=e.currentTarget;
+  const err=document.getElementById('v30-store-error');
+  err.className='admin-error';err.textContent='';
+  const btn=form.querySelector('button[type="submit"]');
+  if(btn) btn.disabled=true;
+  try{
+    const fd=new FormData(e.currentTarget);
+    const payload={};
+    for(const [k,v] of fd.entries()) payload[k]=String(v).trim()===''?null:String(v).trim();
+
+    const file=document.getElementById('entry-gate-wallpaper-file')?.files?.[0];
+    if(file){
+      payload.entry_gate_wallpaper_url=await uploadEntryGateWallpaper(file);
+      const hidden=form.querySelector('[name="entry_gate_wallpaper_url"]');
+      if(hidden) hidden.value=payload.entry_gate_wallpaper_url;
+    }
+
+    payload.monthly_sales_goal=Number(payload.monthly_sales_goal||0);
+    payload.shipping_fee=Number(payload.shipping_fee||0);
+    payload.updated_at=new Date().toISOString();
+
+    await v30Json(`${V30A_URL}/rest/v1/store_settings?id=eq.1`,{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','Prefer':'return=representation'},
+      body:JSON.stringify(payload)
+    });
+    err.className='coupon-message coupon-message-success';
+    err.textContent='Store settings saved.';
+    const prev=document.getElementById('entry-gate-wallpaper-preview');
+    if(prev){prev.src=payload.entry_gate_wallpaper_url||'';prev.hidden=!payload.entry_gate_wallpaper_url;}
+    const input=document.getElementById('entry-gate-wallpaper-file'); if(input) input.value='';
+    loadV30Metrics();
+  }catch(e2){
+    err.className='admin-error';err.textContent=e2.message;
+  }finally{
+    if(btn) btn.disabled=false;
+  }
 }
+
 
 async function exportBackup(){
   const data=await v30Json(`${V30A_URL}/rest/v1/rpc/owner_store_backup`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`DOMARO-V30-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href);
@@ -246,7 +369,39 @@ async function initV30Admin(){
     const at=addV30Tab('abandoned','ABANDONED');const ap=addV30Panel('v30-abandoned-panel','<div class="admin-dashboard-head"><div><div class="eyebrow" style="color:#766b5d">CHECKOUT RECOVERY</div><h1>ABANDONED CARTS</h1><p class="admin-panel-intro">Shows active checkout sessions untouched for at least 30 minutes.</p></div><button id="v30-refresh-abandoned" class="admin-secondary-btn">REFRESH</button></div><div id="v30-abandoned-error" class="admin-error"></div><div id="v30-abandoned-list" class="v30-admin-list"></div>');at.onclick=()=>{v30OpenCustom(ap.id,at);loadAbandoned()};ap.querySelector('#v30-refresh-abandoned').onclick=loadAbandoned;
   }
   if(owner){
-    const st=addV30Tab('store','STORE',true);const sp=addV30Panel('v30-store-panel',`<div class="admin-dashboard-head"><div><div class="eyebrow" style="color:#766b5d">OWNER CONTROL</div><h1>STORE MANAGER</h1><p class="admin-panel-intro">Homepage, sales goal, analytics IDs and backup tools.</p></div></div><form id="v30-store-form" class="v30-store-form"><div class="v30-form-section"><h3>HOMEPAGE</h3><div class="form-row"><label>Hero eyebrow<input name="hero_eyebrow"></label><label>Hero title<input name="hero_title"></label></div><label>Hero subtitle<textarea name="hero_subtitle" class="small-textarea"></textarea></label><div class="form-row"><label>CTA label<input name="hero_cta_label"></label><label>CTA link<input name="hero_cta_href"></label></div><label>Announcement bar<input name="announcement" placeholder="Optional"></label><div class="form-row"><label>Promo title<input name="promo_title"></label><label>Promo link label<input name="promo_link_label"></label></div><label>Promo text<textarea name="promo_text" class="small-textarea"></textarea></label><label>Promo link<input name="promo_link_href"></label></div><div class="v30-form-section"><h3>BUSINESS</h3><div class="form-row"><label>Monthly delivered sales goal (EGP)<input name="monthly_sales_goal" type="number" min="0" step="1"></label><label>Fallback delivery fee (EGP)<input name="shipping_fee" type="number" min="0" step="1"><span class="field-help">Safety fallback only. Normal checkout rates come from Delivery Zones below.</span></label></div></div><div class="v30-form-section"><h3>ANALYTICS</h3><p class="field-help">Optional. Leave blank to send no analytics traffic.</p><div class="form-row"><label>Google Analytics 4 ID<input name="ga4_id" placeholder="G-XXXXXXXXXX"></label><label>Meta Pixel ID<input name="meta_pixel_id"></label></div><label>TikTok Pixel ID<input name="tiktok_pixel_id"></label></div><div class="v30-integration-status"><h3>EXTERNAL INTEGRATIONS</h3><div><b>ONLINE PAYMENT</b><span>Prepared for future provider connection — COD remains the live payment method until provider credentials are supplied.</span></div><div><b>CUSTOMER EMAILS</b><span>Requires a verified sending domain before emails can be sent safely to all customers.</span></div><div><b>CUSTOM DOMAIN</b><span>Connect through Vercel when you decide to purchase/use a domain.</span></div></div><div id="v30-store-error" class="admin-error"></div><button class="admin-primary-btn" type="submit">SAVE STORE SETTINGS</button></form><section class="v30-form-section v304-delivery-zones"><div class="v304-zone-head"><div><span class="eyebrow" style="color:#766b5d">SMART DELIVERY</span><h3>DELIVERY ZONES</h3><p class="field-help">Each governorate has a default fee. Add optional area overrides when a district needs a different price. Checkout calculates the fee automatically.</p></div><button id="v304-refresh-zones" class="admin-secondary-btn" type="button">REFRESH</button></div><div id="v304-delivery-zones-error" class="admin-error"></div><div id="v304-delivery-zones-list" class="v304-delivery-zones-list"></div><form id="v304-add-zone-form" class="v30-inline-form v304-add-zone-form"><h3>ADD AREA OVERRIDE</h3><div class="form-row"><label>Governorate<select name="zone_governorate" required><option value="">Select governorate</option>${v304GovernorateOptions()}</select></label><label>Area / District<input name="zone_area" required placeholder="e.g. Sheikh Zayed"></label></div><div class="form-row"><label>Delivery fee (EGP)<input name="zone_fee" type="number" min="0" step="1" required></label><div class="v304-zone-add-action"><button class="admin-primary-btn" type="submit">ADD OVERRIDE</button></div></div></form></section><section class="v30-backup-card"><div><span>OWNER TOOLS</span><h3>BACKUP / RESTORE</h3><p>Backup includes catalog, variants, galleries, coupons, store settings and delivery zones. Restore is a safe merge and never overwrites orders.</p></div><div class="v30-row-actions"><button id="v30-export-backup" class="admin-secondary-btn">EXPORT BACKUP</button><label class="admin-secondary-btn v30-file-label">RESTORE BACKUP<input id="v30-restore-backup" type="file" accept="application/json" hidden></label></div></section>`);st.onclick=()=>{v30OpenCustom(sp.id,st);loadStoreSettings();loadDeliveryZones()};sp.querySelector('#v30-store-form').onsubmit=saveStoreSettings;sp.querySelector('#v304-refresh-zones').onclick=loadDeliveryZones;sp.querySelector('#v304-add-zone-form').onsubmit=addDeliveryZone;sp.querySelector('#v30-export-backup').onclick=()=>exportBackup().catch(e=>sp.querySelector('#v30-store-error').textContent=e.message);sp.querySelector('#v30-restore-backup').onchange=e=>restoreBackup(e.target.files?.[0]).catch(er=>sp.querySelector('#v30-store-error').textContent=er.message);
+    const st=addV30Tab('store','STORE',true);const sp=addV30Panel('v30-store-panel',`<div class="admin-dashboard-head"><div><div class="eyebrow" style="color:#766b5d">OWNER CONTROL</div><h1>STORE MANAGER</h1><p class="admin-panel-intro">Homepage, sales goal, analytics IDs and backup tools.</p></div></div><form id="v30-store-form" class="v30-store-form"><div class="v30-form-section"><h3>HOMEPAGE</h3><div class="form-row"><label>Hero eyebrow<input name="hero_eyebrow"></label><label>Hero title<input name="hero_title"></label></div><label>Hero subtitle<textarea name="hero_subtitle" class="small-textarea"></textarea></label><div class="form-row"><label>CTA label<input name="hero_cta_label"></label><label>CTA link<input name="hero_cta_href"></label></div><label>Announcement bar<input name="announcement" placeholder="Optional"></label><div class="form-row"><label>Promo title<input name="promo_title"></label><label>Promo link label<input name="promo_link_label"></label></div><label>Promo text<textarea name="promo_text" class="small-textarea"></textarea></label><label>Promo link<input name="promo_link_href"></label></div><div class="v30-form-section"><h3>ENTRY SCREEN WALLPAPER</h3><p class="field-help">Upload the background used on the “Who are you shopping for?” screen. JPG, PNG or WebP up to 8 MB.</p><div class="product-image-editor"><div><label>Wallpaper image<input id="entry-gate-wallpaper-file" type="file" accept="image/jpeg,image/png,image/webp"></label><small class="field-help">Recommended: landscape image, at least 1600 px wide.</small></div><img id="entry-gate-wallpaper-preview" alt="Entry screen wallpaper preview"></div><input type="hidden" name="entry_gate_wallpaper_url"><button id="entry-gate-wallpaper-clear" class="admin-secondary-btn" type="button">REMOVE WALLPAPER</button></div><div class="v30-form-section"><h3>RETURNS & EXCHANGES POLICY</h3><p class="field-help">These fields control the public Returns & Exchanges page.</p><label>Intro text<textarea name="returns_intro" class="small-textarea"></textarea></label><label>Eligible requests<textarea name="returns_eligible" class="small-textarea"></textarea></label><label>Opened fragrance products<textarea name="returns_opened" class="small-textarea"></textarea></label><label>Condition of returned items<textarea name="returns_condition" class="small-textarea"></textarea></label><label>Shipping & refunds<textarea name="returns_shipping_refunds" class="small-textarea"></textarea></label><label>How to request a return or exchange<textarea name="returns_how_to" class="small-textarea"></textarea></label><label>Final note<textarea name="returns_note" class="small-textarea"></textarea></label></div><div class="v30-form-section"><h3>BUSINESS</h3><div class="form-row"><label>Monthly delivered sales goal (EGP)<input name="monthly_sales_goal" type="number" min="0" step="1"></label><label>Fallback delivery fee (EGP)<input name="shipping_fee" type="number" min="0" step="1"><span class="field-help">Safety fallback only. Normal checkout rates come from Delivery Zones below.</span></label></div></div><div class="v30-form-section"><h3>ANALYTICS</h3><p class="field-help">Optional. Leave blank to send no analytics traffic.</p><div class="form-row"><label>Google Analytics 4 ID<input name="ga4_id" placeholder="G-XXXXXXXXXX"></label><label>Meta Pixel ID<input name="meta_pixel_id"></label></div><label>TikTok Pixel ID<input name="tiktok_pixel_id"></label></div><div class="v30-integration-status"><h3>EXTERNAL INTEGRATIONS</h3><div><b>ONLINE PAYMENT</b><span>Prepared for future provider connection — COD remains the live payment method until provider credentials are supplied.</span></div><div><b>CUSTOMER EMAILS</b><span>Requires a verified sending domain before emails can be sent safely to all customers.</span></div><div><b>CUSTOM DOMAIN</b><span>Connect through Vercel when you decide to purchase/use a domain.</span></div></div><div id="v30-store-error" class="admin-error"></div><button class="admin-primary-btn" type="submit">SAVE STORE SETTINGS</button></form><section class="v30-form-section v304-delivery-zones"><div class="v304-zone-head"><div><span class="eyebrow" style="color:#766b5d">SMART DELIVERY</span><h3>DELIVERY ZONES</h3><p class="field-help">Each governorate has a default fee. Add optional area overrides when a district needs a different price. Checkout calculates the fee automatically.</p></div><button id="v304-refresh-zones" class="admin-secondary-btn" type="button">REFRESH</button></div><div id="v304-delivery-zones-error" class="admin-error"></div><div id="v304-delivery-zones-list" class="v304-delivery-zones-list"></div><form id="v304-add-zone-form" class="v30-inline-form v304-add-zone-form"><h3>ADD AREA OVERRIDE</h3><div class="form-row"><label>Governorate<select name="zone_governorate" required><option value="">Select governorate</option>${v304GovernorateOptions()}</select></label><label>Area / District<input name="zone_area" required placeholder="e.g. Sheikh Zayed"></label></div><div class="form-row"><label>Delivery fee (EGP)<input name="zone_fee" type="number" min="0" step="1" required></label><div class="v304-zone-add-action"><button class="admin-primary-btn" type="submit">ADD OVERRIDE</button></div></div></form></section><section class="v30-backup-card"><div><span>OWNER TOOLS</span><h3>BACKUP / RESTORE</h3><p>Backup includes catalog, variants, galleries, coupons, store settings and delivery zones. Restore is a safe merge and never overwrites orders.</p></div><div class="v30-row-actions"><button id="v30-export-backup" class="admin-secondary-btn">EXPORT BACKUP</button><label class="admin-secondary-btn v30-file-label">RESTORE BACKUP<input id="v30-restore-backup" type="file" accept="application/json" hidden></label></div></section>`);if(st&&sp){
+      st.onclick=()=>{v30OpenCustom(sp.id,st);loadStoreSettings();loadDeliveryZones()};
+      const storeForm=sp.querySelector('#v30-store-form');
+      if(storeForm) storeForm.onsubmit=saveStoreSettings;
+      const wpFile=sp.querySelector('#entry-gate-wallpaper-file');
+      const wpPrev=sp.querySelector('#entry-gate-wallpaper-preview');
+      const storeErr=sp.querySelector('#v30-store-error');
+      if(wpFile) wpFile.onchange=()=>{
+        const file=wpFile.files?.[0];
+        if(!file)return;
+        if(file.size>8*1024*1024){
+          if(storeErr)storeErr.textContent='Wallpaper is too large. Maximum size is 8 MB.';
+          wpFile.value='';
+          return;
+        }
+        if(wpPrev){wpPrev.src=URL.createObjectURL(file);wpPrev.hidden=false;}
+      };
+      const wpClear=sp.querySelector('#entry-gate-wallpaper-clear');
+      if(wpClear) wpClear.onclick=()=>{
+        const hidden=sp.querySelector('[name="entry_gate_wallpaper_url"]');
+        if(hidden)hidden.value='';
+        if(wpFile)wpFile.value='';
+        if(wpPrev){wpPrev.src='';wpPrev.hidden=true;}
+      };
+      const refreshZones=sp.querySelector('#v304-refresh-zones');
+      if(refreshZones)refreshZones.onclick=loadDeliveryZones;
+      const addZoneForm=sp.querySelector('#v304-add-zone-form');
+      if(addZoneForm)addZoneForm.onsubmit=addDeliveryZone;
+      const exportBtn=sp.querySelector('#v30-export-backup');
+      if(exportBtn)exportBtn.onclick=()=>exportBackup().catch(e=>{if(storeErr)storeErr.textContent=e.message});
+      const restoreInput=sp.querySelector('#v30-restore-backup');
+      if(restoreInput)restoreInput.onchange=e=>restoreBackup(e.target.files?.[0]).catch(er=>{if(storeErr)storeErr.textContent=er.message});
+    }
     const audt=addV30Tab('audit','AUDIT',true);const audp=addV30Panel('v30-audit-panel','<div class="admin-dashboard-head"><div><div class="eyebrow" style="color:#766b5d">OWNER SECURITY</div><h1>AUDIT LOG</h1></div><button id="v30-refresh-audit" class="admin-secondary-btn">REFRESH</button></div><div id="v30-audit-error" class="admin-error"></div><div id="v30-audit-list" class="v30-audit-list"></div>');audt.onclick=()=>{v30OpenCustom(audp.id,audt);loadAudit()};audp.querySelector('#v30-refresh-audit').onclick=loadAudit;
   }
   document.querySelectorAll('.admin-tab:not(.v30-admin-tab)').forEach(t=>t.addEventListener('click',v30HideCustomPanels));
