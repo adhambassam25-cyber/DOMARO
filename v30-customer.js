@@ -265,6 +265,74 @@ async function v30UploadReturnEvidence(orderNumber,file){
   return objectName;
 }
 
+
+function v30AfterSalesStatusLabel(status){
+  return ({
+    requested:'Request received',
+    under_review:'Under review',
+    approved:'Approved',
+    rejected:'Rejected',
+    received:'Item received',
+    refunded:'Refunded',
+    completed:'Completed',
+    closed:'Closed'
+  })[String(status||'').toLowerCase()] || String(status||'').replaceAll('_',' ');
+}
+
+function v30AfterSalesStatusSteps(request){
+  const status=String(request?.status||'requested').toLowerCase();
+  const type=String(request?.request_type||'return').toLowerCase();
+  const terminal=status==='rejected' || status==='closed';
+  const steps=type==='exchange'
+    ? ['requested','under_review','approved','received','completed']
+    : ['requested','under_review','approved','received','refunded'];
+  const index=steps.indexOf(status);
+  return '<div class="v308-status-steps">'+steps.map((step,i)=>{
+    const done=index>=i && index>=0;
+    const active=status===step;
+    return '<div class="v308-status-step '+(done?'done ':'')+(active?'active':'')+'"><i>'+(done?'✓':(i+1))+'</i><span>'+escapeTrackHtml(v30AfterSalesStatusLabel(step))+'</span></div>';
+  }).join('')+(terminal?'<div class="v308-status-terminal">'+escapeTrackHtml(v30AfterSalesStatusLabel(status))+'</div>':'')+'</div>';
+}
+
+async function v30LoadAfterSalesStatuses(){
+  const orderNumber=document.getElementById('track-order-number')?.value.trim()||'';
+  const phone=document.getElementById('track-phone')?.value.trim()||'';
+  if(!orderNumber||!phone) return [];
+
+  const r=await fetch(V30_SUPABASE_URL+'/rest/v1/rpc/get_after_sales_requests',{
+    method:'POST',
+    headers:{'apikey':V30_SUPABASE_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({p_order_number:orderNumber,p_phone:phone})
+  });
+  if(!r.ok) return [];
+  const data=await r.json().catch(()=>[]);
+  return Array.isArray(data)?data:[];
+}
+
+function v30RenderAfterSalesStatuses(host,requests){
+  let section=host.querySelector('.v308-status-history');
+  if(!requests.length){
+    if(section) section.remove();
+    return;
+  }
+  if(!section){
+    section=document.createElement('section');
+    section.className='v308-status-history';
+    host.prepend(section);
+  }
+  section.innerHTML='<div class="v308-status-history-head"><span>AFTER-SALES STATUS</span><h3>YOUR RETURN & EXCHANGE REQUESTS</h3></div>'+
+    '<div class="v308-status-list">'+requests.map(r=>{
+      const type=String(r.request_type||'return').toUpperCase();
+      const when=r.updated_at?new Date(r.updated_at).toLocaleString('en-EG',{dateStyle:'medium',timeStyle:'short'}):'';
+      return '<article class="v308-status-card">'+
+        '<div class="v308-status-card-head"><div><b>'+escapeTrackHtml(type)+'</b><h4>'+escapeTrackHtml(r.item_label||'Order request')+'</h4></div><span class="v308-customer-status v308-customer-status-'+escapeTrackHtml(r.status)+'">'+escapeTrackHtml(v30AfterSalesStatusLabel(r.status))+'</span></div>'+
+        '<p>'+escapeTrackHtml(r.reason||'')+'</p>'+
+        v30AfterSalesStatusSteps(r)+
+        (when?'<small>Last updated '+escapeTrackHtml(when)+'</small>':'')+
+      '</article>';
+    }).join('')+'</div>';
+}
+
 function initReturnRequestEnhancement(){
   const result=document.getElementById('track-result');
   const form=document.getElementById('track-order-form');
@@ -301,6 +369,8 @@ function initReturnRequestEnhancement(){
       '<div class="checkout-error" id="v30-return-message" aria-live="polite"></div>';
 
     result.appendChild(box);
+
+    v30LoadAfterSalesStatuses().then(requests=>v30RenderAfterSalesStatuses(result,requests)).catch(()=>{});
 
     const photos=box.querySelector('#v30-return-photos');
     const preview=box.querySelector('#v30-return-photo-preview');
@@ -357,6 +427,8 @@ function initReturnRequestEnhancement(){
 
         msg.className='coupon-message coupon-message-success';
         msg.textContent=(type==='exchange'?'Exchange':'Return')+' request submitted successfully.';
+        const requests=await v30LoadAfterSalesStatuses();
+        v30RenderAfterSalesStatuses(result,requests);
         btn.remove();
         box.querySelectorAll('select,textarea,input').forEach(el=>el.disabled=true);
       }catch(err){
