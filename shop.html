@@ -20,7 +20,7 @@
 <meta name="application-name" content="DOMARO">
 <meta name="theme-color" content="#0b0b0b">
 
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css?v=30.7"></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css?v=30.8"></head><body>
 <div class="topbar">DELIVERY ACROSS EGYPT</div>
 <header>
   <div class="container nav">
@@ -64,9 +64,19 @@
     <button class="filter-btn" data-filter="unisex">UNISEX</button>
     <button class="filter-btn" data-filter="boxes">BOXES</button>
   </div>
-  <div class="brand-filter-wrap">
-    <div class="brand-filter-title">SHOP BY BRAND</div>
-    <div id="brand-filters" class="brand-filters"></div>
+  <div class="shop-filter-groups">
+    <div class="brand-filter-wrap">
+      <div class="brand-filter-title">SHOP BY BRAND</div>
+      <div id="brand-filters" class="brand-filters"></div>
+    </div>
+    <div class="availability-filter-wrap">
+      <div class="brand-filter-title">AVAILABILITY</div>
+      <div class="availability-filters" role="group" aria-label="Availability">
+        <button class="availability-filter-btn active" type="button" data-availability="all" aria-pressed="true">ALL</button>
+        <button class="availability-filter-btn" type="button" data-availability="in-stock" aria-pressed="false">IN STOCK</button>
+        <button class="availability-filter-btn" type="button" data-availability="out-of-stock" aria-pressed="false">OUT OF STOCK</button>
+      </div>
+    </div>
   </div>
   <div class="shop-view-toolbar" aria-label="Product view">
     <span class="shop-view-label">VIEW</span>
@@ -93,7 +103,7 @@
         <a href="shop.html">SHOP</a><a href="about.html">ABOUT</a>
         <a href="contact.html">CONTACT</a><a href="track.html">TRACK ORDER</a>
         <a href="#">FAQ</a>
-        <a href="#">SHIPPING</a><a href="#">RETURNS</a>
+        <a href="#">SHIPPING</a><a href="returns.html">RETURNS & EXCHANGES</a>
       </div>
       <div>
         <div class="news-title">JOIN OUR NEWSLETTER</div>
@@ -104,4 +114,4 @@
     <div class="copyright"><span>© 2026 DOMARO. ALL RIGHTS RESERVED.</span><span>A SCENT THAT BECOMES YOU.</span></div>
   </div>
 </footer>
-<script src="app.js?v=30.7"></script><script src="v30-customer.js?v=30.4"></script></body></html>
+<script src="app.js?v=30.8"></script><script src="v30-customer.js?v=30.4"></script></body></html>
