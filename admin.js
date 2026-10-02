@@ -1513,7 +1513,7 @@ function renderProductsAdmin(){
             <span class="mini-status ${stockClass}">${stockState}</span>
           </div>
         </div>
-        <div class="admin-product-price">${money(p.price)}</div>
+        <div class="admin-product-price">${Number(p.compare_at_price)>Number(p.price) ? `<span class="admin-old-price">${money(p.compare_at_price)}</span> <span>${money(p.price)}</span>` : money(p.price)}</div>
         <div class="inventory-stock-row">
           <div class="admin-stock-qty">${tracked ? `STOCK: ${esc(qty)} UNIT${qty===1?'':'S'}` : 'STOCK: NOT TRACKED'}</div>
           ${adjustControls}
@@ -1662,6 +1662,7 @@ function openProductModal(product=null){
   document.getElementById('product-category').value=product?.category || 'men';
   document.getElementById('product-size').value=product?.size_ml || 200;
   document.getElementById('product-price').value=product?.price || 2000;
+  document.getElementById('product-compare-price').value=product?.compare_at_price ?? '';
   document.getElementById('product-cost-price').value=product?.cost_price ?? '';
   document.getElementById('product-description').value=product?.description || '';
   document.getElementById('product-story').value=product?.story || '';
@@ -1674,7 +1675,7 @@ function openProductModal(product=null){
   document.getElementById('product-active').checked=product ? Boolean(product.active) : true;
 
   const variantManaged=Boolean(product?.has_variants);
-  ['product-size','product-price','product-cost-price','product-stock-quantity','product-stock'].forEach(id=>{
+  ['product-size','product-price','product-compare-price','product-cost-price','product-stock-quantity','product-stock'].forEach(id=>{
     const field=document.getElementById(id);
     if(field) field.disabled=variantManaged;
   });
@@ -1731,6 +1732,8 @@ productForm.addEventListener('submit',async e=>{
   const category=document.getElementById('product-category').value;
   const size_ml=Number(document.getElementById('product-size').value);
   const price=Number(document.getElementById('product-price').value);
+  const compareRaw=document.getElementById('product-compare-price').value.trim();
+  const compare_at_price=compareRaw==='' ? null : Number(compareRaw);
   const costRaw=document.getElementById('product-cost-price').value.trim();
   const cost_price=costRaw==='' ? null : Number(costRaw);
   const description=document.getElementById('product-description').value.trim();
@@ -1753,7 +1756,7 @@ productForm.addEventListener('submit',async e=>{
   }
   const file=imageInput.files?.[0];
 
-  if(!name || !size_ml || price<0 || (cost_price!==null && cost_price<0)){
+  if(!name || !size_ml || price<0 || (compare_at_price!==null && compare_at_price<0) || (cost_price!==null && cost_price<0)){
     productFormError.textContent='Please complete the required product information.';
     return;
   }
@@ -1790,7 +1793,7 @@ productForm.addEventListener('submit',async e=>{
       updated_at:new Date().toISOString()
     };
     if(!editingProduct?.has_variants){
-      Object.assign(payload,{size_ml,price,cost_price,stock_quantity,in_stock});
+      Object.assign(payload,{size_ml,price,compare_at_price,cost_price,stock_quantity,in_stock});
     }
 
     let response;
