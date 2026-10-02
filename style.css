@@ -2363,8 +2363,8 @@ body.shop-filter-open{overflow:hidden}
 /* DOMARO V30.8 — user-selected luxury entry background */
 .entry-gate{
   background:
-    linear-gradient(rgba(8,8,8,.40),rgba(8,8,8,.58)),
-    url("assets/entry-gate-luxury.webp") center center / cover no-repeat !important;
+    linear-gradient(rgba(8,8,8,.28),rgba(8,8,8,.46)),
+    url("assets/entry-gate-user-photo.webp") center center / cover no-repeat !important;
 }
 .entry-gate::before,
 .entry-gate::after{
@@ -2375,28 +2375,26 @@ body.shop-filter-open{overflow:hidden}
   z-index:1;
 }
 .entry-choice{
-  background:rgba(10,10,10,.58);
+  background:rgba(10,10,10,.56);
   border-color:rgba(190,151,99,.28);
   backdrop-filter:blur(3px);
   -webkit-backdrop-filter:blur(3px);
 }
 .entry-choice:hover{
-  background:rgba(18,16,14,.70);
+  background:rgba(18,16,14,.68);
   border-color:#9c7d57;
 }
-.entry-gate h1{
-  text-shadow:0 2px 20px rgba(0,0,0,.55);
-}
+.entry-gate h1,
 .entry-gate-logo,
 .entry-gate-kicker,
 .entry-gate>div>p{
-  text-shadow:0 1px 12px rgba(0,0,0,.55);
+  text-shadow:0 2px 18px rgba(0,0,0,.52);
 }
 @media(max-width:760px){
   .entry-gate{
     background:
-      linear-gradient(rgba(8,8,8,.48),rgba(8,8,8,.64)),
-      url("assets/entry-gate-luxury.webp") 42% center / cover no-repeat !important;
+      linear-gradient(rgba(8,8,8,.34),rgba(8,8,8,.52)),
+      url("assets/entry-gate-user-photo.webp") 38% center / cover no-repeat !important;
   }
-  .entry-choice{background:rgba(10,10,10,.66)}
+  .entry-choice{background:rgba(10,10,10,.64)}
 }
