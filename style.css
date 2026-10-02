@@ -2168,3 +2168,93 @@ html,body{max-width:100%;overflow-x:hidden}
   .navlinks{gap:24px}
   .navicons{gap:12px}
 }
+
+
+/* DOMARO V30.8 — stronger typography, availability filters, perfume-inspired home hero */
+.navlinks a,
+.nav-action-label,
+.filter-btn,
+.brand-filter-btn,
+.availability-filter-btn,
+.shop-view-btn,
+.quick-add-btn,
+.btn,
+.add-btn,
+.product-info h3,
+.product-brand,
+.brand-filter-title,
+.page-hero h1,
+.section-head h2{
+  font-weight:600;
+}
+
+.shop-filter-groups{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:28px;
+  align-items:end;
+  margin-bottom:20px;
+}
+.availability-filter-wrap{min-width:320px}
+.availability-filters{display:flex;flex-wrap:wrap;gap:8px}
+.availability-filter-btn{
+  border:1px solid var(--line);
+  background:#fff;
+  color:#171411;
+  padding:10px 14px;
+  font-size:9px;
+  letter-spacing:1.3px;
+  cursor:pointer;
+  transition:.2s;
+}
+.availability-filter-btn:hover,
+.availability-filter-btn.active{
+  border-color:#111;
+  background:#111;
+  color:#fff;
+}
+
+.home-perfume-wallpaper{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+}
+.home-perfume-wallpaper::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-2;
+  background:linear-gradient(90deg,rgba(6,6,6,.94) 0%,rgba(8,8,8,.82) 46%,rgba(8,8,8,.72) 100%);
+}
+.home-perfume-wallpaper::after{
+  content:"";
+  position:absolute;
+  inset:-4% -1% -4% 34%;
+  z-index:-3;
+  background:
+    url("assets/arrogate-blue.png") 18% 57% / 30% auto no-repeat,
+    url("assets/hook-blue.png") 56% 48% / 32% auto no-repeat,
+    url("assets/arrogate-pink.png") 92% 58% / 29% auto no-repeat;
+  filter:grayscale(1) contrast(1.05) brightness(.58);
+  opacity:.28;
+}
+.home-perfume-wallpaper .hero-copy-only{position:relative;z-index:1}
+
+.policy-page{max-width:920px;margin:0 auto}
+.policy-intro{font-size:14px;line-height:1.8;color:#5f5851;margin-bottom:34px}
+.policy-grid{display:grid;gap:16px}
+.policy-card{border:1px solid var(--line);background:#faf7f2;padding:24px}
+.policy-card h2{font:600 28px "Cormorant Garamond",Georgia,serif;margin:0 0 10px}
+.policy-card p,.policy-card li{font-size:12px;line-height:1.8;color:#655e57}
+.policy-card ul{margin:10px 0 0;padding-left:18px}
+.policy-note{margin-top:24px;padding:16px 18px;background:#111;color:#f6efe6;font-size:11px;line-height:1.7}
+
+@media(max-width:860px){
+  .shop-filter-groups{grid-template-columns:1fr}
+  .availability-filter-wrap{min-width:0}
+  .home-perfume-wallpaper::after{
+    inset:0 -30% 0 35%;
+    opacity:.18;
+    background:url("assets/hook-blue.png") 50% 55% / 70% auto no-repeat;
+  }
+}
