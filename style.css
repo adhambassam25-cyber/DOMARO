@@ -2454,8 +2454,8 @@ body.shop-filter-open{overflow:hidden}
     padding-top:0;
   }
   .entry-choice{
-    min-height:124px;
-    padding:20px;
+    min-height:112px;
+    padding:18px 20px;
     background:rgba(10,10,10,.64);
   }
   .entry-choice>span{
