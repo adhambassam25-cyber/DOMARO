@@ -1366,6 +1366,8 @@ function initEntryGate(){
   document.documentElement.classList.add('entry-gate-open');
   document.body.classList.add('entry-gate-open');
   gate.setAttribute('aria-hidden','false');
+  gate.scrollTop=0;
+  requestAnimationFrame(()=>{ gate.scrollTop=0; });
 
   gate.querySelectorAll('[data-entry-category]').forEach(btn=>{
     btn.addEventListener('click',()=>{
