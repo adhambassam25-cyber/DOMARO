@@ -166,4 +166,55 @@ $$;
 revoke all on function public.update_return_status(uuid,text,numeric,text) from public;
 grant execute on function public.update_return_status(uuid,text,numeric,text) to authenticated;
 
+
+create or replace function public.get_after_sales_requests(
+  p_order_number text,
+  p_phone text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path=public
+as $
+declare
+  v_order public.orders%rowtype;
+  v_result jsonb;
+begin
+  select * into v_order
+  from public.orders
+  where upper(order_number)=upper(btrim(p_order_number))
+    and phone=btrim(p_phone)
+  limit 1;
+
+  if not found then
+    return '[]'::jsonb;
+  end if;
+
+  select coalesce(
+    jsonb_agg(
+      jsonb_build_object(
+        'id',r.id,
+        'request_type',r.request_type,
+        'item_label',r.item_label,
+        'reason',r.reason,
+        'status',r.status,
+        'created_at',r.created_at,
+        'updated_at',r.updated_at,
+        'resolved_at',r.resolved_at
+      )
+      order by r.created_at desc
+    ),
+    '[]'::jsonb
+  )
+  into v_result
+  from public.returns r
+  where r.order_id=v_order.id;
+
+  return v_result;
+end;
+$;
+
+revoke all on function public.get_after_sales_requests(text,text) from public;
+grant execute on function public.get_after_sales_requests(text,text) to anon, authenticated;
+
 commit;
