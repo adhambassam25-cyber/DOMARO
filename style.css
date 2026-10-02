@@ -2214,32 +2214,6 @@ html,body{max-width:100%;overflow-x:hidden}
   color:#fff;
 }
 
-.home-perfume-wallpaper{
-  position:relative;
-  overflow:hidden;
-  isolation:isolate;
-}
-.home-perfume-wallpaper::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  z-index:-2;
-  background:linear-gradient(90deg,rgba(6,6,6,.94) 0%,rgba(8,8,8,.82) 46%,rgba(8,8,8,.72) 100%);
-}
-.home-perfume-wallpaper::after{
-  content:"";
-  position:absolute;
-  inset:-4% -1% -4% 34%;
-  z-index:-3;
-  background:
-    url("assets/arrogate-blue.png") 18% 57% / 30% auto no-repeat,
-    url("assets/hook-blue.png") 56% 48% / 32% auto no-repeat,
-    url("assets/arrogate-pink.png") 92% 58% / 29% auto no-repeat;
-  filter:grayscale(1) contrast(1.05) brightness(.58);
-  opacity:.28;
-}
-.home-perfume-wallpaper .hero-copy-only{position:relative;z-index:1}
-
 .policy-page{max-width:920px;margin:0 auto}
 .policy-intro{font-size:14px;line-height:1.8;color:#5f5851;margin-bottom:34px}
 .policy-grid{display:grid;gap:16px}
@@ -2252,11 +2226,6 @@ html,body{max-width:100%;overflow-x:hidden}
 @media(max-width:860px){
   .shop-filter-groups{grid-template-columns:1fr}
   .availability-filter-wrap{min-width:0}
-  .home-perfume-wallpaper::after{
-    inset:0 -30% 0 35%;
-    opacity:.18;
-    background:url("assets/hook-blue.png") 50% 55% / 70% auto no-repeat;
-  }
 }
 
 
