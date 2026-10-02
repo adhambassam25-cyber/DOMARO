@@ -2360,24 +2360,20 @@ body.shop-filter-open{overflow:hidden}
 }
 
 
-/* DOMARO V30.8 — user-selected luxury entry background */
+/* DOMARO V30.8 — admin-managed entry background */
 .entry-gate{
-  background-color:#080808 !important;
-  background-image:
+  background:#080808 !important;
+}
+.entry-gate.has-custom-wallpaper{
+  background:
     linear-gradient(rgba(8,8,8,.26),rgba(8,8,8,.44)),
-    url("https://raw.githubusercontent.com/adhambassam25-cyber/DOMARO/v30-8-shop-filters-policy-style-preview/assets/entry-gate-user-photo.jpg") !important;
-  background-position:center center !important;
-  background-size:cover !important;
-  background-repeat:no-repeat !important;
+    var(--entry-wallpaper) center center / cover no-repeat !important;
 }
 .entry-gate::before,
 .entry-gate::after{
   display:none !important;
 }
-.entry-gate-inner{
-  position:relative;
-  z-index:1;
-}
+.entry-gate-inner{position:relative;z-index:1}
 .entry-choice{
   background:rgba(10,10,10,.56);
   border-color:rgba(190,151,99,.28);
@@ -2395,8 +2391,10 @@ body.shop-filter-open{overflow:hidden}
   text-shadow:0 2px 18px rgba(0,0,0,.52);
 }
 @media(max-width:760px){
-  .entry-gate{
-    background-position:38% center !important;
+  .entry-gate.has-custom-wallpaper{
+    background:
+      linear-gradient(rgba(8,8,8,.34),rgba(8,8,8,.52)),
+      var(--entry-wallpaper) 38% center / cover no-repeat !important;
   }
   .entry-choice{background:rgba(10,10,10,.64)}
 }
