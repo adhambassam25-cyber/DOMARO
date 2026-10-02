@@ -350,6 +350,60 @@ function initFilters(){
   updateShop();
 }
 
+
+function initShopFilterDrawer(){
+  const trigger=document.getElementById('shop-filter-trigger');
+  const drawer=document.getElementById('shop-filter-drawer');
+  if(!trigger || !drawer) return;
+
+  const count=document.getElementById('shop-filter-count');
+  const reset=document.getElementById('shop-filter-reset');
+
+  const syncCount=()=>{
+    const params=new URLSearchParams(location.search);
+    let n=0;
+    if((params.get('category') || 'all')!=='all') n++;
+    if(String(params.get('brand') || '').trim()) n++;
+    if((params.get('availability') || 'all')!=='all') n++;
+    if(count){
+      count.textContent=String(n);
+      count.hidden=n===0;
+    }
+  };
+
+  const open=()=>{
+    drawer.classList.add('open');
+    drawer.setAttribute('aria-hidden','false');
+    trigger.setAttribute('aria-expanded','true');
+    document.body.classList.add('shop-filter-open');
+  };
+  const close=()=>{
+    drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden','true');
+    trigger.setAttribute('aria-expanded','false');
+    document.body.classList.remove('shop-filter-open');
+    syncCount();
+  };
+
+  trigger.addEventListener('click',open);
+  drawer.querySelectorAll('[data-filter-close]').forEach(btn=>btn.addEventListener('click',close));
+
+  reset?.addEventListener('click',()=>{
+    const allCategory=drawer.querySelector('[data-filter="all"]');
+    const allAvailability=drawer.querySelector('[data-availability="all"]');
+    const allBrand=drawer.querySelector('[data-brand=""]');
+    allCategory?.click();
+    allAvailability?.click();
+    allBrand?.click();
+    syncCount();
+  });
+
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape' && drawer.classList.contains('open')) close(); });
+  window.addEventListener('popstate',syncCount);
+  drawer.addEventListener('click',()=>setTimeout(syncCount,0));
+  syncCount();
+}
+
 function safeImageSrc(value){
   const raw=String(value || '').trim();
   if(!raw) return 'assets/hero.svg';
@@ -1384,6 +1438,7 @@ async function initStore(){
   renderProducts('best-products','all',4);
   renderBrandDirectory();
   initFilters();
+  initShopFilterDrawer();
   initShopView();
   renderProductDetail();
   renderCart();
