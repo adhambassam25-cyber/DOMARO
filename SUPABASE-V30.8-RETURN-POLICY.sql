@@ -1,6 +1,7 @@
 -- DOMARO V30.8 — editable Returns & Exchanges policy
 
 alter table public.store_settings
+  add column if not exists entry_gate_wallpaper_url text,
   add column if not exists returns_intro text,
   add column if not exists returns_eligible text,
   add column if not exists returns_opened text,
@@ -33,6 +34,7 @@ returns jsonb language sql stable security definer set search_path=public as $$
     'promo_text',promo_text,
     'promo_link_label',promo_link_label,
     'promo_link_href',promo_link_href,
+    'entry_gate_wallpaper_url',entry_gate_wallpaper_url,
     'returns_intro',returns_intro,
     'returns_eligible',returns_eligible,
     'returns_opened',returns_opened,
