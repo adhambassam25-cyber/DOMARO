@@ -2479,3 +2479,61 @@ body.shop-filter-open{overflow:hidden}
     background-position:78% center !important;
   }
 }
+
+
+/* DOMARO V30.8 — sale pricing */
+.product-price-stack{display:inline-flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.old-price{text-decoration:line-through;text-decoration-thickness:1.4px;color:#9a9188;font-weight:500!important;opacity:.9}
+.sale-price{font-weight:800!important;color:#17120e}
+.product-detail-price{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.variant-option s{color:#9a9188;margin-right:5px;font-weight:500}
+.admin-old-price{text-decoration:line-through;color:#8f857b;font-weight:500;margin-right:8px}
+
+/* DOMARO V30.8 — mobile admin overhaul */
+@media(max-width:760px){
+  .admin-body{overflow-x:hidden}
+  .admin-topbar-inner{min-height:72px;height:auto;padding:12px 0;align-items:flex-start;gap:10px}
+  .admin-topbar .logo{font-size:20px;letter-spacing:5px}
+  .admin-top-actions{gap:7px;flex-wrap:wrap;justify-content:flex-end}
+  .admin-user-label{width:100%;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px}
+  .admin-logout,.admin-secondary-btn,.admin-primary-btn{min-height:40px;padding:10px 12px;font-size:9px}
+  .admin-shell{width:min(94%,1220px);padding:24px 0 54px}
+  .admin-tabs{overflow-x:auto;overflow-y:hidden;gap:4px;margin-bottom:22px;padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .admin-tabs::-webkit-scrollbar{display:none}
+  .admin-tab{flex:0 0 auto;padding:12px 13px;font-size:9px;white-space:nowrap}
+  .admin-panel{min-width:0}
+  .admin-dashboard-head{gap:14px}
+  .admin-dashboard-head h1{font-size:34px}
+  .dashboard-v26-actions,.admin-controls,.admin-product-controls{width:100%;display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+  .dashboard-v26-actions>*,.admin-controls>*,.admin-product-controls>*{width:100%!important;min-width:0!important}
+  .sales-kpis,.admin-product-stats,.admin-stats{grid-template-columns:1fr 1fr!important;gap:8px!important}
+  .sales-kpi,.admin-stat{padding:15px!important;min-width:0}
+  .sales-kpi b,.admin-stat b{font-size:20px!important}
+  .admin-product-card{grid-template-columns:96px minmax(0,1fr);align-items:stretch}
+  .admin-product-image{min-height:125px}
+  .admin-product-image img{min-height:125px;padding:7px}
+  .admin-product-main{padding:14px;min-width:0}
+  .admin-product-title-row{flex-direction:column;gap:9px}
+  .admin-product-title-row h3{font-size:21px}
+  .admin-product-badges{justify-content:flex-start}
+  .admin-product-main p{font-size:10px;line-height:1.5}
+  .admin-product-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .admin-product-actions .admin-secondary-btn{width:100%;padding:9px 7px;font-size:8px}
+  .admin-product-price{margin-top:10px;font-size:12px}
+  .inventory-stock-row{align-items:flex-start;flex-direction:column;gap:8px}
+  .quick-stock-adjuster{width:100%;justify-content:flex-start}
+  .product-modal{align-items:end;padding:0}
+  .product-modal-card,.v30-modal-card{width:100vw!important;max-width:none!important;max-height:92dvh!important;border-radius:18px 18px 0 0;padding:20px 16px calc(22px + env(safe-area-inset-bottom))!important}
+  .product-modal-head h2{font-size:30px}
+  .product-modal .form-row,.v30-inline-form .form-row,.v30-store-form .form-row{grid-template-columns:1fr!important}
+  .product-switch-grid{grid-template-columns:1fr!important}
+  .v30-variant-row,.v30-gallery-item,.v30-audit-row{grid-template-columns:1fr!important;gap:10px!important}
+  .v30-row-actions{width:100%;flex-wrap:wrap}
+  .v30-row-actions>*{flex:1 1 120px}
+  .v30-form-section{padding:18px!important}
+}
+@media(max-width:430px){
+  .sales-kpis,.admin-product-stats,.admin-stats{grid-template-columns:1fr!important}
+  .admin-product-card{grid-template-columns:82px minmax(0,1fr)}
+  .admin-product-image,.admin-product-image img{min-height:116px}
+}
