@@ -1137,6 +1137,7 @@ function trackingStatusLabel(status){
 }
 
 function renderTrackingResult(order){
+  window.DOMARO_LAST_TRACKED_ORDER=order;
   const box=document.getElementById('track-result');
   if(!box) return;
 
