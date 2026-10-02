@@ -165,20 +165,22 @@ function normalizeBrand(value){
   return String(value || '').trim().toLowerCase();
 }
 
-function filteredCatalog(category='all', brand='', query=''){
+function filteredCatalog(category='all', brand='', query='', availability='all'){
   const q=String(query || '').trim().toLowerCase();
+  const stock=String(availability || 'all').toLowerCase();
   return products.filter(p=>{
     const categoryMatch=category==='all' || p.cat===category;
     const brandMatch=!brand || normalizeBrand(p.brand)===normalizeBrand(brand);
     const searchMatch=!q || [p.name,p.brand,p.cat,p.desc].join(' ').toLowerCase().includes(q);
-    return categoryMatch && brandMatch && searchMatch;
+    const availabilityMatch=stock==='all' || (stock==='in-stock' ? Boolean(p.inStock) : stock==='out-of-stock' ? !p.inStock : true);
+    return categoryMatch && brandMatch && searchMatch && availabilityMatch;
   });
 }
 
-function renderProducts(targetId, filter='all', limit=null, brand='', query=''){
+function renderProducts(targetId, filter='all', limit=null, brand='', query='', availability='all'){
   const el=document.getElementById(targetId);
   if(!el) return;
-  let list=filteredCatalog(filter,brand,query);
+  let list=filteredCatalog(filter,brand,query,availability);
   if(limit) list=list.slice(0,limit);
   el.innerHTML=list.length
     ? list.map(productCard).join('')
@@ -261,15 +263,23 @@ function initShopView(){
 
 function initFilters(){
   const allowedFilters=['all','men','women','unisex','boxes'];
+  const allowedAvailability=['all','in-stock','out-of-stock'];
   const params=new URLSearchParams(location.search);
   const urlFilter=(params.get('category') || 'all').toLowerCase();
+  const urlAvailability=(params.get('availability') || 'all').toLowerCase();
   let activeCategory=allowedFilters.includes(urlFilter) ? urlFilter : 'all';
+  let activeAvailability=allowedAvailability.includes(urlAvailability) ? urlAvailability : 'all';
   let activeBrand=String(params.get('brand') || '').trim();
   let activeSearch=String(params.get('search') || '').trim();
 
   const updateShop=()=>{
     document.querySelectorAll('.filter-btn').forEach(btn=>{
       btn.classList.toggle('active',btn.dataset.filter===activeCategory);
+    });
+    document.querySelectorAll('.availability-filter-btn').forEach(btn=>{
+      const active=btn.dataset.availability===activeAvailability;
+      btn.classList.toggle('active',active);
+      btn.setAttribute('aria-pressed',active ? 'true' : 'false');
     });
     renderShopBrandFilters(activeBrand);
     document.querySelectorAll('.brand-filter-btn').forEach(btn=>{
@@ -279,7 +289,7 @@ function initFilters(){
         updateShop();
       });
     });
-    renderProducts('shop-products',activeCategory,null,activeBrand,activeSearch);
+    renderProducts('shop-products',activeCategory,null,activeBrand,activeSearch,activeAvailability);
     const title=document.getElementById('shop-context-title');
     const sub=document.getElementById('shop-context-sub');
     if(title){
@@ -290,7 +300,12 @@ function initFilters(){
       else title.textContent='SHOP FRAGRANCES';
     }
     if(sub){
-      sub.textContent=activeSearch
+      const availabilityText=activeAvailability==='in-stock'
+        ? ' Showing products currently in stock.'
+        : activeAvailability==='out-of-stock'
+          ? ' Showing products currently out of stock.'
+          : '';
+      const baseText=activeSearch
         ? `Products matching “${activeSearch}” by fragrance name or brand.`
         : activeBrand
           ? `Explore every ${activeBrand} fragrance currently available at DOMARO.`
@@ -298,7 +313,8 @@ function initFilters(){
             ? 'Explore DOMARO gift boxes and fragrance sets.'
             : activeCategory!=='all'
               ? `Explore the ${activeCategory} collection.`
-              : 'Browse the currently available DOMARO collection.';
+              : 'Browse the DOMARO fragrance collection.';
+      sub.textContent=baseText + availabilityText;
     }
   };
 
@@ -310,12 +326,22 @@ function initFilters(){
     else url.searchParams.delete('brand');
     if(activeSearch) url.searchParams.set('search',activeSearch);
     else url.searchParams.delete('search');
+    if(activeAvailability==='all') url.searchParams.delete('availability');
+    else url.searchParams.set('availability',activeAvailability);
     history.replaceState({},'',url);
   };
 
   document.querySelectorAll('.filter-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
       activeCategory=btn.dataset.filter;
+      updateShopUrl();
+      updateShop();
+    });
+  });
+
+  document.querySelectorAll('.availability-filter-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      activeAvailability=btn.dataset.availability || 'all';
       updateShopUrl();
       updateShop();
     });
