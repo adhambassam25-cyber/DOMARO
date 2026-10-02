@@ -125,9 +125,58 @@ function addV30Tab(key,label,ownerOnly=false){
 }
 function addV30Panel(id,html){ if(document.getElementById(id))return document.getElementById(id);const p=document.createElement('section');p.id=id;p.className='admin-panel v30-admin-panel';p.hidden=true;p.innerHTML=html;document.getElementById('admin-dashboard').appendChild(p);return p; }
 
+
 async function loadReturns(){
-  const host=document.getElementById('v30-returns-list'); const err=document.getElementById('v30-returns-error'); if(!host)return; err.textContent='';host.innerHTML='<div class="admin-loading">Loading returns…</div>';
-  try{const rows=await v30Json(`${V30A_URL}/rest/v1/returns?select=*&order=created_at.desc&limit=100`);host.innerHTML=rows.length?rows.map(r=>`<article class="v30-return-admin-card"><div><span>${v30Esc(new Date(r.created_at).toLocaleString('en-EG'))}</span><h3>${v30Esc(r.order_number)}</h3><p>${v30Esc(r.phone)} · ${v30Esc(r.reason)}</p>${r.details?`<small>${v30Esc(r.details)}</small>`:''}</div><div class="v30-return-controls"><select data-return-status="${r.id}">${['requested','approved','rejected','received','refunded','closed'].map(s=>`<option value="${s}" ${r.status===s?'selected':''}>${s.toUpperCase()}</option>`).join('')}</select><input data-return-refund="${r.id}" type="number" min="0" step="0.01" placeholder="Refund amount" value="${r.refund_amount??''}"><input data-return-note="${r.id}" placeholder="Admin note" value="${v30Esc(r.admin_note||'')}"><button class="admin-primary-btn" data-return-save="${r.id}">SAVE</button></div></article>`).join(''):'<div class="admin-empty">No return requests.</div>';host.querySelectorAll('[data-return-save]').forEach(btn=>btn.onclick=async()=>{try{const id=btn.dataset.returnSave;const status=host.querySelector(`[data-return-status="${id}"]`).value;const raw=host.querySelector(`[data-return-refund="${id}"]`).value;const note=host.querySelector(`[data-return-note="${id}"]`).value;await v30Json(`${V30A_URL}/rest/v1/rpc/update_return_status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({p_return_id:id,p_status:status,p_refund_amount:raw===''?null:Number(raw),p_admin_note:note||null})});await loadReturns();}catch(e){err.textContent=e.message;}});}catch(e){err.textContent=e.message;host.innerHTML='';}
+  const host=document.getElementById('v30-returns-list');
+  const err=document.getElementById('v30-returns-error');
+  if(!host) return;
+  err.textContent='';
+  host.innerHTML='<div class="admin-loading">Loading after-sales requests…</div>';
+  try{
+    const rows=await v30Json(`${V30A_URL}/rest/v1/returns?select=*&order=created_at.desc&limit=100`);
+    host.innerHTML=rows.length?rows.map(r=>{
+      const type=String(r.request_type||'return').toLowerCase();
+      const evidence=Array.isArray(r.evidence_urls)?r.evidence_urls:[];
+      const evidenceHtml=evidence.length
+        ? '<div class="v308-return-evidence">'+evidence.map((url,i)=>'<a href="'+v30Esc(url)+'" target="_blank" rel="noopener"><img src="'+v30Esc(url)+'" alt="Evidence photo '+(i+1)+'"></a>').join('')+'</div>'
+        : '';
+      const item=r.item_label?'<div class="v308-return-item"><span>ITEM</span><b>'+v30Esc(r.item_label)+'</b></div>':'';
+      return '<article class="v30-return-admin-card">'+
+        '<div>'+
+          '<span>'+v30Esc(new Date(r.created_at).toLocaleString('en-EG'))+'</span>'+
+          '<div class="v308-return-heading"><h3>'+v30Esc(r.order_number)+'</h3><b class="v308-request-type v308-request-'+v30Esc(type)+'">'+v30Esc(type.toUpperCase())+'</b></div>'+
+          '<p>'+v30Esc(r.phone)+' · '+v30Esc(r.reason)+'</p>'+
+          item+
+          (r.details?'<small>'+v30Esc(r.details)+'</small>':'')+
+          evidenceHtml+
+        '</div>'+
+        '<div class="v30-return-controls">'+
+          '<select data-return-status="'+r.id+'">'+['requested','under_review','approved','rejected','received','refunded','completed','closed'].map(s=>'<option value="'+s+'" '+(r.status===s?'selected':'')+'>'+s.replaceAll('_',' ').toUpperCase()+'</option>').join('')+'</select>'+
+          '<input data-return-refund="'+r.id+'" type="number" min="0" step="0.01" placeholder="Refund amount" value="'+(r.refund_amount??'')+'">'+
+          '<input data-return-note="'+r.id+'" placeholder="Admin note" value="'+v30Esc(r.admin_note||'')+'">'+
+          '<button class="admin-primary-btn" data-return-save="'+r.id+'">SAVE</button>'+
+        '</div>'+
+      '</article>';
+    }).join(''):'<div class="admin-empty">No return or exchange requests.</div>';
+
+    host.querySelectorAll('[data-return-save]').forEach(btn=>btn.onclick=async()=>{
+      try{
+        const id=btn.dataset.returnSave;
+        const status=host.querySelector('[data-return-status="'+id+'"]').value;
+        const raw=host.querySelector('[data-return-refund="'+id+'"]').value;
+        const note=host.querySelector('[data-return-note="'+id+'"]').value;
+        await v30Json(`${V30A_URL}/rest/v1/rpc/update_return_status`,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({p_return_id:id,p_status:status,p_refund_amount:raw===''?null:Number(raw),p_admin_note:note||null})
+        });
+        await loadReturns();
+      }catch(e){ err.textContent=e.message; }
+    });
+  }catch(e){
+    err.textContent=e.message;
+    host.innerHTML='';
+  }
 }
 
 async function loadAbandoned(){
