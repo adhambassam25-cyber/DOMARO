@@ -57,28 +57,13 @@
 </header>
 <section class="page-hero"><div class="eyebrow">DOMARO COLLECTION</div><h1 id="shop-context-title">SHOP FRAGRANCES</h1><p id="shop-context-sub">Browse the currently available DOMARO collection.</p></section>
 <section class="section"><div class="container">
-  <div class="filters">
-    <button class="filter-btn active" data-filter="all">ALL</button>
-    <button class="filter-btn" data-filter="men">MEN</button>
-    <button class="filter-btn" data-filter="women">WOMEN</button>
-    <button class="filter-btn" data-filter="unisex">UNISEX</button>
-    <button class="filter-btn" data-filter="boxes">BOXES</button>
-  </div>
-  <div class="shop-filter-groups">
-    <div class="brand-filter-wrap">
-      <div class="brand-filter-title">SHOP BY BRAND</div>
-      <div id="brand-filters" class="brand-filters"></div>
-    </div>
-    <div class="availability-filter-wrap">
-      <div class="brand-filter-title">AVAILABILITY</div>
-      <div class="availability-filters" role="group" aria-label="Availability">
-        <button class="availability-filter-btn active" type="button" data-availability="all" aria-pressed="true">ALL</button>
-        <button class="availability-filter-btn" type="button" data-availability="in-stock" aria-pressed="false">IN STOCK</button>
-        <button class="availability-filter-btn" type="button" data-availability="out-of-stock" aria-pressed="false">OUT OF STOCK</button>
-      </div>
-    </div>
-  </div>
-  <div class="shop-view-toolbar" aria-label="Product view">
+  <div class="shop-toolbar">
+    <button class="shop-filter-trigger" id="shop-filter-trigger" type="button" aria-expanded="false" aria-controls="shop-filter-drawer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"></path></svg>
+      <span>FILTERS</span>
+      <b id="shop-filter-count" hidden>0</b>
+    </button>
+    <div class="shop-view-toolbar" aria-label="Product view">
     <span class="shop-view-label">VIEW</span>
     <button class="shop-view-btn active" type="button" data-view="thumbnail" aria-pressed="true" title="Thumbnail view">
       <span class="view-icon view-icon-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
@@ -88,7 +73,49 @@
       <span class="view-icon view-icon-list" aria-hidden="true"><i></i><i></i><i></i></span>
       LIST
     </button>
+    </div>
   </div>
+
+  <aside class="shop-filter-drawer" id="shop-filter-drawer" aria-hidden="true">
+    <button class="shop-filter-backdrop" type="button" data-filter-close aria-label="Close filters"></button>
+    <div class="shop-filter-panel" role="dialog" aria-modal="true" aria-labelledby="shop-filter-title">
+      <div class="shop-filter-panel-head">
+        <div><span>REFINE YOUR SELECTION</span><h2 id="shop-filter-title">FILTERS</h2></div>
+        <button class="shop-filter-close" type="button" data-filter-close aria-label="Close filters">×</button>
+      </div>
+
+      <div class="shop-filter-section">
+        <div class="shop-filter-section-title">CATEGORY</div>
+        <div class="filters shop-drawer-options">
+          <button class="filter-btn active" data-filter="all">ALL</button>
+          <button class="filter-btn" data-filter="men">MEN</button>
+          <button class="filter-btn" data-filter="women">WOMEN</button>
+          <button class="filter-btn" data-filter="unisex">UNISEX</button>
+          <button class="filter-btn" data-filter="boxes">BOXES</button>
+        </div>
+      </div>
+
+      <div class="shop-filter-section">
+        <div class="shop-filter-section-title">BRAND</div>
+        <div id="brand-filters" class="brand-filters shop-drawer-options"></div>
+      </div>
+
+      <div class="shop-filter-section">
+        <div class="shop-filter-section-title">AVAILABILITY</div>
+        <div class="availability-filters shop-drawer-options" role="group" aria-label="Availability">
+          <button class="availability-filter-btn active" type="button" data-availability="all" aria-pressed="true">ALL</button>
+          <button class="availability-filter-btn" type="button" data-availability="in-stock" aria-pressed="false">IN STOCK</button>
+          <button class="availability-filter-btn" type="button" data-availability="out-of-stock" aria-pressed="false">OUT OF STOCK</button>
+        </div>
+      </div>
+
+      <div class="shop-filter-panel-actions">
+        <button class="shop-filter-reset" id="shop-filter-reset" type="button">RESET FILTERS</button>
+        <button class="shop-filter-done" type="button" data-filter-close>DONE</button>
+      </div>
+    </div>
+  </aside>
+
   <div id="shop-products" class="products products-thumbnail-view"></div>
 </div></section>
 
