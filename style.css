@@ -2171,12 +2171,12 @@ html,body{max-width:100%;overflow-x:hidden}
 
 
 /* DOMARO V30.8 — product card typography only */
-.product-card .product-brand{font-weight:600}
-.product-card .product-info h3{font-weight:600}
-.product-card .product-info .meta{font-weight:500}
-.product-card .product-info .price{font-weight:700}
-.product-card .badge{font-weight:700}
-.product-card .quick-add-btn{font-weight:700}
+.product-card .product-brand{font-weight:700;letter-spacing:3px}
+.product-card .product-info h3{font-weight:700}
+.product-card .product-info .meta{font-weight:600}
+.product-card .product-info .price{font-weight:800}
+.product-card .badge{font-weight:800}
+.product-card .quick-add-btn{font-weight:800}
 
 .shop-filter-groups{
   display:grid;
