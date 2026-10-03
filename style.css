@@ -2676,3 +2676,40 @@ body.shop-filter-open{overflow:hidden}
   .manual-order-items-head{display:grid}
   .manual-order-summary{justify-content:space-between}
 }
+
+
+/* DOMARO V30.9.1 — equal-height catalog cards */
+.products-thumbnail-view{align-items:stretch}
+.products-thumbnail-view .product-card{
+  display:flex;
+  flex-direction:column;
+  height:100%;
+}
+.products-thumbnail-view .product-card-link{
+  display:flex;
+  flex:1;
+  flex-direction:column;
+}
+.products-thumbnail-view .product-info{
+  display:flex;
+  flex:1;
+  flex-direction:column;
+}
+.products-thumbnail-view .product-info h3{
+  min-height:2.15em;
+  line-height:1.075;
+}
+.products-thumbnail-view .product-info .meta{
+  min-height:1.35em;
+}
+.products-thumbnail-view .price-row{
+  margin-top:auto;
+  padding-top:12px;
+}
+.products-thumbnail-view .product-price-stack{
+  display:flex;
+  min-height:3.1em;
+  flex-direction:column;
+  justify-content:flex-end;
+}
+.products-thumbnail-view .quick-add-btn{margin-top:auto}
