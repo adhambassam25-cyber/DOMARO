@@ -405,7 +405,7 @@ async function initV30Admin(){
     const audt=addV30Tab('audit','AUDIT',true);const audp=addV30Panel('v30-audit-panel','<div class="admin-dashboard-head"><div><div class="eyebrow" style="color:#766b5d">OWNER SECURITY</div><h1>AUDIT LOG</h1></div><button id="v30-refresh-audit" class="admin-secondary-btn">REFRESH</button></div><div id="v30-audit-error" class="admin-error"></div><div id="v30-audit-list" class="v30-audit-list"></div>');audt.onclick=()=>{v30OpenCustom(audp.id,audt);loadAudit()};audp.querySelector('#v30-refresh-audit').onclick=loadAudit;
   }
   document.querySelectorAll('.admin-tab:not(.v30-admin-tab)').forEach(t=>t.addEventListener('click',v30HideCustomPanels));
-  bindProductManagers(); loadV30Metrics(); document.getElementById('dashboard-period')?.addEventListener('change',()=>setTimeout(loadV30Metrics,100));
+  bindProductManagers(); loadV30Metrics(); document.getElementById('dashboard-period')?.addEventListener('change',()=>setTimeout(loadV30Metrics,100)); document.getElementById('refresh-dashboard')?.addEventListener('click',()=>setTimeout(loadV30Metrics,100));
 }
 
 const v30ProductObserver=new MutationObserver(bindProductManagers); const productList=document.getElementById('products-list'); if(productList)v30ProductObserver.observe(productList,{childList:true,subtree:true});
