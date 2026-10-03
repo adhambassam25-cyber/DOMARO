@@ -73,7 +73,7 @@ function customerAuthHeaders(extra={}){
 async function loadCatalog(){
   try{
     const [productsRes,variantsRes,imagesRes,settingsRes]=await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/products?select=id,name,category,size_ml,price,compare_at_price,cost_price,has_variants,image_path,description,brand,story,top_notes,heart_notes,base_notes,key_notes,in_stock,stock_quantity,active&active=eq.true&order=created_at.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
+      fetch(`${SUPABASE_URL}/rest/v1/products?select=id,name,category,size_ml,price,compare_at_price,cost_price,has_variants,image_path,description,brand,story,top_notes,heart_notes,base_notes,key_notes,in_stock,stock_quantity,active,display_order&active=eq.true&order=display_order.asc.nullslast,created_at.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
       fetch(`${SUPABASE_URL}/rest/v1/product_variants?select=id,product_id,sku,label,size_ml,price,compare_at_price,stock_quantity,in_stock,active,is_default,sort_order&active=eq.true&order=product_id.asc,sort_order.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
       fetch(`${SUPABASE_URL}/rest/v1/product_images?select=id,product_id,image_path,alt_text,sort_order&order=product_id.asc,sort_order.asc,id.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
       fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_store_settings`,{method:'POST',headers:{'apikey':SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},body:'{}'})
