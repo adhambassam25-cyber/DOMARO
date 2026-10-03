@@ -1669,7 +1669,7 @@ async function loadProducts(){
   productsLoading.hidden=false;
   try{
     const response=await fetch(
-      `${SUPABASE_URL}/rest/v1/products?select=*&order=created_at.asc`,
+      `${SUPABASE_URL}/rest/v1/products?select=*&order=display_order.asc.nullslast,created_at.asc`,
       {headers:authHeaders()}
     );
     const data=await response.json().catch(()=>[]);
@@ -1889,6 +1889,7 @@ function openProductModal(product=null){
   document.getElementById('product-name').value=product?.name || '';
   document.getElementById('product-brand').value=product?.brand || '';
   document.getElementById('product-category').value=product?.category || 'men';
+  document.getElementById('product-display-order').value=product?.display_order ?? '';
   document.getElementById('product-size').value=product?.size_ml || 200;
   document.getElementById('product-price').value=product?.price || 2000;
   document.getElementById('product-compare-price').value=product?.compare_at_price ?? '';
@@ -1959,6 +1960,8 @@ productForm.addEventListener('submit',async e=>{
   const name=document.getElementById('product-name').value.trim();
   const brand=document.getElementById('product-brand').value.trim();
   const category=document.getElementById('product-category').value;
+  const displayOrderRaw=document.getElementById('product-display-order').value.trim();
+  const display_order=displayOrderRaw==='' ? null : Number(displayOrderRaw);
   const size_ml=Number(document.getElementById('product-size').value);
   const price=Number(document.getElementById('product-price').value);
   const compareRaw=document.getElementById('product-compare-price').value.trim();
@@ -1984,6 +1987,11 @@ productForm.addEventListener('submit',async e=>{
     in_stock = stock_quantity > 0;
   }
   const file=imageInput.files?.[0];
+
+  if(display_order!==null && (!Number.isInteger(display_order) || display_order<1)){
+    productFormError.textContent='Display position must be a whole number of 1 or more.';
+    return;
+  }
 
   if(!name || !size_ml || price<0 || (compare_at_price!==null && compare_at_price<0) || (cost_price!==null && cost_price<0)){
     productFormError.textContent='Please complete the required product information.';
@@ -2042,6 +2050,17 @@ productForm.addEventListener('submit',async e=>{
 
     const data=await response.json().catch(()=>[]);
     if(!response.ok) throw new Error(data?.message || data?.details || 'Could not save product.');
+
+    const savedId=Array.isArray(data) && data[0]?.id ? data[0].id : id;
+    if(display_order!==null){
+      const orderResponse=await fetch(SUPABASE_URL+'/rest/v1/rpc/set_product_display_order',{
+        method:'POST',
+        headers:authHeaders({'Content-Type':'application/json'}),
+        body:JSON.stringify({p_product_id:savedId,p_position:display_order})
+      });
+      const orderData=await orderResponse.json().catch(()=>null);
+      if(!orderResponse.ok) throw new Error(orderData?.message || 'Product was saved, but display position could not be updated.');
+    }
 
     closeProductModal();
     await loadProducts();
