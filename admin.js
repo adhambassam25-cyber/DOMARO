@@ -1632,6 +1632,7 @@ async function saveManualOrder(e){
     closeManualOrderModal();
     await loadOrders();
     await loadDashboardStats();
+    if(typeof loadV30Metrics==='function') await loadV30Metrics();
     if(typeof loadProducts==='function') await loadProducts();
     ordersError.className='coupon-message coupon-message-success';
     ordersError.textContent=`${orderNumber} saved as delivered and included in profit reporting.`;
