@@ -32,6 +32,7 @@ const ordersList = document.getElementById('orders-list');
 const ordersError = document.getElementById('orders-error');
 const ordersLoading = document.getElementById('orders-loading');
 const refreshBtn = document.getElementById('refresh-orders');
+const addManualOrderBtn = document.getElementById('add-manual-order');
 const searchInput = document.getElementById('order-search');
 const statusFilter = document.getElementById('status-filter');
 const ordersDateFrom = document.getElementById('orders-date-from');
@@ -1417,6 +1418,234 @@ async function updateOrderStatus(orderId,status,button){
     button.textContent=original;
   }
 }
+
+
+// ---------- V30.9 MANUAL ORDERS ----------
+let manualOrderCatalog=[];
+let manualOrderModal=null;
+
+async function loadManualOrderCatalog(){
+  const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/manual_order_catalog`,{
+    method:'POST',
+    headers:authHeaders({'Content-Type':'application/json'}),
+    body:'{}'
+  });
+  const data=await response.json().catch(()=>[]);
+  if(response.status===401){clearSession();showLogin('Your session expired. Please sign in again.');throw new Error('Session expired.');}
+  if(response.status===403) throw new Error('This account does not have permission to add manual orders.');
+  if(!response.ok) throw new Error(data?.message || 'Could not load products for manual order.');
+  manualOrderCatalog=Array.isArray(data)?data:[];
+  return manualOrderCatalog;
+}
+
+function manualProductOptions(selected=''){
+  return '<option value="">Select product</option>'+manualOrderCatalog.map(p=>`<option value="${esc(p.id)}" ${String(p.id)===String(selected)?'selected':''}>${esc([p.brand,p.name].filter(Boolean).join(' · '))}</option>`).join('');
+}
+
+function manualVariantOptions(product,selected=''){
+  if(!product?.has_variants) return '<option value="">No variant required</option>';
+  return '<option value="">Select variant</option>'+((product.variants||[]).map(v=>`<option value="${esc(v.id)}" ${String(v.id)===String(selected)?'selected':''}>${esc(v.label || (v.size_ml+` ML`))}${v.stock_quantity===null||v.stock_quantity===undefined?'':` · Stock ${v.stock_quantity}`}</option>`).join(''));
+}
+
+function manualOrderRowHtml(){
+  return `<div class="manual-order-item-row">
+    <label>PRODUCT<select class="manual-product-select">${manualProductOptions()}</select></label>
+    <label>VARIANT<select class="manual-variant-select" disabled><option value="">Choose product first</option></select></label>
+    <label>QTY<input class="manual-qty" type="number" min="1" step="1" value="1"></label>
+    <label>SELLING PRICE<input class="manual-price" type="number" min="0" step="1" placeholder="EGP"></label>
+    <button class="admin-secondary-btn manual-remove-item" type="button">REMOVE</button>
+  </div>`;
+}
+
+function updateManualOrderTotals(){
+  if(!manualOrderModal) return;
+  const subtotal=[...manualOrderModal.querySelectorAll('.manual-order-item-row')].reduce((sum,row)=>{
+    const q=Number(row.querySelector('.manual-qty')?.value||0);
+    const p=Number(row.querySelector('.manual-price')?.value||0);
+    return sum+(Number.isFinite(q)&&Number.isFinite(p)?q*p:0);
+  },0);
+  const shipping=Number(manualOrderModal.querySelector('#manual-order-shipping')?.value||0);
+  const subEl=manualOrderModal.querySelector('#manual-order-subtotal');
+  const totalEl=manualOrderModal.querySelector('#manual-order-total');
+  if(subEl) subEl.textContent=money(subtotal);
+  if(totalEl) totalEl.textContent=money(subtotal+(Number.isFinite(shipping)?shipping:0));
+}
+
+function wireManualOrderRow(row){
+  const productSelect=row.querySelector('.manual-product-select');
+  const variantSelect=row.querySelector('.manual-variant-select');
+  const priceInput=row.querySelector('.manual-price');
+
+  productSelect.addEventListener('change',()=>{
+    const product=manualOrderCatalog.find(p=>String(p.id)===productSelect.value);
+    if(!product){
+      variantSelect.innerHTML='<option value="">Choose product first</option>';
+      variantSelect.disabled=true;
+      priceInput.value='';
+      updateManualOrderTotals();
+      return;
+    }
+    variantSelect.disabled=!product.has_variants;
+    variantSelect.innerHTML=manualVariantOptions(product);
+    if(!product.has_variants){
+      priceInput.value=Math.round(Number(product.price||0));
+    }else{
+      const def=(product.variants||[]).find(v=>v.is_default) || (product.variants||[])[0];
+      if(def){
+        variantSelect.value=def.id;
+        priceInput.value=Math.round(Number(def.price||0));
+      }
+    }
+    updateManualOrderTotals();
+  });
+
+  variantSelect.addEventListener('change',()=>{
+    const product=manualOrderCatalog.find(p=>String(p.id)===productSelect.value);
+    const variant=(product?.variants||[]).find(v=>String(v.id)===variantSelect.value);
+    if(variant) priceInput.value=Math.round(Number(variant.price||0));
+    updateManualOrderTotals();
+  });
+
+  row.querySelectorAll('.manual-qty,.manual-price').forEach(el=>el.addEventListener('input',updateManualOrderTotals));
+  row.querySelector('.manual-remove-item').addEventListener('click',()=>{
+    const rows=manualOrderModal.querySelectorAll('.manual-order-item-row');
+    if(rows.length<=1) return;
+    row.remove();
+    updateManualOrderTotals();
+  });
+}
+
+function closeManualOrderModal(){
+  if(!manualOrderModal) return;
+  manualOrderModal.remove();
+  manualOrderModal=null;
+  document.body.classList.remove('modal-open');
+}
+
+async function openManualOrderModal(){
+  ordersError.textContent='';
+  addManualOrderBtn.disabled=true;
+  const old=addManualOrderBtn.textContent;
+  addManualOrderBtn.textContent='LOADING…';
+  try{
+    await loadManualOrderCatalog();
+    if(!manualOrderCatalog.length) throw new Error('No active products are available.');
+
+    manualOrderModal=document.createElement('section');
+    manualOrderModal.className='product-modal manual-order-modal';
+    manualOrderModal.innerHTML=`
+      <div class="product-modal-backdrop" data-close-manual-order></div>
+      <div class="product-modal-card manual-order-modal-card">
+        <div class="product-modal-head">
+          <div><div class="eyebrow" style="color:#766b5d">OFFLINE SALES</div><h2>ADD MANUAL ORDER</h2></div>
+          <button class="product-modal-close" type="button" data-close-manual-order>×</button>
+        </div>
+        <form id="manual-order-form">
+          <div class="manual-order-intro">Use this for sales made outside the website. It will be saved as <b>DELIVERED</b> and included in sales & profit reporting.</div>
+          <div class="form-row">
+            <div><label>Customer first name <span class="field-optional">optional</span></label><input id="manual-order-first-name" placeholder="Friend / customer"></div>
+            <div><label>Customer last name <span class="field-optional">optional</span></label><input id="manual-order-last-name" placeholder="Optional"></div>
+          </div>
+          <div class="form-row">
+            <div><label>Phone <span class="field-optional">optional</span></label><input id="manual-order-phone" inputmode="tel" placeholder="01xxxxxxxxx"></div>
+            <div><label>Shipping charged (EGP)</label><input id="manual-order-shipping" type="number" min="0" step="1" value="0"></div>
+          </div>
+          <div class="manual-order-items-head"><div><span>ORDER ITEMS</span><small>Change selling price if you gave your friend a different price.</small></div><button id="manual-add-item" class="admin-secondary-btn" type="button">+ ADD ITEM</button></div>
+          <div id="manual-order-items">${manualOrderRowHtml()}</div>
+          <label>Internal note <span class="field-optional">optional</span><textarea id="manual-order-notes" class="small-textarea" placeholder="e.g. Sold to a friend, cash received"></textarea></label>
+          <div class="manual-order-summary">
+            <div><span>SUBTOTAL</span><b id="manual-order-subtotal">0 EGP</b></div>
+            <div><span>TOTAL</span><b id="manual-order-total">0 EGP</b></div>
+          </div>
+          <div id="manual-order-error" class="admin-error"></div>
+          <button id="save-manual-order" class="admin-primary-btn" type="submit">SAVE MANUAL ORDER</button>
+        </form>
+      </div>`;
+    document.body.appendChild(manualOrderModal);
+    document.body.classList.add('modal-open');
+
+    manualOrderModal.querySelectorAll('[data-close-manual-order]').forEach(el=>el.addEventListener('click',closeManualOrderModal));
+    manualOrderModal.querySelectorAll('.manual-order-item-row').forEach(wireManualOrderRow);
+    manualOrderModal.querySelector('#manual-order-shipping').addEventListener('input',updateManualOrderTotals);
+    manualOrderModal.querySelector('#manual-add-item').addEventListener('click',()=>{
+      const host=manualOrderModal.querySelector('#manual-order-items');
+      host.insertAdjacentHTML('beforeend',manualOrderRowHtml());
+      wireManualOrderRow(host.lastElementChild);
+      updateManualOrderTotals();
+    });
+
+    manualOrderModal.querySelector('#manual-order-form').addEventListener('submit',saveManualOrder);
+  }catch(err){
+    ordersError.textContent=err.message || 'Could not open manual order.';
+  }finally{
+    addManualOrderBtn.disabled=false;
+    addManualOrderBtn.textContent=old;
+  }
+}
+
+async function saveManualOrder(e){
+  e.preventDefault();
+  if(!manualOrderModal) return;
+  const errorEl=manualOrderModal.querySelector('#manual-order-error');
+  const saveBtn=manualOrderModal.querySelector('#save-manual-order');
+  errorEl.textContent='';
+
+  const items=[];
+  for(const row of manualOrderModal.querySelectorAll('.manual-order-item-row')){
+    const productId=row.querySelector('.manual-product-select').value;
+    const product=manualOrderCatalog.find(p=>String(p.id)===productId);
+    const variantId=row.querySelector('.manual-variant-select').value || null;
+    const qty=Number(row.querySelector('.manual-qty').value);
+    const price=Number(row.querySelector('.manual-price').value);
+    if(!product){errorEl.textContent='Choose a product for every item.';return;}
+    if(product.has_variants && !variantId){errorEl.textContent=`Choose a variant for ${product.name}.`;return;}
+    if(!Number.isInteger(qty)||qty<1){errorEl.textContent='Quantity must be a whole number of 1 or more.';return;}
+    if(!Number.isInteger(price)||price<0){errorEl.textContent='Selling price must be a whole EGP amount of 0 or more.';return;}
+    items.push({product_id:productId,variant_id:variantId,quantity:qty,unit_price:price});
+  }
+
+  const shipping=Number(manualOrderModal.querySelector('#manual-order-shipping').value||0);
+  if(!Number.isInteger(shipping)||shipping<0){errorEl.textContent='Shipping must be a whole EGP amount of 0 or more.';return;}
+
+  saveBtn.disabled=true;
+  const old=saveBtn.textContent;
+  saveBtn.textContent='SAVING…';
+  try{
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_manual_order`,{
+      method:'POST',
+      headers:authHeaders({'Content-Type':'application/json'}),
+      body:JSON.stringify({
+        p_items:items,
+        p_first_name:manualOrderModal.querySelector('#manual-order-first-name').value.trim() || 'Manual',
+        p_last_name:manualOrderModal.querySelector('#manual-order-last-name').value.trim() || 'Order',
+        p_phone:manualOrderModal.querySelector('#manual-order-phone').value.trim(),
+        p_shipping:shipping,
+        p_notes:manualOrderModal.querySelector('#manual-order-notes').value.trim() || null
+      })
+    });
+    const data=await response.json().catch(()=>null);
+    if(response.status===401){clearSession();showLogin('Your session expired. Please sign in again.');closeManualOrderModal();return;}
+    if(response.status===403) throw new Error('This account does not have permission to add manual orders.');
+    if(!response.ok) throw new Error(data?.message || data?.details || 'Could not save manual order.');
+
+    const orderNumber=data?.order_number || 'Manual order';
+    closeManualOrderModal();
+    await loadOrders();
+    await loadDashboardStats();
+    if(typeof loadV30Metrics==='function') await loadV30Metrics();
+    if(typeof loadProducts==='function') await loadProducts();
+    ordersError.className='coupon-message coupon-message-success';
+    ordersError.textContent=`${orderNumber} saved as delivered and included in profit reporting.`;
+    setTimeout(()=>{ordersError.className='admin-error';},3500);
+  }catch(err){
+    errorEl.textContent=err.message || 'Could not save manual order.';
+  }finally{
+    if(saveBtn){saveBtn.disabled=false;saveBtn.textContent=old;}
+  }
+}
+
+if(addManualOrderBtn) addManualOrderBtn.addEventListener('click',openManualOrderModal);
+
 
 // ---------- PRODUCT MANAGEMENT ----------
 function getLowStockThreshold(){
