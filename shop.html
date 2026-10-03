@@ -46,9 +46,40 @@
 .shop-page-hero p{color:#e5d8c8;text-shadow:0 1px 12px rgba(0,0,0,.62)}
 @media(max-width:760px){
   .shop-page-hero{
-    min-height:280px;
-    padding:58px 18px 54px;
-    background-position:78% center;
+    min-height:0;
+    height:235px;
+    box-sizing:border-box;
+    padding:0 12px;
+    background-size:auto 100%;
+    background-position:right center;
+  }
+  .shop-page-hero .eyebrow{
+    margin-bottom:9px;
+    font-size:9px;
+    letter-spacing:3.6px;
+  }
+  .shop-page-hero h1{
+    font-size:32px;
+    line-height:1;
+    letter-spacing:1.7px;
+    white-space:nowrap;
+  }
+  .shop-page-hero p{
+    margin-top:12px;
+    max-width:100%;
+    font-size:11px;
+    line-height:1.45;
+  }
+}
+@media(max-width:390px){
+  .shop-page-hero{
+    height:225px;
+    background-size:auto 100%;
+    background-position:right center;
+  }
+  .shop-page-hero h1{
+    font-size:29px;
+    letter-spacing:1.2px;
   }
 }
 </style></head><body>
