@@ -2644,3 +2644,35 @@ body.shop-filter-open{overflow:hidden}
   .v308-status-step{font-size:6px}
   .v308-status-step i{width:18px;height:18px}
 }
+
+
+/* DOMARO V30.9 — manual orders */
+.manual-order-head-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.manual-order-modal-card{width:min(1100px,94vw);max-height:92vh;overflow:auto}
+.manual-order-intro{padding:13px 15px;border:1px solid #dccfbe;background:#f5eee4;color:#655b51;font-size:10px;line-height:1.6}
+.manual-order-items-head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin-top:8px;padding-top:14px;border-top:1px solid #ded3c5}
+.manual-order-items-head span{display:block;font-size:9px;font-weight:800;letter-spacing:1.5px}
+.manual-order-items-head small{display:block;margin-top:4px;color:#81776d;font-size:9px}
+#manual-order-items{display:grid;gap:9px}
+.manual-order-item-row{display:grid;grid-template-columns:minmax(190px,1.6fr) minmax(150px,1.1fr) 80px 130px auto;gap:8px;align-items:end;padding:12px;border:1px solid #ded3c5;background:#fbf8f3}
+.manual-order-item-row label{display:grid;gap:6px;font-size:8px;font-weight:700;letter-spacing:1px;color:#625950}
+.manual-order-item-row select,.manual-order-item-row input{width:100%;min-width:0}
+.manual-remove-item{min-height:44px}
+.manual-order-summary{display:flex;justify-content:flex-end;gap:28px;padding:16px;border-top:1px solid #d8cdbf;border-bottom:1px solid #d8cdbf}
+.manual-order-summary div{display:grid;gap:4px;text-align:right}
+.manual-order-summary span{font-size:8px;letter-spacing:1.4px;color:#84786d}
+.manual-order-summary b{font-size:17px}
+@media(max-width:760px){
+  .manual-order-head-actions{width:100%;display:grid;grid-template-columns:1.25fr 1fr}
+  .manual-order-item-row{grid-template-columns:1fr 1fr}
+  .manual-order-item-row label:first-child{grid-column:1/-1}
+  .manual-remove-item{width:100%}
+  .manual-order-items-head{align-items:stretch}
+  .manual-order-items-head #manual-add-item{white-space:nowrap}
+}
+@media(max-width:430px){
+  .manual-order-item-row{grid-template-columns:1fr}
+  .manual-order-item-row label:first-child{grid-column:auto}
+  .manual-order-items-head{display:grid}
+  .manual-order-summary{justify-content:space-between}
+}
