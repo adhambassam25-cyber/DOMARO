@@ -1355,10 +1355,21 @@ function initGlobalSearch(){
   });
 }
 
+// DOMARO V30.8.2 — entry gate temporarily disabled. Keep the full gate code below for quick restoration.
+const DOMARO_ENTRY_GATE_ENABLED=false;
+
 // DOMARO V19 — audience entry gate
 function initEntryGate(){
   const gate=document.getElementById('entry-gate');
   if(!gate) return;
+
+  if(!DOMARO_ENTRY_GATE_ENABLED){
+    gate.remove();
+    document.documentElement.classList.remove('entry-gate-open');
+    document.body.classList.remove('entry-gate-open');
+    window.location.replace('shop.html');
+    return;
+  }
 
   let alreadyChosen=false;
   try{
