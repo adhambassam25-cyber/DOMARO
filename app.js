@@ -127,7 +127,7 @@ function applyEntryGateWallpaper(){
   }
 }
 
-function productCard(p){
+function productCard(p, priority=false){
   const brandLine=p.brand ? `<div class="product-brand">${escapeTrackHtml(p.brand)}</div>` : '';
   const activeVariants=(p.variants||[]).filter(v=>v.active!==false);
   const availableVariants=activeVariants.filter(variantAvailable);
@@ -145,7 +145,7 @@ function productCard(p){
     <a class="product-card-link" href="${productUrl}">
       <div class="product-img real-photo">
         <span class="badge ${p.inStock ? '' : 'badge-out'}">${p.inStock ? p.badge : 'OUT OF STOCK'}</span>
-        <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy" decoding="async">
+        <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" width="600" height="600" loading="${priority?'eager':'lazy'}" decoding="async" ${priority?'fetchpriority="high"':''}>
       </div>
       <div class="product-info">
         ${brandLine}
@@ -203,7 +203,7 @@ function renderProducts(targetId, filter='all', limit=null, brand='', query='', 
   let list=filteredCatalog(filter,brand,query,availability);
   if(limit) list=list.slice(0,limit);
   el.innerHTML=list.length
-    ? list.map(productCard).join('')
+    ? list.map((p,i)=>productCard(p,i===0)).join('')
     : `<div class="empty" style="grid-column:1/-1">${window.DOMARO_CATALOG_UNAVAILABLE ? 'Our catalog is temporarily unavailable. Please refresh in a moment.' : 'No products match this selection yet.'}</div>`;
   if(typeof window.DOMAROV30DecorateProductCards==='function') window.DOMAROV30DecorateProductCards();
 }
@@ -436,6 +436,93 @@ function safeImageSrc(value){
   return 'assets/hero.svg';
 }
 
+
+function upsertMeta(selector, attrName, attrValue, content){
+  let el=document.head.querySelector(selector);
+  if(!el){
+    el=document.createElement('meta');
+    el.setAttribute(attrName,attrValue);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content',content);
+}
+function updateProductSEO(p){
+  try{
+    const productUrl=`${location.origin}/product.html?id=${encodeURIComponent(p.id)}`;
+    const title=`${p.name} Perfume in Egypt | ${p.brand || 'DOMARO'} | DOMARO`;
+    const description=(p.desc || `Shop ${p.name} perfume in Egypt at DOMARO. View fragrance notes, size, availability and current price with delivery across Egypt.`).replace(/\s+/g,' ').trim().slice(0,155);
+    document.title=title;
+    const desc=document.head.querySelector('meta[name="description"]');
+    if(desc) desc.setAttribute('content',description);
+    let canonical=document.head.querySelector('link[rel="canonical"]');
+    if(!canonical){
+      canonical=document.createElement('link');
+      canonical.rel='canonical';
+      document.head.appendChild(canonical);
+    }
+    canonical.href=productUrl;
+    upsertMeta('meta[property="og:title"]','property','og:title',title);
+    upsertMeta('meta[property="og:description"]','property','og:description',description);
+    upsertMeta('meta[property="og:url"]','property','og:url',productUrl);
+    upsertMeta('meta[name="twitter:title"]','name','twitter:title',title);
+    upsertMeta('meta[name="twitter:description"]','name','twitter:description',description);
+    const image=safeImageSrc(p.img);
+    if(/^https?:/i.test(image)){
+      upsertMeta('meta[property="og:image"]','property','og:image',image);
+      upsertMeta('meta[name="twitter:image"]','name','twitter:image',image);
+    }
+
+    const variants=(p.variants||[]).filter(v=>v.active!==false);
+    const prices=variants.length?variants.map(v=>Number(v.price)).filter(Number.isFinite):[Number(p.price)].filter(Number.isFinite);
+    const lowPrice=prices.length?Math.min(...prices):Number(p.price||0);
+    const inStock=variants.length?variants.some(variantAvailable):true;
+    const schema={
+      "@context":"https://schema.org",
+      "@type":"Product",
+      "@id":productUrl+"#product",
+      "name":p.name,
+      "url":productUrl,
+      "image":[image],
+      "description":description,
+      "brand":{"@type":"Brand","name":p.brand || "DOMARO"},
+      "category":String(p.cat || "Fragrance"),
+      "offers":{
+        "@type":"Offer",
+        "url":productUrl,
+        "priceCurrency":"EGP",
+        "price":lowPrice,
+        "availability":inStock?"https://schema.org/InStock":"https://schema.org/OutOfStock",
+        "seller":{"@id":"https://domaro.vercel.app/#organization"}
+      }
+    };
+    let script=document.getElementById('domaro-product-schema');
+    if(!script){
+      script=document.createElement('script');
+      script.type='application/ld+json';
+      script.id='domaro-product-schema';
+      document.head.appendChild(script);
+    }
+    script.textContent=JSON.stringify(schema);
+
+    let crumb=document.getElementById('domaro-breadcrumb-schema');
+    if(!crumb){
+      crumb=document.createElement('script');
+      crumb.type='application/ld+json';
+      crumb.id='domaro-breadcrumb-schema';
+      document.head.appendChild(crumb);
+    }
+    crumb.textContent=JSON.stringify({
+      "@context":"https://schema.org",
+      "@type":"BreadcrumbList",
+      "itemListElement":[
+        {"@type":"ListItem","position":1,"name":"Home","item":location.origin+"/"},
+        {"@type":"ListItem","position":2,"name":"Shop","item":location.origin+"/shop.html"},
+        {"@type":"ListItem","position":3,"name":p.name,"item":productUrl}
+      ]
+    });
+  }catch(_){}
+}
+
 function renderProductDetail(){
   const detail=document.getElementById('product-detail');
   if(!detail) return;
@@ -450,6 +537,8 @@ function renderProductDetail(){
     detail.innerHTML=`<div class="empty" style="grid-column:1/-1">${message}<br><br><a class="btn dark" href="shop.html">BACK TO SHOP</a></div>`;
     return;
   }
+
+  updateProductSEO(p);
 
   try{
     const recent=JSON.parse(localStorage.getItem('domaro_recently_viewed') || '[]');
@@ -491,8 +580,8 @@ function renderProductDetail(){
   detail.innerHTML=`
     <div class="product-main-grid">
       <div class="product-gallery-v30">
-        <div class="product-gallery real-photo product-gallery-main"><img id="product-main-image" src="${safeImageSrc(gallery[0]?.path || p.img)}" alt="${escapeTrackHtml(p.name)}" decoding="async" fetchpriority="high"></div>
-        ${gallery.length>1?`<div class="product-gallery-thumbs">${gallery.map((g,i)=>`<button type="button" class="product-gallery-thumb ${i===0?'active':''}" data-gallery-src="${safeImageSrc(g.path)}"><img src="${safeImageSrc(g.path)}" alt="${escapeTrackHtml(g.alt||p.name)}" loading="lazy"></button>`).join('')}</div>`:''}
+        <div class="product-gallery real-photo product-gallery-main"><img id="product-main-image" src="${safeImageSrc(gallery[0]?.path || p.img)}" alt="${escapeTrackHtml(p.name)}" width="900" height="900" decoding="async" fetchpriority="high"></div>
+        ${gallery.length>1?`<div class="product-gallery-thumbs">${gallery.map((g,i)=>`<button type="button" class="product-gallery-thumb ${i===0?'active':''}" data-gallery-src="${safeImageSrc(g.path)}"><img src="${safeImageSrc(g.path)}" alt="${escapeTrackHtml(g.alt||p.name)}" width="160" height="160" loading="lazy" decoding="async"></button>`).join('')}</div>`:''}
       </div>
       <div class="product-copy">
         <a class="product-brand-link" href="${p.brand ? `shop.html?brand=${encodeURIComponent(p.brand)}` : 'shop.html'}">${brandLabel}</a>
@@ -526,7 +615,7 @@ function renderProductDetail(){
 
     <div class="product-accordion-wide accordion">
       <details open><summary>PRODUCT INFORMATION</summary><p>${p.brand ? `Brand: ${escapeTrackHtml(p.brand)}<br>` : ''}Size: <span id="product-info-size">${escapeTrackHtml(initialVariant?.size || p.size)}</span><br>Category: ${escapeTrackHtml(String(p.cat || '').charAt(0).toUpperCase()+String(p.cat || '').slice(1))}<br>Price: <span id="product-info-price">${money(initialVariant?.price ?? p.price)}</span></p></details>
-      <details><summary>DELIVERY</summary><p>Delivery is available across Egypt. The delivery fee is calculated automatically at checkout based on your governorate and area.</p></details>
+      <details><summary>DELIVERY</summary><p>Cairo &amp; Giza: delivery within a maximum of 2 days. Other governorates may vary depending on destination, courier availability and order volume. The delivery fee is calculated automatically at checkout based on your governorate and area.</p></details>
     </div>
     <section id="product-recommendations" class="product-recommendations-v30"></section>`;
 

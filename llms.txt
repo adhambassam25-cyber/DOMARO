@@ -1,0 +1,30 @@
+# DOMARO Fragrances
+
+DOMARO is an online fragrance store serving customers in Egypt. The catalog includes men's, women's and unisex perfumes, Arabic and oriental fragrances, gift boxes and selected fragrance houses.
+
+## Primary pages
+- Home: https://domaro.vercel.app/
+- Shop: https://domaro.vercel.app/shop.html
+- Brands: https://domaro.vercel.app/brands.html
+- About: https://domaro.vercel.app/about.html
+- Shipping: https://domaro.vercel.app/shipping.html
+- Returns & Exchanges: https://domaro.vercel.app/returns.html
+- FAQ: https://domaro.vercel.app/faq.html
+- Contact: https://domaro.vercel.app/contact.html
+
+## Shopping information
+- Delivery is available across Egypt.
+- Cairo and Giza orders are delivered within a maximum of 2 days.
+- Other governorates may vary depending on destination, courier availability and order volume.
+- Delivery fees depend on governorate and area.
+- Product availability, sizes and pricing are shown on the product and checkout pages.
+
+## Social profiles
+- Instagram: https://www.instagram.com/domaro.fragrances/
+- TikTok: https://www.tiktok.com/@domaro.fragrances
+- Facebook: https://www.facebook.com/profile.php?id=61595093811869
+
+## Brand
+DOMARO Fragrances
+Website: https://domaro.vercel.app/
+Country served: Egypt

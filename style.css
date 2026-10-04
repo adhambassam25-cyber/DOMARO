@@ -2713,3 +2713,13 @@ body.shop-filter-open{overflow:hidden}
   justify-content:flex-end;
 }
 .products-thumbnail-view .quick-add-btn{margin-top:auto}
+
+
+/* Performance: defer below-the-fold rendering without changing layout */
+.section,
+.split-dark,
+.brand-ribbon,
+footer{
+  content-visibility:auto;
+  contain-intrinsic-size:1px 900px;
+}

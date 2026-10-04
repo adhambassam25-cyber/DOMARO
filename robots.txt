@@ -2,6 +2,17 @@ User-agent: *
 Allow: /
 Disallow: /admin.html
 Disallow: /checkout.html
+Disallow: /cart.html
+Disallow: /account.html
 Disallow: /track.html
 
 Sitemap: https://domaro.vercel.app/sitemap.xml
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
