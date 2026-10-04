@@ -127,7 +127,7 @@ function applyEntryGateWallpaper(){
   }
 }
 
-function productCard(p){
+function productCard(p, priority=false){
   const brandLine=p.brand ? `<div class="product-brand">${escapeTrackHtml(p.brand)}</div>` : '';
   const activeVariants=(p.variants||[]).filter(v=>v.active!==false);
   const availableVariants=activeVariants.filter(variantAvailable);
@@ -145,7 +145,7 @@ function productCard(p){
     <a class="product-card-link" href="${productUrl}">
       <div class="product-img real-photo">
         <span class="badge ${p.inStock ? '' : 'badge-out'}">${p.inStock ? p.badge : 'OUT OF STOCK'}</span>
-        <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy" decoding="async">
+        <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" width="600" height="600" loading="${priority?'eager':'lazy'}" decoding="async" ${priority?'fetchpriority="high"':''}>
       </div>
       <div class="product-info">
         ${brandLine}
@@ -203,7 +203,7 @@ function renderProducts(targetId, filter='all', limit=null, brand='', query='', 
   let list=filteredCatalog(filter,brand,query,availability);
   if(limit) list=list.slice(0,limit);
   el.innerHTML=list.length
-    ? list.map(productCard).join('')
+    ? list.map((p,i)=>productCard(p,i===0)).join('')
     : `<div class="empty" style="grid-column:1/-1">${window.DOMARO_CATALOG_UNAVAILABLE ? 'Our catalog is temporarily unavailable. Please refresh in a moment.' : 'No products match this selection yet.'}</div>`;
   if(typeof window.DOMAROV30DecorateProductCards==='function') window.DOMAROV30DecorateProductCards();
 }
@@ -580,8 +580,8 @@ function renderProductDetail(){
   detail.innerHTML=`
     <div class="product-main-grid">
       <div class="product-gallery-v30">
-        <div class="product-gallery real-photo product-gallery-main"><img id="product-main-image" src="${safeImageSrc(gallery[0]?.path || p.img)}" alt="${escapeTrackHtml(p.name)}" decoding="async" fetchpriority="high"></div>
-        ${gallery.length>1?`<div class="product-gallery-thumbs">${gallery.map((g,i)=>`<button type="button" class="product-gallery-thumb ${i===0?'active':''}" data-gallery-src="${safeImageSrc(g.path)}"><img src="${safeImageSrc(g.path)}" alt="${escapeTrackHtml(g.alt||p.name)}" loading="lazy"></button>`).join('')}</div>`:''}
+        <div class="product-gallery real-photo product-gallery-main"><img id="product-main-image" src="${safeImageSrc(gallery[0]?.path || p.img)}" alt="${escapeTrackHtml(p.name)}" width="900" height="900" decoding="async" fetchpriority="high"></div>
+        ${gallery.length>1?`<div class="product-gallery-thumbs">${gallery.map((g,i)=>`<button type="button" class="product-gallery-thumb ${i===0?'active':''}" data-gallery-src="${safeImageSrc(g.path)}"><img src="${safeImageSrc(g.path)}" alt="${escapeTrackHtml(g.alt||p.name)}" width="160" height="160" loading="lazy" decoding="async"></button>`).join('')}</div>`:''}
       </div>
       <div class="product-copy">
         <a class="product-brand-link" href="${p.brand ? `shop.html?brand=${encodeURIComponent(p.brand)}` : 'shop.html'}">${brandLabel}</a>
