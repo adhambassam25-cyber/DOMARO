@@ -2723,3 +2723,9 @@ footer{
   content-visibility:auto;
   contain-intrinsic-size:1px 900px;
 }
+
+
+/* SEO/performance cleanup: reusable styles instead of inline declarations */
+.footer-brand-copy{color:#8f877f;max-width:310px;line-height:1.7;font-size:12px;margin-top:20px}
+.empty-full-span{grid-column:1/-1}
+.product-detail-price{font-size:22px;margin:18px 0}
