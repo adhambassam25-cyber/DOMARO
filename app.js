@@ -72,17 +72,20 @@ function customerAuthHeaders(extra={}){
 
 async function loadCatalog(){
   try{
-    const [productsRes,variantsRes,imagesRes,settingsRes]=await Promise.all([
+    const [productsRes,variantsRes,imagesRes,settingsRes,optimizedManifestRes]=await Promise.all([
       fetch(`${SUPABASE_URL}/rest/v1/products?select=id,name,category,size_ml,price,compare_at_price,cost_price,has_variants,image_path,description,brand,story,top_notes,heart_notes,base_notes,key_notes,in_stock,stock_quantity,active,display_order&active=eq.true&order=display_order.asc.nullslast,created_at.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
       fetch(`${SUPABASE_URL}/rest/v1/product_variants?select=id,product_id,sku,label,size_ml,price,compare_at_price,stock_quantity,in_stock,active,is_default,sort_order&active=eq.true&order=product_id.asc,sort_order.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
       fetch(`${SUPABASE_URL}/rest/v1/product_images?select=id,product_id,image_path,alt_text,sort_order&order=product_id.asc,sort_order.asc,id.asc`,{headers:{'apikey':SUPABASE_PUBLISHABLE_KEY}}),
-      fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_store_settings`,{method:'POST',headers:{'apikey':SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},body:'{}'})
+      fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_store_settings`,{method:'POST',headers:{'apikey':SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},body:'{}'}),
+      fetch('/assets/products-optimized/manifest.json',{cache:'force-cache'}).catch(()=>null)
     ]);
     const data=await productsRes.json();
     if(!productsRes.ok || !Array.isArray(data)) throw new Error(data?.message || 'Catalog unavailable');
     productVariants=variantsRes.ok ? await variantsRes.json().catch(()=>[]) : [];
     productImages=imagesRes.ok ? await imagesRes.json().catch(()=>[]) : [];
     storeSettings=settingsRes.ok ? (await settingsRes.json().catch(()=>({})) || {}) : {};
+    const optimizedManifest=optimizedManifestRes?.ok ? (await optimizedManifestRes.json().catch(()=>({})) || {}) : {};
+    const optimizedImage=url=>optimizedManifest?.[url] || url;
     const configuredShipping=Number(storeSettings?.shipping_fee);
     SHIPPING_FEE=Number.isFinite(configuredShipping) && configuredShipping>=0 ? configuredShipping : 80;
     window.DOMARO_SHIPPING_FEE=SHIPPING_FEE;
@@ -95,11 +98,11 @@ async function loadCatalog(){
         variants.push({id:null,sku:'',label:`${Number(p.size_ml)} ML`,size_ml:Number(p.size_ml),size:`${Number(p.size_ml)} ML`,price:Number(p.price),compareAtPrice:p.compare_at_price==null?null:Number(p.compare_at_price),stockQuantity:p.stock_quantity===null?null:Number(p.stock_quantity),inStock:Boolean(p.in_stock),active:true,isDefault:true,sortOrder:0});
       }
       const defaultVariant=variants.find(v=>v.isDefault) || variants[0];
-      const gallery=(Array.isArray(productImages)?productImages:[]).filter(i=>i.product_id===p.id).map(i=>({id:i.id,path:i.image_path,alt:i.alt_text||p.name,sortOrder:Number(i.sort_order||0)}));
+      const gallery=(Array.isArray(productImages)?productImages:[]).filter(i=>i.product_id===p.id).map(i=>({id:i.id,path:optimizedImage(i.image_path),alt:i.alt_text||p.name,sortOrder:Number(i.sort_order||0)}));
       const availableVariants=variants.filter(variantAvailable);
       const minPrice=Math.min(...variants.filter(v=>v.active!==false).map(v=>v.price));
       return {
-        id:p.id,name:p.name,type:String(p.category||'').toLowerCase()==='boxes'?'Gift Box':'Eau de Parfum',price:Number.isFinite(minPrice)?minPrice:Number(p.price),compareAtPrice:p.compare_at_price==null?null:Number(p.compare_at_price),size:defaultVariant?.size || `${p.size_ml} ML`,size_ml:defaultVariant?.size_ml || Number(p.size_ml),img:p.image_path || 'assets/hero.svg',cat:p.category,
+        id:p.id,name:p.name,type:String(p.category||'').toLowerCase()==='boxes'?'Gift Box':'Eau de Parfum',price:Number.isFinite(minPrice)?minPrice:Number(p.price),compareAtPrice:p.compare_at_price==null?null:Number(p.compare_at_price),size:defaultVariant?.size || `${p.size_ml} ML`,size_ml:defaultVariant?.size_ml || Number(p.size_ml),img:optimizedImage(p.image_path) || 'assets/hero.svg',cat:p.category,
         badge:availableVariants.length ? String(p.category).toUpperCase() : 'OUT OF STOCK',stockQuantity:p.stock_quantity===null?null:Number(p.stock_quantity),inStock:availableVariants.length>0,active:Boolean(p.active),brand:String(p.brand||'').trim(),story:String(p.story||'').trim(),topNotes:String(p.top_notes||'').trim(),heartNotes:String(p.heart_notes||'').trim(),baseNotes:String(p.base_notes||'').trim(),keyNotes:String(p.key_notes||'').trim(),desc:p.description||'',hasVariants:Boolean(p.has_variants)||variants.length>1,variants,gallery
       };
     });
