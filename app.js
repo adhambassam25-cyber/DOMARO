@@ -9,6 +9,13 @@ let productImages = [];
 let storeSettings = {};
 
 const money = n => Number(n || 0).toLocaleString('en-EG') + ' EGP';
+const productPath=id=>`/products/${encodeURIComponent(String(id||''))}`;
+function currentProductId(){
+  const fromQuery=new URLSearchParams(location.search).get('id');
+  if(fromQuery) return fromQuery;
+  const match=location.pathname.match(/^\/products\/([^/?#]+)\/?$/i);
+  return match ? decodeURIComponent(match[1]) : null;
+}
 
 const GA4_MEASUREMENT_ID='G-J34L8511SG';
 
@@ -290,7 +297,7 @@ function productCard(p, priority=false){
   const priceHtml=discounted
     ? `<span class="old-price">${money(comparePrice)}</span><span class="price sale-price">${priceLabel}</span>`
     : `<span class="price">${priceLabel}</span>`;
-  const productUrl=`product.html?id=${encodeURIComponent(p.id)}`;
+  const productUrl=productPath(p.id);
   const quickLabel=!p.inStock ? 'OUT OF STOCK' : availableVariants.length>1 ? 'SELECT SIZE' : 'ADD TO CART';
   return `<article class="product-card" data-product-id="${escapeTrackHtml(p.id)}">
     <a class="product-card-link" href="${productUrl}">
@@ -323,7 +330,7 @@ function initQuickAdd(){
     if(!product || !product.inStock) return;
     const available=(product.variants||[]).filter(variantAvailable);
     if(available.length!==1){
-      window.location.href=`product.html?id=${encodeURIComponent(id)}`;
+      window.location.href=productPath(id);
       return;
     }
     addToCart(id,1,available[0].id || null);
@@ -600,7 +607,7 @@ function upsertMeta(selector, attrName, attrValue, content){
 }
 function updateProductSEO(p){
   try{
-    const productUrl=`${location.origin}/product.html?id=${encodeURIComponent(p.id)}`;
+    const productUrl=`${location.origin}${productPath(p.id)}`;
     const title=`${p.name} Perfume in Egypt | ${p.brand || 'DOMARO'} | DOMARO`;
     const description=(p.desc || `Shop ${p.name} perfume in Egypt at DOMARO. View fragrance notes, size, availability and current price with delivery across Egypt.`).replace(/\s+/g,' ').trim().slice(0,155);
     document.title=title;
@@ -679,7 +686,7 @@ function renderProductDetail(){
   const detail=document.getElementById('product-detail');
   if(!detail) return;
 
-  const id=new URLSearchParams(location.search).get('id') || products[0]?.id;
+  const id=currentProductId() || products[0]?.id;
   const p=products.find(x=>x.id===id);
 
   if(!p){
@@ -1586,7 +1593,7 @@ function initGlobalSearch(){
       <div class="global-search-section">
         <div class="global-search-section-title">PRODUCTS</div>
         <div class="global-search-product-list">${productMatches.map(p=>`
-          <a class="global-search-product" href="product.html?id=${encodeURIComponent(p.id)}">
+          <a class="global-search-product" href="${productPath(p.id)}">
             <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy">
             <span><b>${escapeTrackHtml(p.name)}</b><small>${p.brand?escapeTrackHtml(p.brand)+' · ':''}${escapeTrackHtml(p.size)}</small></span>
             <strong>${money(p.price)}</strong>
