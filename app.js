@@ -145,7 +145,7 @@ function productCard(p, priority=false){
     <a class="product-card-link" href="${productUrl}">
       <div class="product-img real-photo">
         <span class="badge ${p.inStock ? '' : 'badge-out'}">${p.inStock ? p.badge : 'OUT OF STOCK'}</span>
-        <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" width="600" height="750" loading="eager" decoding="async" fetchpriority="${priority?'high':'low'}">
+        <img ${priority?`src="${safeImageSrc(p.img)}" fetchpriority="high"`:`src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'/%3E" data-catalog-src="${safeImageSrc(p.img)}" fetchpriority="low"`} alt="${escapeTrackHtml(p.name)}" width="600" height="750" decoding="async">
       </div>
       <div class="product-info">
         ${brandLine}
@@ -156,6 +156,79 @@ function productCard(p, priority=false){
     </a>
     <button class="quick-add-btn" type="button" data-quick-add="${escapeTrackHtml(p.id)}" ${p.inStock ? '' : 'disabled'}>${quickLabel}</button>
   </article>`;
+}
+
+
+const catalogImageQueue=[];
+let catalogImageLoads=0;
+const CATALOG_IMAGE_CONCURRENCY=2;
+
+function pumpCatalogImageQueue(){
+  while(catalogImageLoads<CATALOG_IMAGE_CONCURRENCY && catalogImageQueue.length){
+    const img=catalogImageQueue.shift();
+    if(!img || !img.dataset.catalogSrc || img.dataset.catalogLoading==='1') continue;
+    img.dataset.catalogLoading='1';
+    catalogImageLoads++;
+    const done=()=>{
+      catalogImageLoads=Math.max(0,catalogImageLoads-1);
+      delete img.dataset.catalogLoading;
+      pumpCatalogImageQueue();
+    };
+    img.addEventListener('load',done,{once:true});
+    img.addEventListener('error',()=>{
+      if(img.dataset.catalogRetried!=='1'){
+        img.dataset.catalogRetried='1';
+        delete img.dataset.catalogLoading;
+        catalogImageLoads=Math.max(0,catalogImageLoads-1);
+        setTimeout(()=>queueCatalogImage(img),700);
+        return;
+      }
+      done();
+    },{once:true});
+    img.src=img.dataset.catalogSrc;
+  }
+}
+
+function queueCatalogImage(img){
+  if(!img || !img.dataset.catalogSrc || img.dataset.catalogQueued==='1' || img.complete && img.naturalWidth>1) return;
+  img.dataset.catalogQueued='1';
+  catalogImageQueue.push(img);
+  pumpCatalogImageQueue();
+}
+
+let catalogImageObserver=null;
+function observeCatalogImages(root=document){
+  const images=[...root.querySelectorAll('img[data-catalog-src]')];
+  if(!images.length) return;
+  if(!('IntersectionObserver' in window)){
+    images.forEach(queueCatalogImage);
+    return;
+  }
+  if(!catalogImageObserver){
+    catalogImageObserver=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(!entry.isIntersecting) return;
+        catalogImageObserver.unobserve(entry.target);
+        queueCatalogImage(entry.target);
+      });
+    },{rootMargin:'900px 0px',threshold:0.01});
+  }
+  images.forEach(img=>catalogImageObserver.observe(img));
+}
+
+function initCatalogImageLoader(){
+  observeCatalogImages(document);
+  if(!('MutationObserver' in window) || !document.body) return;
+  const mo=new MutationObserver(records=>{
+    for(const record of records){
+      for(const node of record.addedNodes){
+        if(!(node instanceof Element)) continue;
+        if(node.matches?.('img[data-catalog-src]')) observeCatalogImages(node.parentElement || document);
+        else if(node.querySelector?.('img[data-catalog-src]')) observeCatalogImages(node);
+      }
+    }
+  });
+  mo.observe(document.body,{childList:true,subtree:true});
 }
 
 function initQuickAdd(){
@@ -1555,6 +1628,7 @@ async function initStore(){
   initEntryGate();
   initMobileNavigation();
   initQuickAdd();
+  initCatalogImageLoader();
   updateCartCount();
   await loadCatalog();
   initGlobalSearch();
