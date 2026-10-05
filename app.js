@@ -145,7 +145,7 @@ function productCard(p, priority=false){
     <a class="product-card-link" href="${productUrl}">
       <div class="product-img real-photo">
         <span class="badge ${p.inStock ? '' : 'badge-out'}">${p.inStock ? p.badge : 'OUT OF STOCK'}</span>
-        <img ${priority?`src="${safeImageSrc(p.img)}" fetchpriority="high"`:`src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'/%3E" data-catalog-src="${safeImageSrc(p.img)}" fetchpriority="low"`} alt="${escapeTrackHtml(p.name)}" width="600" height="750" decoding="async">
+        <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" width="600" height="750" loading="eager" decoding="async" fetchpriority="${priority?'high':'auto'}">
       </div>
       <div class="product-info">
         ${brandLine}
@@ -158,50 +158,6 @@ function productCard(p, priority=false){
   </article>`;
 }
 
-
-let catalogImageBatchToken=0;
-
-function loadCatalogImagesSequentially(root){
-  const token=++catalogImageBatchToken;
-  const queue=[...root.querySelectorAll('img[data-catalog-src]')];
-  let active=0;
-  const maxConcurrent=2;
-
-  const pump=()=>{
-    if(token!==catalogImageBatchToken) return;
-    while(active<maxConcurrent && queue.length){
-      const img=queue.shift();
-      if(!img || !img.isConnected || !img.dataset.catalogSrc) continue;
-      active++;
-      const original=img.dataset.catalogSrc;
-      let retried=false;
-      const finish=()=>{
-        active=Math.max(0,active-1);
-        setTimeout(pump,60);
-      };
-      const tryLoad=()=>{
-        img.onload=()=>{
-          img.onload=null;
-          img.onerror=null;
-          finish();
-        };
-        img.onerror=()=>{
-          img.onload=null;
-          img.onerror=null;
-          if(!retried){
-            retried=true;
-            setTimeout(tryLoad,350);
-          }else{
-            finish();
-          }
-        };
-        img.src=original;
-      };
-      tryLoad();
-    }
-  };
-  pump();
-}
 
 function initQuickAdd(){
   if(window.__domaroQuickAddReady) return;
@@ -251,7 +207,6 @@ function renderProducts(targetId, filter='all', limit=null, brand='', query='', 
     ? list.map((p,i)=>productCard(p,i<4)).join('')
     : `<div class="empty" style="grid-column:1/-1">${window.DOMARO_CATALOG_UNAVAILABLE ? 'Our catalog is temporarily unavailable. Please refresh in a moment.' : 'No products match this selection yet.'}</div>`;
   if(typeof window.DOMAROV30DecorateProductCards==='function') window.DOMAROV30DecorateProductCards();
-  loadCatalogImagesSequentially(el);
 }
 
 function catalogBrands(){
