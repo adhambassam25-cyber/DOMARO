@@ -208,17 +208,9 @@ function applyStoreSettings(settings=window.DOMARO_STORE_SETTINGS||{}){
 }
 
 function initAnalytics(settings){
-  if(window.__domaroAnalyticsInit) return; window.__domaroAnalyticsInit=true;
-  const ga=String(settings?.ga4_id||'').trim();
-  if(/^G-[A-Z0-9]+$/i.test(ga)){
-    const s=document.createElement('script'); s.async=true; s.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ga)}`; document.head.appendChild(s);
-    window.dataLayer=window.dataLayer||[]; window.gtag=function(){dataLayer.push(arguments)}; gtag('js',new Date()); gtag('config',ga);
-  }
-  const meta=String(settings?.meta_pixel_id||'').trim();
-  if(/^\d{5,20}$/.test(meta)){
-    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init',meta); fbq('track','PageView');
-  }
+  if(window.__domaroAnalyticsInit) return;
+  window.__domaroAnalyticsInit=true;
+  // GA4 is initialized once in app.js. Meta Pixel is intentionally disabled.
   const tt=String(settings?.tiktok_pixel_id||'').trim();
   if(/^[A-Z0-9]{10,30}$/i.test(tt)){
     !function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=['page','track','identify','instances','debug','on','off','once','ready','alias','group','enableCookie','disableCookie'];ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.load=function(e){var n='https://analytics.tiktok.com/i18n/pixel/events.js';var s=d.createElement('script');s.type='text/javascript';s.async=!0;s.src=n+'?sdkid='+e+'&lib='+t;var a=d.getElementsByTagName('script')[0];a.parentNode.insertBefore(s,a)};ttq.load(tt);ttq.page()}(window,document,'ttq');
