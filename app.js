@@ -145,7 +145,7 @@ function productCard(p, priority=false){
     <a class="product-card-link" href="${productUrl}">
       <div class="product-img real-photo">
         <span class="badge ${p.inStock ? '' : 'badge-out'}">${p.inStock ? p.badge : 'OUT OF STOCK'}</span>
-        <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" width="600" height="750" loading="${priority?'eager':'lazy'}" decoding="async" ${priority?'fetchpriority="high"':''}>
+        <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" width="600" height="750" loading="eager" decoding="async" fetchpriority="${priority?'high':'low'}">
       </div>
       <div class="product-info">
         ${brandLine}
