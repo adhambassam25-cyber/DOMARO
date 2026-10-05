@@ -203,7 +203,7 @@ function renderProducts(targetId, filter='all', limit=null, brand='', query='', 
   let list=filteredCatalog(filter,brand,query,availability);
   if(limit) list=list.slice(0,limit);
   el.innerHTML=list.length
-    ? list.map((p,i)=>productCard(p,i===0)).join('')
+    ? list.map((p,i)=>productCard(p,i<4)).join('')
     : `<div class="empty" style="grid-column:1/-1">${window.DOMARO_CATALOG_UNAVAILABLE ? 'Our catalog is temporarily unavailable. Please refresh in a moment.' : 'No products match this selection yet.'}</div>`;
   if(typeof window.DOMAROV30DecorateProductCards==='function') window.DOMAROV30DecorateProductCards();
 }
