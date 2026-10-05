@@ -6,6 +6,7 @@ const SUPABASE_URL = 'https://zuqjxcsjjgotwwmlvxmf.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c';
 const OUT_DIR = path.resolve('assets/products-optimized');
 const MANIFEST = path.join(OUT_DIR, 'manifest.json');
+const SITEMAP_PATH = path.resolve('sitemap.xml');
 
 async function fetchJson(url){
   const res=await fetch(url,{headers:{apikey:SUPABASE_PUBLISHABLE_KEY}});
@@ -21,6 +22,10 @@ async function rawPixels(buf){
 function samePixels(a,b){
   if(a.info.width!==b.info.width || a.info.height!==b.info.height || a.info.channels!==b.info.channels) return false;
   return a.data.length===b.data.length && a.data.equals(b.data);
+}
+
+function xmlEscape(value){
+  return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 }
 
 function safeName(kind,id){
@@ -62,7 +67,7 @@ async function optimizeOne(url,kind,id){
 
 await fs.mkdir(OUT_DIR,{recursive:true});
 
-const products=await fetchJson(`${SUPABASE_URL}/rest/v1/products?select=id,image_path&active=eq.true`);
+const products=await fetchJson(`${SUPABASE_URL}/rest/v1/products?select=id,image_path,updated_at&active=eq.true&order=display_order.asc.nullslast,created_at.asc`);
 const gallery=await fetchJson(`${SUPABASE_URL}/rest/v1/product_images?select=id,product_id,image_path`);
 
 const jobs=[];
@@ -88,3 +93,32 @@ const before=report.reduce((n,x)=>n+(x.before||0),0);
 const after=report.reduce((n,x)=>n+((x.status==='optimized'?x.after:x.before)||0),0);
 console.log(`DOMARO image build: ${report.filter(x=>x.status==='optimized').length}/${report.length} optimized`);
 console.log(`Bytes: ${before} -> ${after} (${before?(((before-after)/before)*100).toFixed(1):0}% saved)`);
+
+
+const staticPages=[
+  ['https://domaro-eg.com/', '1.0'],
+  ['https://domaro-eg.com/shop.html', '0.9'],
+  ['https://domaro-eg.com/brands.html', '0.8'],
+  ['https://domaro-eg.com/about.html', '0.6'],
+  ['https://domaro-eg.com/faq.html', '0.6'],
+  ['https://domaro-eg.com/shipping.html', '0.6'],
+  ['https://domaro-eg.com/returns.html', '0.6'],
+  ['https://domaro-eg.com/contact.html', '0.5'],
+];
+
+const sitemapRows=[
+  ...staticPages.map(([loc,priority])=>`  <url><loc>${xmlEscape(loc)}</loc><priority>${priority}</priority></url>`),
+  ...products.map(p=>{
+    const loc=`https://domaro-eg.com/products/${encodeURIComponent(String(p.id||''))}`;
+    const lastmod=p.updated_at ? `<lastmod>${xmlEscape(new Date(p.updated_at).toISOString().slice(0,10))}</lastmod>` : '';
+    return `  <url><loc>${xmlEscape(loc)}</loc>${lastmod}<priority>0.8</priority></url>`;
+  })
+];
+
+const sitemap=`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemapRows.join('\n')}
+</urlset>
+`;
+await fs.writeFile(SITEMAP_PATH,sitemap);
+console.log(`DOMARO sitemap build: ${staticPages.length + products.length} URLs`);
