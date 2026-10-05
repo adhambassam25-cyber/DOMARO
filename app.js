@@ -10,6 +10,12 @@ let storeSettings = {};
 
 const money = n => Number(n || 0).toLocaleString('en-EG') + ' EGP';
 const productPath=id=>`/products/${encodeURIComponent(String(id||''))}`;
+const CATEGORY_PATHS={men:'/men',women:'/women',unisex:'/unisex',boxes:'/boxes'};
+const categoryPath=category=>CATEGORY_PATHS[String(category||'').toLowerCase()] || '/shop.html';
+function categoryFromPath(){
+  const clean=location.pathname.replace(/\/+$/,'').toLowerCase();
+  return Object.entries(CATEGORY_PATHS).find(([,path])=>path===clean)?.[0] || null;
+}
 function currentProductId(){
   const fromQuery=new URLSearchParams(location.search).get('id');
   if(fromQuery) return fromQuery;
@@ -444,12 +450,52 @@ function initFilters(){
   const allowedFilters=['all','men','women','unisex','boxes'];
   const allowedAvailability=['all','in-stock','out-of-stock'];
   const params=new URLSearchParams(location.search);
-  const urlFilter=(params.get('category') || 'all').toLowerCase();
+  const urlFilter=(categoryFromPath() || params.get('category') || 'all').toLowerCase();
   const urlAvailability=(params.get('availability') || 'all').toLowerCase();
   let activeCategory=allowedFilters.includes(urlFilter) ? urlFilter : 'all';
   let activeAvailability=allowedAvailability.includes(urlAvailability) ? urlAvailability : 'all';
   let activeBrand=String(params.get('brand') || '').trim();
   let activeSearch=String(params.get('search') || '').trim();
+
+  const updateCategorySeo=()=>{
+    const cleanCategory=activeCategory!=='all' && !activeBrand && !activeSearch && activeAvailability==='all';
+    const canonicalUrl=cleanCategory
+      ? location.origin + categoryPath(activeCategory)
+      : location.origin + '/shop.html';
+
+    let canonical=document.head.querySelector('link[rel="canonical"]');
+    if(!canonical){
+      canonical=document.createElement('link');
+      canonical.rel='canonical';
+      document.head.appendChild(canonical);
+    }
+    canonical.href=canonicalUrl;
+
+    const titles={
+      men:'Men’s Perfumes & Fragrances in Egypt | DOMARO',
+      women:'Women’s Perfumes & Fragrances in Egypt | DOMARO',
+      unisex:'Unisex Perfumes & Fragrances in Egypt | DOMARO',
+      boxes:'Perfume Gift Boxes & Sets in Egypt | DOMARO'
+    };
+    const descriptions={
+      men:'Shop premium men’s perfumes and fragrances at DOMARO Egypt. Discover elegant scents, luxury bottles and delivery across Egypt.',
+      women:'Shop premium women’s perfumes and fragrances at DOMARO Egypt. Discover elegant scents, luxury bottles and delivery across Egypt.',
+      unisex:'Shop premium unisex perfumes and fragrances at DOMARO Egypt. Discover versatile luxury scents with delivery across Egypt.',
+      boxes:'Shop premium perfume gift boxes and fragrance sets at DOMARO Egypt, with elegant presentation and delivery across Egypt.'
+    };
+
+    if(cleanCategory){
+      document.title=titles[activeCategory] || document.title;
+      const desc=document.head.querySelector('meta[name="description"]');
+      if(desc) desc.content=descriptions[activeCategory] || desc.content;
+      const ogUrl=document.head.querySelector('meta[property="og:url"]');
+      if(ogUrl) ogUrl.content=canonicalUrl;
+      const ogTitle=document.head.querySelector('meta[property="og:title"]');
+      if(ogTitle) ogTitle.content=titles[activeCategory] || document.title;
+      const ogDesc=document.head.querySelector('meta[property="og:description"]');
+      if(ogDesc) ogDesc.content=descriptions[activeCategory] || '';
+    }
+  };
 
   const updateShop=()=>{
     document.querySelectorAll('.filter-btn').forEach(btn=>{
@@ -478,6 +524,7 @@ function initFilters(){
       else if(activeCategory!=='all') title.textContent=activeCategory.toUpperCase()+' FRAGRANCES';
       else title.textContent='SHOP FRAGRANCES';
     }
+    updateCategorySeo();
     if(sub){
       const availabilityText=activeAvailability==='in-stock'
         ? ' Showing products currently in stock.'
@@ -499,8 +546,8 @@ function initFilters(){
 
   const updateShopUrl=()=>{
     const url=new URL(location.href);
-    if(activeCategory==='all') url.searchParams.delete('category');
-    else url.searchParams.set('category',activeCategory);
+    url.pathname=activeCategory==='all' ? '/shop.html' : categoryPath(activeCategory);
+    url.searchParams.delete('category');
     if(activeBrand) url.searchParams.set('brand',activeBrand);
     else url.searchParams.delete('brand');
     if(activeSearch) url.searchParams.set('search',activeSearch);
@@ -1674,7 +1721,7 @@ function initEntryGate(){
         sessionStorage.setItem('domaroAudienceChosen','1');
         sessionStorage.setItem('domaroAudienceCategory',category);
       }catch(_){}
-      window.location.href=`shop.html?category=${encodeURIComponent(category)}`;
+      window.location.href=categoryPath(category);
     });
   });
 }
