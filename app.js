@@ -473,11 +473,14 @@ function initFilters(){
   let activeBrand=brandFromPath() || String(params.get('brand') || '').trim();
   let activeSearch=String(params.get('search') || '').trim();
 
-  const updateCategorySeo=()=>{
+  const updateShopSeo=()=>{
     const cleanCategory=activeCategory!=='all' && !activeBrand && !activeSearch && activeAvailability==='all';
-    const canonicalUrl=cleanCategory
-      ? location.origin + categoryPath(activeCategory)
-      : location.origin + '/shop.html';
+    const cleanBrand=Boolean(activeBrand) && activeCategory==='all' && !activeSearch && activeAvailability==='all';
+    const canonicalUrl=cleanBrand
+      ? location.origin + brandPath(activeBrand)
+      : cleanCategory
+        ? location.origin + categoryPath(activeCategory)
+        : location.origin + '/shop.html';
 
     let canonical=document.head.querySelector('link[rel="canonical"]');
     if(!canonical){
@@ -500,16 +503,21 @@ function initFilters(){
       boxes:'Shop premium perfume gift boxes and fragrance sets at DOMARO Egypt, with elegant presentation and delivery across Egypt.'
     };
 
-    if(cleanCategory){
-      document.title=titles[activeCategory] || document.title;
+    const brandTitle=activeBrand ? `${activeBrand} Perfumes in Egypt | DOMARO` : '';
+    const brandDescription=activeBrand ? `Shop ${activeBrand} perfumes at DOMARO Egypt. Explore available fragrances, sizes, prices and delivery across Egypt.` : '';
+    const nextTitle=cleanBrand ? brandTitle : cleanCategory ? (titles[activeCategory] || document.title) : '';
+    const nextDescription=cleanBrand ? brandDescription : cleanCategory ? (descriptions[activeCategory] || '') : '';
+
+    if(cleanCategory || cleanBrand){
+      document.title=nextTitle || document.title;
       const desc=document.head.querySelector('meta[name="description"]');
-      if(desc) desc.content=descriptions[activeCategory] || desc.content;
+      if(desc && nextDescription) desc.content=nextDescription;
       const ogUrl=document.head.querySelector('meta[property="og:url"]');
       if(ogUrl) ogUrl.content=canonicalUrl;
       const ogTitle=document.head.querySelector('meta[property="og:title"]');
-      if(ogTitle) ogTitle.content=titles[activeCategory] || document.title;
+      if(ogTitle) ogTitle.content=nextTitle || document.title;
       const ogDesc=document.head.querySelector('meta[property="og:description"]');
-      if(ogDesc) ogDesc.content=descriptions[activeCategory] || '';
+      if(ogDesc) ogDesc.content=nextDescription;
     }
   };
 
@@ -540,7 +548,7 @@ function initFilters(){
       else if(activeCategory!=='all') title.textContent=activeCategory.toUpperCase()+' FRAGRANCES';
       else title.textContent='SHOP FRAGRANCES';
     }
-    updateCategorySeo();
+    updateShopSeo();
     if(sub){
       const availabilityText=activeAvailability==='in-stock'
         ? ' Showing products currently in stock.'
@@ -562,10 +570,16 @@ function initFilters(){
 
   const updateShopUrl=()=>{
     const url=new URL(location.href);
-    url.pathname=activeCategory==='all' ? '/shop.html' : categoryPath(activeCategory);
-    url.searchParams.delete('category');
-    if(activeBrand) url.searchParams.set('brand',activeBrand);
-    else url.searchParams.delete('brand');
+    if(activeBrand){
+      url.pathname=brandPath(activeBrand);
+      if(activeCategory==='all') url.searchParams.delete('category');
+      else url.searchParams.set('category',activeCategory);
+      url.searchParams.delete('brand');
+    }else{
+      url.pathname=activeCategory==='all' ? '/shop.html' : categoryPath(activeCategory);
+      url.searchParams.delete('category');
+      url.searchParams.delete('brand');
+    }
     if(activeSearch) url.searchParams.set('search',activeSearch);
     else url.searchParams.delete('search');
     if(activeAvailability==='all') url.searchParams.delete('availability');
