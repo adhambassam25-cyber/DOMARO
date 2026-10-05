@@ -159,76 +159,48 @@ function productCard(p, priority=false){
 }
 
 
-const catalogImageQueue=[];
-let catalogImageLoads=0;
-const CATALOG_IMAGE_CONCURRENCY=2;
+let catalogImageBatchToken=0;
 
-function pumpCatalogImageQueue(){
-  while(catalogImageLoads<CATALOG_IMAGE_CONCURRENCY && catalogImageQueue.length){
-    const img=catalogImageQueue.shift();
-    if(!img || !img.dataset.catalogSrc || img.dataset.catalogLoading==='1') continue;
-    img.dataset.catalogLoading='1';
-    catalogImageLoads++;
-    const done=()=>{
-      catalogImageLoads=Math.max(0,catalogImageLoads-1);
-      delete img.dataset.catalogLoading;
-      pumpCatalogImageQueue();
-    };
-    img.addEventListener('load',done,{once:true});
-    img.addEventListener('error',()=>{
-      if(img.dataset.catalogRetried!=='1'){
-        img.dataset.catalogRetried='1';
-        delete img.dataset.catalogLoading;
-        catalogImageLoads=Math.max(0,catalogImageLoads-1);
-        setTimeout(()=>queueCatalogImage(img),700);
-        return;
-      }
-      done();
-    },{once:true});
-    img.src=img.dataset.catalogSrc;
-  }
-}
+function loadCatalogImagesSequentially(root){
+  const token=++catalogImageBatchToken;
+  const queue=[...root.querySelectorAll('img[data-catalog-src]')];
+  let active=0;
+  const maxConcurrent=2;
 
-function queueCatalogImage(img){
-  if(!img || !img.dataset.catalogSrc || img.dataset.catalogQueued==='1' || img.complete && img.naturalWidth>1) return;
-  img.dataset.catalogQueued='1';
-  catalogImageQueue.push(img);
-  pumpCatalogImageQueue();
-}
-
-let catalogImageObserver=null;
-function observeCatalogImages(root=document){
-  const images=[...root.querySelectorAll('img[data-catalog-src]')];
-  if(!images.length) return;
-  if(!('IntersectionObserver' in window)){
-    images.forEach(queueCatalogImage);
-    return;
-  }
-  if(!catalogImageObserver){
-    catalogImageObserver=new IntersectionObserver(entries=>{
-      entries.forEach(entry=>{
-        if(!entry.isIntersecting) return;
-        catalogImageObserver.unobserve(entry.target);
-        queueCatalogImage(entry.target);
-      });
-    },{rootMargin:'900px 0px',threshold:0.01});
-  }
-  images.forEach(img=>catalogImageObserver.observe(img));
-}
-
-function initCatalogImageLoader(){
-  observeCatalogImages(document);
-  if(!('MutationObserver' in window) || !document.body) return;
-  const mo=new MutationObserver(records=>{
-    for(const record of records){
-      for(const node of record.addedNodes){
-        if(!(node instanceof Element)) continue;
-        if(node.matches?.('img[data-catalog-src]')) observeCatalogImages(node.parentElement || document);
-        else if(node.querySelector?.('img[data-catalog-src]')) observeCatalogImages(node);
-      }
+  const pump=()=>{
+    if(token!==catalogImageBatchToken) return;
+    while(active<maxConcurrent && queue.length){
+      const img=queue.shift();
+      if(!img || !img.isConnected || !img.dataset.catalogSrc) continue;
+      active++;
+      const original=img.dataset.catalogSrc;
+      let retried=false;
+      const finish=()=>{
+        active=Math.max(0,active-1);
+        setTimeout(pump,60);
+      };
+      const tryLoad=()=>{
+        img.onload=()=>{
+          img.onload=null;
+          img.onerror=null;
+          finish();
+        };
+        img.onerror=()=>{
+          img.onload=null;
+          img.onerror=null;
+          if(!retried){
+            retried=true;
+            setTimeout(tryLoad,350);
+          }else{
+            finish();
+          }
+        };
+        img.src=original;
+      };
+      tryLoad();
     }
-  });
-  mo.observe(document.body,{childList:true,subtree:true});
+  };
+  pump();
 }
 
 function initQuickAdd(){
@@ -279,6 +251,7 @@ function renderProducts(targetId, filter='all', limit=null, brand='', query='', 
     ? list.map((p,i)=>productCard(p,i<4)).join('')
     : `<div class="empty" style="grid-column:1/-1">${window.DOMARO_CATALOG_UNAVAILABLE ? 'Our catalog is temporarily unavailable. Please refresh in a moment.' : 'No products match this selection yet.'}</div>`;
   if(typeof window.DOMAROV30DecorateProductCards==='function') window.DOMAROV30DecorateProductCards();
+  loadCatalogImagesSequentially(el);
 }
 
 function catalogBrands(){
@@ -1628,7 +1601,6 @@ async function initStore(){
   initEntryGate();
   initMobileNavigation();
   initQuickAdd();
-  initCatalogImageLoader();
   updateCartCount();
   await loadCatalog();
   initGlobalSearch();
