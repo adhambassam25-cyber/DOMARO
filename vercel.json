@@ -120,6 +120,10 @@
   "outputDirectory": ".",
   "rewrites": [
     {
+      "source": "/brands/:slug",
+      "destination": "/shop.html"
+    },
+    {
       "source": "/boxes",
       "destination": "/shop.html"
     },
