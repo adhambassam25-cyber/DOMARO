@@ -120,6 +120,22 @@
   "outputDirectory": ".",
   "rewrites": [
     {
+      "source": "/boxes",
+      "destination": "/shop.html"
+    },
+    {
+      "source": "/unisex",
+      "destination": "/shop.html"
+    },
+    {
+      "source": "/women",
+      "destination": "/shop.html"
+    },
+    {
+      "source": "/men",
+      "destination": "/shop.html"
+    },
+    {
       "source": "/products/:id",
       "destination": "/product.html"
     }
