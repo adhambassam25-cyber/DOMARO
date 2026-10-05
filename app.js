@@ -408,7 +408,7 @@ function renderBrandDirectory(){
   grid.innerHTML=brands.length
     ? brands.map(brand=>{
         const count=products.filter(p=>normalizeBrand(p.brand)===normalizeBrand(brand)).length;
-        return `<a class="brand-directory-card" href="shop.html?brand=${encodeURIComponent(brand)}">
+        return `<a class="brand-directory-card" href="${brandPath(brand)}">
           <span class="brand-directory-label">FRAGRANCE HOUSE</span>
           <h2>${escapeTrackHtml(brand)}</h2>
           <span>${count} PRODUCT${count===1?'':'S'} →</span>
@@ -1653,7 +1653,7 @@ function initGlobalSearch(){
         <div class="global-search-empty">
           <span>SEARCH THE COLLECTION</span>
           <p>Type a fragrance name or brand.</p>
-          ${brands.length?`<div class="global-search-brand-chips">${brands.slice(0,8).map(brand=>`<a href="shop.html?brand=${encodeURIComponent(brand)}">${escapeTrackHtml(brand)}</a>`).join('')}</div>`:''}
+          ${brands.length?`<div class="global-search-brand-chips">${brands.slice(0,8).map(brand=>`<a href="${brandPath(brand)}">${escapeTrackHtml(brand)}</a>`).join('')}</div>`:''}
         </div>`;
       return;
     }
@@ -1680,7 +1680,7 @@ function initGlobalSearch(){
     const brandHtml=brandMatches.length?`
       <div class="global-search-section">
         <div class="global-search-section-title">BRANDS</div>
-        <div class="global-search-brand-results">${brandMatches.map(brand=>`<a href="shop.html?brand=${encodeURIComponent(brand)}">${escapeTrackHtml(brand)}<span>→</span></a>`).join('')}</div>
+        <div class="global-search-brand-results">${brandMatches.map(brand=>`<a href="${brandPath(brand)}">${escapeTrackHtml(brand)}<span>→</span></a>`).join('')}</div>
       </div>`:'';
 
     results.innerHTML=productHtml+brandHtml;
