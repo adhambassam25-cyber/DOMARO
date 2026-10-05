@@ -12,6 +12,22 @@ const money = n => Number(n || 0).toLocaleString('en-EG') + ' EGP';
 const productPath=id=>`/products/${encodeURIComponent(String(id||''))}`;
 const CATEGORY_PATHS={men:'/men',women:'/women',unisex:'/unisex',boxes:'/boxes'};
 const categoryPath=category=>CATEGORY_PATHS[String(category||'').toLowerCase()] || '/shop.html';
+const brandSlug=brand=>String(brand||'')
+  .replace(/\([^)]*\)/g,'')
+  .trim()
+  .toLowerCase()
+  .normalize('NFKD')
+  .replace(/[\u0300-\u036f]/g,'')
+  .replace(/[^a-z0-9]+/g,'-')
+  .replace(/^-+|-+$/g,'');
+const brandPath=brand=>`/brands/${brandSlug(brand)}`;
+function brandFromPath(){
+  const match=location.pathname.match(/^\/brands\/([^/?#]+)\/?$/i);
+  if(!match) return '';
+  const slug=decodeURIComponent(match[1]).toLowerCase();
+  const brands=[...new Set(products.map(p=>String(p.brand||'').trim()).filter(Boolean))];
+  return brands.find(brand=>brandSlug(brand)===slug) || '';
+}
 function categoryFromPath(){
   const clean=location.pathname.replace(/\/+$/,'').toLowerCase();
   return Object.entries(CATEGORY_PATHS).find(([,path])=>path===clean)?.[0] || null;
@@ -454,7 +470,7 @@ function initFilters(){
   const urlAvailability=(params.get('availability') || 'all').toLowerCase();
   let activeCategory=allowedFilters.includes(urlFilter) ? urlFilter : 'all';
   let activeAvailability=allowedAvailability.includes(urlAvailability) ? urlAvailability : 'all';
-  let activeBrand=String(params.get('brand') || '').trim();
+  let activeBrand=brandFromPath() || String(params.get('brand') || '').trim();
   let activeSearch=String(params.get('search') || '').trim();
 
   const updateCategorySeo=()=>{
@@ -797,7 +813,7 @@ function renderProductDetail(){
         ${gallery.length>1?`<div class="product-gallery-thumbs">${gallery.map((g,i)=>`<button type="button" class="product-gallery-thumb ${i===0?'active':''}" data-gallery-src="${safeImageSrc(g.path)}"><img src="${safeImageSrc(g.path)}" alt="${escapeTrackHtml(g.alt||p.name)}" width="160" height="160" loading="lazy" decoding="async"></button>`).join('')}</div>`:''}
       </div>
       <div class="product-copy">
-        <a class="product-brand-link" href="${p.brand ? `shop.html?brand=${encodeURIComponent(p.brand)}` : 'shop.html'}">${brandLabel}</a>
+        <a class="product-brand-link" href="${p.brand ? brandPath(p.brand) : 'shop.html'}">${brandLabel}</a>
         <h1>${escapeTrackHtml(p.name)}</h1>
         <div class="product-facts">
           <span>${escapeTrackHtml(String(p.cat || '').toUpperCase())}</span>
