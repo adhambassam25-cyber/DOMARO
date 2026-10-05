@@ -150,6 +150,9 @@ async function loadCatalog(){
     storeSettings=settingsRes.ok ? (await settingsRes.json().catch(()=>({})) || {}) : {};
     const optimizedManifest=optimizedManifestRes?.ok ? (await optimizedManifestRes.json().catch(()=>({})) || {}) : {};
     const optimizedImage=url=>optimizedManifest?.[url] || url;
+    if(storeSettings?.entry_gate_wallpaper_url){
+      storeSettings.entry_gate_wallpaper_url=optimizedImage(storeSettings.entry_gate_wallpaper_url);
+    }
     const configuredShipping=Number(storeSettings?.shipping_fee);
     SHIPPING_FEE=Number.isFinite(configuredShipping) && configuredShipping>=0 ? configuredShipping : 80;
     window.DOMARO_SHIPPING_FEE=SHIPPING_FEE;
