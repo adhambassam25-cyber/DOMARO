@@ -12,6 +12,22 @@ const money = n => Number(n || 0).toLocaleString('en-EG') + ' EGP';
 const productPath=id=>`/products/${encodeURIComponent(String(id||''))}`;
 const CATEGORY_PATHS={men:'/men',women:'/women',unisex:'/unisex',boxes:'/boxes'};
 const categoryPath=category=>CATEGORY_PATHS[String(category||'').toLowerCase()] || '/shop.html';
+const brandSlug=brand=>String(brand||'')
+  .replace(/\([^)]*\)/g,'')
+  .trim()
+  .toLowerCase()
+  .normalize('NFKD')
+  .replace(/[\u0300-\u036f]/g,'')
+  .replace(/[^a-z0-9]+/g,'-')
+  .replace(/^-+|-+$/g,'');
+const brandPath=brand=>`/brands/${brandSlug(brand)}`;
+function brandFromPath(){
+  const match=location.pathname.match(/^\/brands\/([^/?#]+)\/?$/i);
+  if(!match) return '';
+  const slug=decodeURIComponent(match[1]).toLowerCase();
+  const brands=[...new Set(products.map(p=>String(p.brand||'').trim()).filter(Boolean))];
+  return brands.find(brand=>brandSlug(brand)===slug) || '';
+}
 function categoryFromPath(){
   const clean=location.pathname.replace(/\/+$/,'').toLowerCase();
   return Object.entries(CATEGORY_PATHS).find(([,path])=>path===clean)?.[0] || null;
@@ -392,7 +408,7 @@ function renderBrandDirectory(){
   grid.innerHTML=brands.length
     ? brands.map(brand=>{
         const count=products.filter(p=>normalizeBrand(p.brand)===normalizeBrand(brand)).length;
-        return `<a class="brand-directory-card" href="shop.html?brand=${encodeURIComponent(brand)}">
+        return `<a class="brand-directory-card" href="${brandPath(brand)}">
           <span class="brand-directory-label">FRAGRANCE HOUSE</span>
           <h2>${escapeTrackHtml(brand)}</h2>
           <span>${count} PRODUCT${count===1?'':'S'} →</span>
@@ -454,14 +470,17 @@ function initFilters(){
   const urlAvailability=(params.get('availability') || 'all').toLowerCase();
   let activeCategory=allowedFilters.includes(urlFilter) ? urlFilter : 'all';
   let activeAvailability=allowedAvailability.includes(urlAvailability) ? urlAvailability : 'all';
-  let activeBrand=String(params.get('brand') || '').trim();
+  let activeBrand=brandFromPath() || String(params.get('brand') || '').trim();
   let activeSearch=String(params.get('search') || '').trim();
 
-  const updateCategorySeo=()=>{
+  const updateShopSeo=()=>{
     const cleanCategory=activeCategory!=='all' && !activeBrand && !activeSearch && activeAvailability==='all';
-    const canonicalUrl=cleanCategory
-      ? location.origin + categoryPath(activeCategory)
-      : location.origin + '/shop.html';
+    const cleanBrand=Boolean(activeBrand) && activeCategory==='all' && !activeSearch && activeAvailability==='all';
+    const canonicalUrl=cleanBrand
+      ? location.origin + brandPath(activeBrand)
+      : cleanCategory
+        ? location.origin + categoryPath(activeCategory)
+        : location.origin + '/shop.html';
 
     let canonical=document.head.querySelector('link[rel="canonical"]');
     if(!canonical){
@@ -484,16 +503,21 @@ function initFilters(){
       boxes:'Shop premium perfume gift boxes and fragrance sets at DOMARO Egypt, with elegant presentation and delivery across Egypt.'
     };
 
-    if(cleanCategory){
-      document.title=titles[activeCategory] || document.title;
+    const brandTitle=activeBrand ? `${activeBrand} Perfumes in Egypt | DOMARO` : '';
+    const brandDescription=activeBrand ? `Shop ${activeBrand} perfumes at DOMARO Egypt. Explore available fragrances, sizes, prices and delivery across Egypt.` : '';
+    const nextTitle=cleanBrand ? brandTitle : cleanCategory ? (titles[activeCategory] || document.title) : '';
+    const nextDescription=cleanBrand ? brandDescription : cleanCategory ? (descriptions[activeCategory] || '') : '';
+
+    if(cleanCategory || cleanBrand){
+      document.title=nextTitle || document.title;
       const desc=document.head.querySelector('meta[name="description"]');
-      if(desc) desc.content=descriptions[activeCategory] || desc.content;
+      if(desc && nextDescription) desc.content=nextDescription;
       const ogUrl=document.head.querySelector('meta[property="og:url"]');
       if(ogUrl) ogUrl.content=canonicalUrl;
       const ogTitle=document.head.querySelector('meta[property="og:title"]');
-      if(ogTitle) ogTitle.content=titles[activeCategory] || document.title;
+      if(ogTitle) ogTitle.content=nextTitle || document.title;
       const ogDesc=document.head.querySelector('meta[property="og:description"]');
-      if(ogDesc) ogDesc.content=descriptions[activeCategory] || '';
+      if(ogDesc) ogDesc.content=nextDescription;
     }
   };
 
@@ -524,7 +548,7 @@ function initFilters(){
       else if(activeCategory!=='all') title.textContent=activeCategory.toUpperCase()+' FRAGRANCES';
       else title.textContent='SHOP FRAGRANCES';
     }
-    updateCategorySeo();
+    updateShopSeo();
     if(sub){
       const availabilityText=activeAvailability==='in-stock'
         ? ' Showing products currently in stock.'
@@ -546,10 +570,16 @@ function initFilters(){
 
   const updateShopUrl=()=>{
     const url=new URL(location.href);
-    url.pathname=activeCategory==='all' ? '/shop.html' : categoryPath(activeCategory);
-    url.searchParams.delete('category');
-    if(activeBrand) url.searchParams.set('brand',activeBrand);
-    else url.searchParams.delete('brand');
+    if(activeBrand){
+      url.pathname=brandPath(activeBrand);
+      if(activeCategory==='all') url.searchParams.delete('category');
+      else url.searchParams.set('category',activeCategory);
+      url.searchParams.delete('brand');
+    }else{
+      url.pathname=activeCategory==='all' ? '/shop.html' : categoryPath(activeCategory);
+      url.searchParams.delete('category');
+      url.searchParams.delete('brand');
+    }
     if(activeSearch) url.searchParams.set('search',activeSearch);
     else url.searchParams.delete('search');
     if(activeAvailability==='all') url.searchParams.delete('availability');
@@ -797,7 +827,7 @@ function renderProductDetail(){
         ${gallery.length>1?`<div class="product-gallery-thumbs">${gallery.map((g,i)=>`<button type="button" class="product-gallery-thumb ${i===0?'active':''}" data-gallery-src="${safeImageSrc(g.path)}"><img src="${safeImageSrc(g.path)}" alt="${escapeTrackHtml(g.alt||p.name)}" width="160" height="160" loading="lazy" decoding="async"></button>`).join('')}</div>`:''}
       </div>
       <div class="product-copy">
-        <a class="product-brand-link" href="${p.brand ? `shop.html?brand=${encodeURIComponent(p.brand)}` : 'shop.html'}">${brandLabel}</a>
+        <a class="product-brand-link" href="${p.brand ? brandPath(p.brand) : 'shop.html'}">${brandLabel}</a>
         <h1>${escapeTrackHtml(p.name)}</h1>
         <div class="product-facts">
           <span>${escapeTrackHtml(String(p.cat || '').toUpperCase())}</span>
@@ -1623,7 +1653,7 @@ function initGlobalSearch(){
         <div class="global-search-empty">
           <span>SEARCH THE COLLECTION</span>
           <p>Type a fragrance name or brand.</p>
-          ${brands.length?`<div class="global-search-brand-chips">${brands.slice(0,8).map(brand=>`<a href="shop.html?brand=${encodeURIComponent(brand)}">${escapeTrackHtml(brand)}</a>`).join('')}</div>`:''}
+          ${brands.length?`<div class="global-search-brand-chips">${brands.slice(0,8).map(brand=>`<a href="${brandPath(brand)}">${escapeTrackHtml(brand)}</a>`).join('')}</div>`:''}
         </div>`;
       return;
     }
@@ -1650,7 +1680,7 @@ function initGlobalSearch(){
     const brandHtml=brandMatches.length?`
       <div class="global-search-section">
         <div class="global-search-section-title">BRANDS</div>
-        <div class="global-search-brand-results">${brandMatches.map(brand=>`<a href="shop.html?brand=${encodeURIComponent(brand)}">${escapeTrackHtml(brand)}<span>→</span></a>`).join('')}</div>
+        <div class="global-search-brand-results">${brandMatches.map(brand=>`<a href="${brandPath(brand)}">${escapeTrackHtml(brand)}<span>→</span></a>`).join('')}</div>
       </div>`:'';
 
     results.innerHTML=productHtml+brandHtml;

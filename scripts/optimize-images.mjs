@@ -24,6 +24,8 @@ function samePixels(a,b){
   return a.data.length===b.data.length && a.data.equals(b.data);
 }
 
+const brandSlug=brand=>String(brand||'').replace(/\([^)]*\)/g,'').trim().toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+
 function xmlEscape(value){
   return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 }
@@ -67,7 +69,7 @@ async function optimizeOne(url,kind,id){
 
 await fs.mkdir(OUT_DIR,{recursive:true});
 
-const products=await fetchJson(`${SUPABASE_URL}/rest/v1/products?select=id,image_path,updated_at&active=eq.true&order=display_order.asc.nullslast,created_at.asc`);
+const products=await fetchJson(`${SUPABASE_URL}/rest/v1/products?select=id,image_path,updated_at,brand&active=eq.true&order=display_order.asc.nullslast,created_at.asc`);
 const gallery=await fetchJson(`${SUPABASE_URL}/rest/v1/product_images?select=id,product_id,image_path`);
 
 const jobs=[];
@@ -110,8 +112,10 @@ const staticPages=[
   ['https://domaro-eg.com/contact.html', '0.5'],
 ];
 
+const activeBrands=[...new Set(products.map(p=>String(p.brand||'').trim()).filter(Boolean))];
 const sitemapRows=[
   ...staticPages.map(([loc,priority])=>`  <url><loc>${xmlEscape(loc)}</loc><priority>${priority}</priority></url>`),
+  ...activeBrands.map(brand=>`  <url><loc>${xmlEscape(`https://domaro-eg.com/brands/${brandSlug(brand)}`)}</loc><priority>0.8</priority></url>`),
   ...products.map(p=>{
     const loc=`https://domaro-eg.com/products/${encodeURIComponent(String(p.id||''))}`;
     const lastmod=p.updated_at ? `<lastmod>${xmlEscape(new Date(p.updated_at).toISOString().slice(0,10))}</lastmod>` : '';
@@ -125,4 +129,4 @@ ${sitemapRows.join('\n')}
 </urlset>
 `;
 await fs.writeFile(SITEMAP_PATH,sitemap);
-console.log(`DOMARO sitemap build: ${staticPages.length + products.length} URLs`);
+console.log(`DOMARO sitemap build: ${staticPages.length + activeBrands.length + products.length} URLs`);
