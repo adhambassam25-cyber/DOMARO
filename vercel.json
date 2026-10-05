@@ -117,5 +117,11 @@
     }
   ],
   "buildCommand": "npm run build",
-  "outputDirectory": "."
+  "outputDirectory": ".",
+  "rewrites": [
+    {
+      "source": "/products/:id",
+      "destination": "/product.html"
+    }
+  ]
 }
