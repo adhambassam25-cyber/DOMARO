@@ -35,6 +35,33 @@ function initAnalytics(){
 
 initAnalytics();
 
+const META_PIXEL_ID='1070949589184839';
+
+function initMetaPixel(){
+  if(window.__domaroMetaPixelLoaded) return;
+  window.__domaroMetaPixelLoaded=true;
+
+  !function(f,b,e,v,n,t,s){
+    if(f.fbq)return;
+    n=f.fbq=function(){ n.callMethod ? n.callMethod.apply(n,arguments) : n.queue.push(arguments); };
+    if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];
+    t=b.createElement(e);t.async=!0;t.src=v;
+    s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s);
+  }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+
+  window.fbq('init',META_PIXEL_ID);
+  window.fbq('track','PageView');
+}
+
+function trackMeta(eventName, params={}){
+  try{
+    if(typeof window.fbq==='function') window.fbq('track',eventName,params);
+  }catch(_){}
+}
+
+initMetaPixel();
+
 function getCart(){
   try{
     const parsed=JSON.parse(localStorage.getItem('domaro_cart') || '[]');
@@ -80,6 +107,14 @@ function addToCart(id, qty=1, variantId=null){
   const safeQty=Math.max(1,Math.min(10,Number(qty||1)));
   if(item) item.qty=Math.min(10,item.qty+safeQty); else cart.push({id,variantId:variant.id,qty:safeQty});
   setCart(cart);
+  trackMeta('AddToCart',{
+    content_ids:[p.id],
+    content_name:p.name,
+    content_type:'product',
+    contents:[{id:p.id,quantity:safeQty,item_price:Number(variant.price)}],
+    value:Number(variant.price)*safeQty,
+    currency:'EGP'
+  });
   toast('Added to cart');
 }
 function removeItem(id,variantId=null){
@@ -569,6 +604,13 @@ function renderProductDetail(){
   }
 
   updateProductSEO(p);
+  trackMeta('ViewContent',{
+    content_ids:[p.id],
+    content_name:p.name,
+    content_type:'product',
+    value:Number(variantForProduct(p,null)?.price ?? p.price ?? 0),
+    currency:'EGP'
+  });
 
   try{
     const recent=JSON.parse(localStorage.getItem('domaro_recently_viewed') || '[]');
@@ -812,6 +854,20 @@ function renderCheckout(){
     }
   }
   renderCheckoutTotals();
+
+  if(!window.__domaroCheckoutTracked){
+    window.__domaroCheckoutTracked=true;
+    trackMeta('InitiateCheckout',{
+      content_ids:cart.map(item=>item.id),
+      contents:cart.map(item=>{
+        const {product,variant}=cartProduct(item);
+        return {id:item.id,quantity:item.qty,item_price:Number(variant?.price||0)};
+      }),
+      num_items:cart.reduce((sum,item)=>sum+Number(item.qty||0),0),
+      value:Number(subtotal),
+      currency:'EGP'
+    });
+  }
 
   const governorateEl=document.getElementById('governorate');
   const areaEl=document.getElementById('area');
@@ -1163,6 +1219,17 @@ function renderCheckout(){
         if(!response.ok){
           throw new Error(result?.message || result?.error || 'Could not place order. Please try again.');
         }
+
+        trackMeta('Purchase',{
+          content_ids:cart.map(item=>item.id),
+          contents:cart.map(item=>{
+            const {variant}=cartProduct(item);
+            return {id:item.id,quantity:item.qty,item_price:Number(variant?.price||0)};
+          }),
+          num_items:cart.reduce((sum,item)=>sum+Number(item.qty||0),0),
+          value:Number(currentTotal()),
+          currency:'EGP'
+        });
 
         localStorage.removeItem('domaro_cart');
         sessionStorage.removeItem('domaro_checkout_token');
