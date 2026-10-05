@@ -10,6 +10,27 @@ let storeSettings = {};
 
 const money = n => Number(n || 0).toLocaleString('en-EG') + ' EGP';
 
+function initAnalytics(){
+  const measurementId=String(storeSettings?.ga4_id||'').trim();
+  if(!/^G-[A-Z0-9]+$/i.test(measurementId) || window.__domaroGa4Loaded) return;
+
+  window.__domaroGa4Loaded=true;
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=window.gtag||function(){ window.dataLayer.push(arguments); };
+
+  const script=document.createElement('script');
+  script.async=true;
+  script.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
+  document.head.appendChild(script);
+
+  window.gtag('js',new Date());
+  window.gtag('config',measurementId,{
+    page_title:document.title,
+    page_location:location.href,
+    send_page_view:true
+  });
+}
+
 function getCart(){
   try{
     const parsed=JSON.parse(localStorage.getItem('domaro_cart') || '[]');
@@ -108,6 +129,7 @@ async function loadCatalog(){
     });
     window.DOMARO_CATALOG_UNAVAILABLE=false;
     window.DOMARO_STORE_SETTINGS=storeSettings;
+    initAnalytics();
     applyEntryGateWallpaper();
     window.dispatchEvent(new CustomEvent('domaro:catalog-ready',{detail:{products,storeSettings}}));
   }catch(err){
