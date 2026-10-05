@@ -1,0 +1,10 @@
+{
+  "name": "domaro-storefront",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/optimize-images.mjs"
+  },
+  "dependencies": {
+    "sharp": "0.34.4"
+  }
+}
