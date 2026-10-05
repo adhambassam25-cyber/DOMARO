@@ -6,7 +6,7 @@ Disallow: /cart.html
 Disallow: /account.html
 Disallow: /track.html
 
-Sitemap: https://domaro.vercel.app/sitemap.xml
+Sitemap: https://domaro-eg.com/sitemap.xml
 
 User-agent: GPTBot
 Allow: /
