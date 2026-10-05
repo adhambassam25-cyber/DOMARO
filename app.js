@@ -10,9 +10,11 @@ let storeSettings = {};
 
 const money = n => Number(n || 0).toLocaleString('en-EG') + ' EGP';
 
+const GA4_MEASUREMENT_ID='G-J34L8511SG';
+
 function initAnalytics(){
-  const measurementId=String(storeSettings?.ga4_id||'').trim();
-  if(!/^G-[A-Z0-9]+$/i.test(measurementId) || window.__domaroGa4Loaded) return;
+  const measurementId=GA4_MEASUREMENT_ID;
+  if(window.__domaroGa4Loaded) return;
 
   window.__domaroGa4Loaded=true;
   window.dataLayer=window.dataLayer||[];
@@ -30,6 +32,8 @@ function initAnalytics(){
     send_page_view:true
   });
 }
+
+initAnalytics();
 
 function getCart(){
   try{
