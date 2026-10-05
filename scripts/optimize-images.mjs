@@ -14,6 +14,16 @@ async function fetchJson(url){
   return await res.json();
 }
 
+async function fetchPublicSettings(){
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_store_settings`,{
+    method:'POST',
+    headers:{apikey:SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},
+    body:'{}'
+  });
+  if(!res.ok) throw new Error(`Settings request failed ${res.status}`);
+  return await res.json();
+}
+
 async function rawPixels(buf){
   const {data,info}=await sharp(buf).ensureAlpha().raw().toBuffer({resolveWithObject:true});
   return {data,info};
@@ -71,6 +81,7 @@ await fs.mkdir(OUT_DIR,{recursive:true});
 
 const products=await fetchJson(`${SUPABASE_URL}/rest/v1/products?select=id,image_path,updated_at,brand&active=eq.true&order=display_order.asc.nullslast,created_at.asc`);
 const gallery=await fetchJson(`${SUPABASE_URL}/rest/v1/product_images?select=id,product_id,image_path`);
+const publicSettings=await fetchPublicSettings();
 
 const jobs=[];
 for(const p of products){
@@ -78,6 +89,9 @@ for(const p of products){
 }
 for(const g of gallery){
   if(g?.image_path) jobs.push({url:g.image_path,kind:'gallery',id:g.id});
+}
+if(publicSettings?.entry_gate_wallpaper_url){
+  jobs.push({url:publicSettings.entry_gate_wallpaper_url,kind:'site',id:'entry-gate'});
 }
 
 const manifest={};
