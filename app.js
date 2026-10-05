@@ -39,6 +39,10 @@ const META_PIXEL_ID='1070949589184839';
 
 function initMetaPixel(){
   if(window.__domaroMetaPixelLoaded) return;
+  if(typeof window.fbq==='function'){
+    window.__domaroMetaPixelLoaded=true;
+    return;
+  }
   window.__domaroMetaPixelLoaded=true;
 
   !function(f,b,e,v,n,t,s){
