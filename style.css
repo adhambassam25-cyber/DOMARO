@@ -2723,3 +2723,21 @@ body.shop-filter-open{overflow:hidden}
 .footer-brand-copy{color:#8f877f;max-width:310px;line-height:1.7;font-size:12px;margin-top:20px}
 .empty-full-span{grid-column:1/-1}
 .product-detail-price{font-size:22px;margin:18px 0}
+
+/* Compact product gallery on mobile */
+
+@media(max-width:640px){
+  .product-page{padding:34px 0 56px}
+  .product-gallery-main{
+    aspect-ratio:1/1;
+    min-height:0;
+  }
+  .product-gallery-main img{
+    width:100%;
+    height:100%;
+    aspect-ratio:auto;
+    object-fit:contain;
+    padding:14px;
+  }
+  .product-copy{padding-top:22px}
+}
