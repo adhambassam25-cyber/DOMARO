@@ -26,8 +26,15 @@
 {
   "@context":"https://schema.org",
   "@type":"WebSite",
+  "@id":"https://domaro-eg.com/#website",
   "name":"DOMARO",
-  "url":"https://domaro-eg.com/"
+  "url":"https://domaro-eg.com/",
+  "publisher":{"@id":"https://domaro-eg.com/#organization"},
+  "potentialAction":{
+    "@type":"SearchAction",
+    "target":"https://domaro-eg.com/shop?search={search_term_string}",
+    "query-input":"required name=search_term_string"
+  }
 }
 </script>
 <script type="application/ld+json" id="domaro-organization-schema">
@@ -39,6 +46,7 @@
   "alternateName": "DOMARO Fragrances",
   "url": "https://domaro-eg.com/",
   "logo": "https://domaro-eg.com/favicon.svg",
+  "email": "mailto:domaro.eg@gmail.com",
   "description": "DOMARO is an online fragrance destination in Egypt offering premium perfumes for men, women and unisex collections.",
   "areaServed": {
     "@type": "Country",
