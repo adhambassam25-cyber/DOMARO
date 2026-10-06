@@ -173,6 +173,7 @@ async function loadCatalog(){
         badge:availableVariants.length ? String(p.category).toUpperCase() : 'OUT OF STOCK',stockQuantity:p.stock_quantity===null?null:Number(p.stock_quantity),inStock:availableVariants.length>0,active:Boolean(p.active),brand:String(p.brand||'').trim(),story:String(p.story||'').trim(),topNotes:String(p.top_notes||'').trim(),heartNotes:String(p.heart_notes||'').trim(),baseNotes:String(p.base_notes||'').trim(),keyNotes:String(p.key_notes||'').trim(),desc:p.description||'',hasVariants:Boolean(p.has_variants)||variants.length>1,variants,gallery
       };
     });
+    document.querySelectorAll('[data-live-products-count]').forEach(el=>el.textContent=String(products.length));
     window.DOMARO_CATALOG_UNAVAILABLE=false;
     window.DOMARO_STORE_SETTINGS=storeSettings;
     initAnalytics();
@@ -216,7 +217,7 @@ function productCard(p, priority=false){
     <a class="product-card-link" href="${productUrl}">
       <div class="product-img real-photo">
         <span class="badge ${p.inStock ? '' : 'badge-out'}">${p.inStock ? p.badge : 'OUT OF STOCK'}</span>
-        <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" width="600" height="750" loading="eager" decoding="async" fetchpriority="${priority?'high':'auto'}">
+        <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" width="600" height="750" loading="${priority?'eager':'lazy'}" decoding="async" fetchpriority="${priority?'high':'low'}">
       </div>
       <div class="product-info">
         ${brandLine}

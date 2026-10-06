@@ -113,17 +113,17 @@ console.log(`Bytes: ${before} -> ${after} (${before?(((before-after)/before)*100
 
 const staticPages=[
   ['https://domaro-eg.com/', '1.0'],
-  ['https://domaro-eg.com/shop.html', '0.9'],
-  ['https://domaro-eg.com/brands.html', '0.8'],
+  ['https://domaro-eg.com/shop', '0.9'],
+  ['https://domaro-eg.com/brands', '0.8'],
   ['https://domaro-eg.com/men', '0.9'],
   ['https://domaro-eg.com/women', '0.9'],
   ['https://domaro-eg.com/unisex', '0.9'],
   ['https://domaro-eg.com/boxes', '0.8'],
-  ['https://domaro-eg.com/about.html', '0.6'],
-  ['https://domaro-eg.com/faq.html', '0.6'],
-  ['https://domaro-eg.com/shipping.html', '0.6'],
-  ['https://domaro-eg.com/returns.html', '0.6'],
-  ['https://domaro-eg.com/contact.html', '0.5'],
+  ['https://domaro-eg.com/about', '0.6'],
+  ['https://domaro-eg.com/faq', '0.6'],
+  ['https://domaro-eg.com/shipping', '0.6'],
+  ['https://domaro-eg.com/returns', '0.6'],
+  ['https://domaro-eg.com/contact', '0.5'],
 ];
 
 const activeBrands=[...new Set(products.map(p=>String(p.brand||'').trim()).filter(Boolean))];
