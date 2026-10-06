@@ -265,6 +265,7 @@ function hasPermission(permission){
   const key={
     dashboard:'can_dashboard',
     orders:'can_orders',
+    customers:'can_customers',
     products:'can_products',
     coupons:'can_coupons',
     admins:'can_manage_admins'
@@ -276,7 +277,8 @@ function hasPermission(permission){
 function allowedTabs(){
   const tabs=[];
   if(hasPermission('dashboard')) tabs.push('dashboard');
-  if(hasPermission('orders')) tabs.push('orders','customers');
+  if(hasPermission('orders')) tabs.push('orders');
+  if(hasPermission('customers')) tabs.push('customers');
   if(hasPermission('products')) tabs.push('products');
   if(hasPermission('coupons')) tabs.push('coupons');
 
@@ -298,7 +300,7 @@ function applyAdminPermissions(){
   const permissionMap={
     dashboard:'dashboard',
     orders:'orders',
-    customers:'orders',
+    customers:'customers',
     products:'products',
     coupons:'coupons',
     admins:'admins'
@@ -397,8 +399,7 @@ function setTab(tab){
   if(tab==='admins'){
     if(!isOwner) return;
   }else{
-    const requiredPermission=tab==='customers' ? 'orders' : tab;
-    if(!hasPermission(requiredPermission)) return;
+    if(!hasPermission(tab)) return;
   }
 
   document.querySelectorAll('.admin-tab').forEach(btn=>{
@@ -2290,6 +2291,7 @@ function adminPermissionPayloadFromForm(){
   return {
     dashboard:Boolean(document.getElementById('perm-dashboard').checked),
     orders:Boolean(document.getElementById('perm-orders').checked),
+    customers:Boolean(document.getElementById('perm-customers').checked),
     products:Boolean(document.getElementById('perm-products').checked),
     coupons:Boolean(document.getElementById('perm-coupons').checked)
   };
@@ -2300,6 +2302,7 @@ function permissionLabels(admin){
   if(admin.role==='owner') return ['OWNER · FULL ACCESS'];
   if(admin.can_dashboard) labels.push('DASHBOARD');
   if(admin.can_orders) labels.push('ORDERS');
+  if(admin.can_customers) labels.push('CUSTOMERS');
   if(admin.can_products) labels.push('PRODUCTS');
   if(admin.can_coupons) labels.push('COUPONS');
   return labels;
@@ -2417,6 +2420,7 @@ function openAdminModal(admin=null){
 
   document.getElementById('perm-dashboard').checked=editing ? Boolean(admin.can_dashboard) : true;
   document.getElementById('perm-orders').checked=editing ? Boolean(admin.can_orders) : true;
+  document.getElementById('perm-customers').checked=editing ? Boolean(admin.can_customers) : false;
   document.getElementById('perm-products').checked=editing ? Boolean(admin.can_products) : false;
   document.getElementById('perm-coupons').checked=editing ? Boolean(admin.can_coupons) : false;
 
