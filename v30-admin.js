@@ -100,7 +100,43 @@ async function deleteGalleryStorage(publicUrl){
 }
 function renderGallery(modal){
   const list=modal.querySelector('#v30-gallery-list'); list.innerHTML=v30GalleryRows.length?v30GalleryRows.map(i=>`<article class="v30-gallery-item"><img src="${v30Esc(i.image_path)}" alt=""><div><b>${v30Esc(i.alt_text||'Gallery image')}</b><small>Order ${i.sort_order||0}</small></div><button class="admin-secondary-btn admin-danger-btn" data-gallery-delete="${i.id}">DELETE</button></article>`).join(''):'<div class="admin-empty">No extra gallery images yet.</div>';
-  list.querySelectorAll('[data-gallery-delete]').forEach(btn=>btn.onclick=async()=>{ if(!confirm('Delete this gallery image?'))return; try{const row=v30GalleryRows.find(x=>String(x.id)===String(btn.dataset.galleryDelete));if(row?.image_path)await deleteGalleryStorage(row.image_path);await v30Json(`${V30A_URL}/rest/v1/product_images?id=eq.${btn.dataset.galleryDelete}`,{method:'DELETE',headers:{'Prefer':'return=representation'}});await loadGalleryRows(v30CurrentProductId);renderGallery(modal);}catch(err){modal.querySelector('#v30-gallery-message').textContent=err.message;} });
+  list.querySelectorAll('[data-gallery-delete]').forEach(btn=>btn.onclick=async()=>{
+    if(!confirm('Delete this gallery image?')) return;
+    const message=modal.querySelector('#v30-gallery-message');
+    message.textContent='';
+    btn.disabled=true;
+    const oldText=btn.textContent;
+    btn.textContent='DELETING…';
+    try{
+      const row=v30GalleryRows.find(x=>String(x.id)===String(btn.dataset.galleryDelete));
+      if(!row) throw new Error('Gallery image was not found. Refresh and try again.');
+
+      const deleted=await v30Json(
+        `${V30A_URL}/rest/v1/product_images?id=eq.${encodeURIComponent(btn.dataset.galleryDelete)}&product_id=eq.${encodeURIComponent(v30CurrentProductId)}`,
+        {method:'DELETE',headers:{'Prefer':'return=representation'}}
+      );
+
+      if(!Array.isArray(deleted) || deleted.length!==1){
+        throw new Error('Image was not deleted. Your session may not have product permissions.');
+      }
+
+      if(row.image_path){
+        try{
+          await deleteGalleryStorage(row.image_path);
+        }catch(storageError){
+          console.warn('Gallery DB row deleted but storage cleanup failed:',storageError);
+          message.textContent='Image removed from the product. Storage cleanup will need a retry.';
+        }
+      }
+
+      await loadGalleryRows(v30CurrentProductId);
+      renderGallery(modal);
+    }catch(err){
+      message.textContent=err.message||'Could not delete gallery image.';
+      btn.disabled=false;
+      btn.textContent=oldText;
+    }
+  });
 }
 async function openGallery(productId){
   v30CurrentProductId=productId; const product=(typeof allProducts!=='undefined'?allProducts:[]).find(p=>p.id===productId);
