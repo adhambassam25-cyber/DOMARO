@@ -13,6 +13,7 @@ const enableNotificationsBtn = document.getElementById('enable-notifications-btn
 const dashboardPanel = document.getElementById('admin-sales-panel');
 const ordersPanel = document.getElementById('admin-orders-panel');
 const customersPanel = document.getElementById('admin-customers-panel');
+const accountingPanel = document.getElementById('admin-accounting-panel');
 const productsPanel = document.getElementById('admin-products-panel');
 const couponsPanel = document.getElementById('admin-coupons-panel');
 const adminsPanel = document.getElementById('admin-admins-panel');
@@ -266,6 +267,7 @@ function hasPermission(permission){
     dashboard:'can_dashboard',
     orders:'can_orders',
     customers:'can_customers',
+    accounting:'can_accounting',
     products:'can_products',
     coupons:'can_coupons',
     admins:'can_manage_admins'
@@ -278,6 +280,7 @@ function allowedTabs(){
   const tabs=[];
   if(hasPermission('dashboard')) tabs.push('dashboard');
   if(hasPermission('orders')) tabs.push('orders');
+  if(hasPermission('accounting')) tabs.push('accounting');
   if(hasPermission('customers')) tabs.push('customers');
   if(hasPermission('products')) tabs.push('products');
   if(hasPermission('coupons')) tabs.push('coupons');
@@ -301,6 +304,7 @@ function applyAdminPermissions(){
     dashboard:'dashboard',
     orders:'orders',
     customers:'customers',
+    accounting:'accounting',
     products:'products',
     coupons:'coupons',
     admins:'admins'
@@ -410,6 +414,7 @@ function setTab(tab){
     dashboard:dashboardPanel,
     orders:ordersPanel,
     customers:customersPanel,
+    accounting:accountingPanel,
     products:productsPanel,
     coupons:couponsPanel,
     admins:adminsPanel
@@ -429,6 +434,7 @@ function setTab(tab){
     if(!allOrders.length) loadCustomers();
     else renderCustomers();
   }
+  if(tab==='accounting') window.DOMARO_ACCOUNTING?.load();
   if(tab==='products' && !allProducts.length) loadProducts();
   if(tab==='coupons' && !allCoupons.length) loadCoupons();
   if(tab==='admins' && isOwner && !allAdmins.length) loadAdmins();
@@ -2292,6 +2298,7 @@ function adminPermissionPayloadFromForm(){
     dashboard:Boolean(document.getElementById('perm-dashboard').checked),
     orders:Boolean(document.getElementById('perm-orders').checked),
     customers:Boolean(document.getElementById('perm-customers').checked),
+    accounting:Boolean(document.getElementById('perm-accounting').checked),
     products:Boolean(document.getElementById('perm-products').checked),
     coupons:Boolean(document.getElementById('perm-coupons').checked)
   };
@@ -2303,6 +2310,7 @@ function permissionLabels(admin){
   if(admin.can_dashboard) labels.push('DASHBOARD');
   if(admin.can_orders) labels.push('ORDERS');
   if(admin.can_customers) labels.push('CUSTOMERS');
+  if(admin.can_accounting) labels.push('ACCOUNTING');
   if(admin.can_products) labels.push('PRODUCTS');
   if(admin.can_coupons) labels.push('COUPONS');
   return labels;
@@ -2421,6 +2429,7 @@ function openAdminModal(admin=null){
   document.getElementById('perm-dashboard').checked=editing ? Boolean(admin.can_dashboard) : true;
   document.getElementById('perm-orders').checked=editing ? Boolean(admin.can_orders) : true;
   document.getElementById('perm-customers').checked=editing ? Boolean(admin.can_customers) : false;
+  document.getElementById('perm-accounting').checked=editing ? Boolean(admin.can_accounting) : false;
   document.getElementById('perm-products').checked=editing ? Boolean(admin.can_products) : false;
   document.getElementById('perm-coupons').checked=editing ? Boolean(admin.can_coupons) : false;
 

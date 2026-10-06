@@ -2741,3 +2741,62 @@ body.shop-filter-open{overflow:hidden}
   }
   .product-copy{padding-top:22px}
 }
+
+/* DOMARO Accounting V1 */
+.accounting-head{align-items:flex-start}
+.accounting-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.accounting-kpis{display:grid;grid-template-columns:1.3fr repeat(4,1fr);gap:12px;margin-bottom:16px}
+.accounting-kpi{border:1px solid #d8cfc2;background:#f8f4ee;padding:20px;min-height:124px;display:flex;flex-direction:column;justify-content:center}
+.accounting-kpi-featured{background:#171513;color:#fff;border-color:#171513}
+.accounting-kpi-profit{background:#ede7dc}
+.accounting-kpi span{font-size:8px;letter-spacing:1.4px;color:#776e65}
+.accounting-kpi-featured span{color:#cfc5b8}
+.accounting-kpi b{font:600 30px "Cormorant Garamond",Georgia,serif;margin-top:8px}
+.accounting-kpi small{font-size:8px;color:#8b8177;margin-top:6px;line-height:1.45}
+.accounting-kpi-featured small{color:#aaa097}
+.accounting-support-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-bottom:16px}
+.accounting-card{background:#fff;border:1px solid #d8cfc2;padding:22px}
+.accounting-metric-list{display:grid;gap:0;margin-top:12px}
+.accounting-metric-list>div{display:flex;justify-content:space-between;gap:20px;padding:11px 0;border-bottom:1px solid #eee7dd;font-size:10px}
+.accounting-metric-list>div:last-child{border-bottom:0}
+.accounting-metric-list span{color:#746b62}
+.accounting-coverage{padding:18px 0 22px;border-bottom:1px solid #e2d9cd}
+.accounting-coverage b{font:600 46px "Cormorant Garamond",Georgia,serif}
+.accounting-coverage p{color:#746b62;font-size:10px;line-height:1.55;margin:4px 0 0}
+.accounting-formula{padding-top:19px}
+.accounting-formula span{display:block;font-size:8px;letter-spacing:1.3px;color:#81776c}
+.accounting-formula b{display:block;margin:7px 0 8px;font-size:11px}
+.accounting-formula small{display:block;color:#8a8075;font-size:9px;line-height:1.55}
+.accounting-monthly-card{margin-bottom:24px}
+.accounting-table-wrap{overflow:auto}
+.accounting-table{width:100%;border-collapse:collapse;margin-top:12px;min-width:720px}
+.accounting-table th{background:#f1ece4;color:#756b61;font-size:8px;letter-spacing:1.2px;text-align:left;padding:11px 12px;border-bottom:1px solid #d8cfc2}
+.accounting-table td{font-size:10px;padding:12px;border-bottom:1px solid #e7dfd4;vertical-align:middle}
+.accounting-table-empty{text-align:center;color:#82786e;padding:30px!important}
+.accounting-positive{color:#256237}
+.accounting-negative{color:#9a3e34}
+.accounting-expenses-section{margin-top:28px;padding-top:28px;border-top:1px solid #d8cfc2}
+.accounting-expense-head{margin-bottom:15px}
+.accounting-expense-head h2{font:500 34px "Cormorant Garamond",Georgia,serif;margin:5px 0 8px}
+.accounting-expense-form{display:grid;grid-template-columns:150px 190px 150px minmax(160px,1fr);gap:10px;background:#f8f4ee;border:1px solid #d8cfc2;padding:16px;margin-bottom:8px;align-items:end}
+.accounting-expense-form label{display:flex;flex-direction:column;gap:6px;font-size:8px;letter-spacing:1px;color:#6e655c}
+.accounting-expense-form label span em{font-style:normal;text-transform:none;letter-spacing:0;color:#9a9085}
+.accounting-expense-form input,.accounting-expense-form select{width:100%;background:#fff}
+.accounting-expense-description{grid-column:span 3}
+.accounting-expense-buttons{display:flex;gap:8px;align-items:center}
+.accounting-row-actions{display:flex;gap:6px;justify-content:flex-end}
+.accounting-row-actions .admin-secondary-btn{padding:8px 10px}
+@media(max-width:1100px){
+  .accounting-kpis{grid-template-columns:1fr 1fr}
+  .accounting-support-grid{grid-template-columns:1fr}
+  .accounting-expense-form{grid-template-columns:1fr 1fr}
+  .accounting-expense-description{grid-column:span 2}
+}
+@media(max-width:700px){
+  .accounting-actions{width:100%;justify-content:flex-start}
+  .accounting-actions select{width:100%}
+  .accounting-kpis{grid-template-columns:1fr}
+  .accounting-expense-form{grid-template-columns:1fr}
+  .accounting-expense-description{grid-column:auto}
+  .accounting-expense-buttons{flex-direction:column;align-items:stretch}
+}

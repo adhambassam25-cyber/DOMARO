@@ -28,7 +28,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=30.9.0">
+  <link rel="stylesheet" href="style.css?v=30.10.0">
 </head>
 <body class="admin-body">
   <header class="admin-topbar">
@@ -68,6 +68,7 @@
 
   <div class="admin-tabs">
     <button class="admin-tab active" data-admin-tab="dashboard">DASHBOARD</button>
+    <button class="admin-tab" data-admin-tab="accounting">ACCOUNTING</button>
     <button class="admin-tab" data-admin-tab="orders">ORDERS</button>
     <button class="admin-tab" data-admin-tab="customers">CUSTOMERS</button>
     <button class="admin-tab" data-admin-tab="products">PRODUCTS</button>
@@ -196,6 +197,117 @@
         </div>
         <div id="dashboard-recent-orders" class="sales-recent-orders"></div>
       </section>
+    </div>
+  </section>
+
+
+  <section id="admin-accounting-panel" class="admin-panel" hidden>
+    <div class="admin-dashboard-head accounting-head">
+      <div>
+        <div class="eyebrow" style="color:#766b5d">DOMARO FINANCE</div>
+        <h1>ACCOUNTING</h1>
+        <p class="admin-panel-intro">Delivered revenue, product cost, operating expenses and net profit. Revenue is recognized from delivered orders.</p>
+      </div>
+      <div class="accounting-actions">
+        <select id="accounting-period" class="dashboard-period-select" aria-label="Accounting period">
+          <option value="month" selected>THIS MONTH</option>
+          <option value="30">LAST 30 DAYS</option>
+          <option value="90">LAST 90 DAYS</option>
+          <option value="0">ALL TIME</option>
+        </select>
+        <button id="accounting-export" class="admin-primary-btn" type="button">EXPORT CSV</button>
+        <button id="accounting-refresh" class="admin-secondary-btn" type="button">REFRESH</button>
+      </div>
+    </div>
+
+    <div id="accounting-loading" class="admin-loading" hidden>Loading accounting…</div>
+    <div id="accounting-error" class="admin-error"></div>
+
+    <div class="accounting-kpis">
+      <div class="accounting-kpi accounting-kpi-featured"><span>NET REVENUE</span><b id="accounting-net-revenue">0 EGP</b><small>Delivered revenue less refunds</small></div>
+      <div class="accounting-kpi"><span>COGS</span><b id="accounting-cogs">0 EGP</b><small>Cost of delivered items</small></div>
+      <div class="accounting-kpi"><span>GROSS PROFIT</span><b id="accounting-gross-profit">0 EGP</b><small id="accounting-gross-margin">0% margin</small></div>
+      <div class="accounting-kpi"><span>OPERATING EXPENSES</span><b id="accounting-expenses-total">0 EGP</b><small>Manual expense register</small></div>
+      <div class="accounting-kpi accounting-kpi-profit"><span>NET PROFIT</span><b id="accounting-net-profit">0 EGP</b><small id="accounting-net-margin">0% margin</small></div>
+    </div>
+
+    <div class="accounting-support-grid">
+      <div class="dashboard-card accounting-card">
+        <div class="dashboard-card-head"><div><span>REVENUE DETAILS</span><h3>SALES BREAKDOWN</h3></div></div>
+        <div class="accounting-metric-list">
+          <div><span>Delivered revenue</span><b id="accounting-delivered-revenue">0 EGP</b></div>
+          <div><span>Product sales after discounts</span><b id="accounting-product-sales">0 EGP</b></div>
+          <div><span>Shipping collected</span><b id="accounting-shipping">0 EGP</b></div>
+          <div><span>Discounts given</span><b id="accounting-discounts">0 EGP</b></div>
+          <div><span>Refunds</span><b id="accounting-refunds">0 EGP</b></div>
+          <div><span>Delivered orders</span><b id="accounting-orders">0</b></div>
+          <div><span>Average order value</span><b id="accounting-aov">0 EGP</b></div>
+        </div>
+      </div>
+
+      <div class="dashboard-card accounting-card">
+        <div class="dashboard-card-head"><div><span>COST QUALITY</span><h3>COST COVERAGE</h3></div></div>
+        <div class="accounting-coverage">
+          <b id="accounting-cost-coverage">100%</b>
+          <p id="accounting-cost-note">All delivered items have a saved cost price.</p>
+        </div>
+        <div class="accounting-formula">
+          <span>NET PROFIT FORMULA</span>
+          <b>Net Revenue − COGS − Operating Expenses</b>
+          <small>Do not enter inventory purchases as expenses when the product cost is already stored, otherwise cost will be counted twice.</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-card accounting-card accounting-monthly-card">
+      <div class="dashboard-card-head"><div><span>PROFIT & LOSS</span><h3>MONTHLY P&amp;L</h3></div></div>
+      <div class="accounting-table-wrap">
+        <table class="accounting-table">
+          <thead><tr><th>MONTH</th><th>REVENUE</th><th>COGS</th><th>REFUNDS</th><th>EXPENSES</th><th>NET PROFIT</th></tr></thead>
+          <tbody id="accounting-monthly-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="accounting-expenses-section">
+      <div class="admin-dashboard-head accounting-expense-head">
+        <div>
+          <div class="eyebrow" style="color:#766b5d">OPERATING COSTS</div>
+          <h2>EXPENSE REGISTER</h2>
+          <p class="admin-panel-intro">Add advertising, packaging, delivery, website, photography, salaries and other operating expenses.</p>
+        </div>
+      </div>
+
+      <form id="accounting-expense-form" class="accounting-expense-form">
+        <input id="accounting-expense-id" type="hidden">
+        <label><span>DATE</span><input id="accounting-expense-date" type="date" required></label>
+        <label><span>CATEGORY</span><select id="accounting-expense-category" required>
+          <option value="Advertising">Advertising</option>
+          <option value="Packaging">Packaging</option>
+          <option value="Delivery / Courier">Delivery / Courier</option>
+          <option value="Website & Tools">Website & Tools</option>
+          <option value="Payment / Bank Fees">Payment / Bank Fees</option>
+          <option value="Photography & Content">Photography & Content</option>
+          <option value="Salaries">Salaries</option>
+          <option value="Other Operating Expense">Other Operating Expense</option>
+        </select></label>
+        <label><span>AMOUNT (EGP)</span><input id="accounting-expense-amount" type="number" min="0.01" step="0.01" required></label>
+        <label><span>VENDOR <em>optional</em></span><input id="accounting-expense-vendor" maxlength="120" placeholder="Supplier / service"></label>
+        <label class="accounting-expense-description"><span>DESCRIPTION <em>optional</em></span><input id="accounting-expense-description" maxlength="300" placeholder="What was this expense for?"></label>
+        <div class="accounting-expense-buttons">
+          <button id="accounting-expense-save" class="admin-primary-btn" type="submit">ADD EXPENSE</button>
+          <button id="accounting-expense-cancel" class="admin-secondary-btn" type="button" hidden>CANCEL EDIT</button>
+        </div>
+      </form>
+      <div id="accounting-expense-error" class="admin-error"></div>
+
+      <div class="accounting-table-wrap">
+        <table class="accounting-table accounting-expense-table">
+          <thead><tr><th>DATE</th><th>CATEGORY</th><th>VENDOR / NOTE</th><th>AMOUNT</th><th></th></tr></thead>
+          <tbody id="accounting-expenses-body"></tbody>
+        </table>
+      </div>
+      <div id="accounting-expenses-empty" class="admin-empty compact" hidden>No expenses in this period.</div>
     </div>
   </section>
 
@@ -374,6 +486,7 @@
     <div class="admin-permission-guide">
       <div><b>DASHBOARD</b><span>Sales figures, best sellers and recent orders</span></div>
       <div><b>ORDERS</b><span>Customer orders, Customer Center and status updates</span></div>
+      <div><b>ACCOUNTING</b><span>Profit, COGS, expenses and monthly P&amp;L</span></div>
       <div><b>PRODUCTS</b><span>Products, stock, images and catalog editing</span></div>
       <div><b>COUPONS</b><span>Discount codes and promotions</span></div>
     </div>
@@ -459,6 +572,11 @@
         <label class="admin-permission-check">
           <input id="perm-customers" type="checkbox">
           <span><b>Customer Center</b><small>View customer summaries built from order history. Requires Orders access.</small></span>
+        </label>
+
+        <label class="admin-permission-check">
+          <input id="perm-accounting" type="checkbox">
+          <span><b>Accounting</b><small>View profit, COGS, expenses and financial reports</small></span>
         </label>
 
         <label class="admin-permission-check">
@@ -690,6 +808,6 @@
       SUPABASE_KEY: "sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c"
     };
   </script>
-  <script src="admin.js?v=30.9.2"></script><script src="v30-admin.js?v=30.9.0"></script>
+  <script src="admin.js?v=30.10.0"></script><script src="accounting-admin.js?v=1.0.0"></script><script src="v30-admin.js?v=30.9.0"></script>
 </body>
 </html>
