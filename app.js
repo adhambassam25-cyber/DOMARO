@@ -372,7 +372,7 @@ function initFilters(){
       ? location.origin + brandPath(activeBrand)
       : cleanCategory
         ? location.origin + categoryPath(activeCategory)
-        : location.origin + '/shop.html';
+        : location.origin + '/shop';
 
     let canonical=document.head.querySelector('link[rel="canonical"]');
     if(!canonical){
@@ -468,7 +468,7 @@ function initFilters(){
       else url.searchParams.set('category',activeCategory);
       url.searchParams.delete('brand');
     }else{
-      url.pathname=activeCategory==='all' ? '/shop.html' : categoryPath(activeCategory);
+      url.pathname=activeCategory==='all' ? '/shop' : categoryPath(activeCategory);
       url.searchParams.delete('category');
       url.searchParams.delete('brand');
     }
@@ -620,7 +620,7 @@ function updateProductSEO(p){
         "priceCurrency":"EGP",
         "price":lowPrice,
         "availability":inStock?"https://schema.org/InStock":"https://schema.org/OutOfStock",
-        "seller":{"@id":"https://domaro.vercel.app/#organization"}
+        "seller":{"@id":"https://domaro-eg.com/#organization"}
       }
     };
     let script=document.getElementById('domaro-product-schema');
