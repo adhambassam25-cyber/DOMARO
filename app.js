@@ -64,7 +64,59 @@ function initAnalytics(){
 
 initAnalytics();
 
-function trackMeta(){ /* Meta Pixel intentionally disabled for performance. */ }
+function initAdPixels(){
+  const metaId=String(storeSettings?.meta_pixel_id||'').trim();
+  const tiktokId=String(storeSettings?.tiktok_pixel_id||'').trim();
+
+  if(metaId && !window.__domaroMetaPixelLoaded){
+    window.__domaroMetaPixelLoaded=true;
+    (function(f,b,e,v,n,t,s){
+      if(f.fbq) return;
+      n=f.fbq=function(){ n.callMethod ? n.callMethod.apply(n,arguments) : n.queue.push(arguments); };
+      if(!f._fbq) f._fbq=n;
+      n.push=n;n.loaded=true;n.version='2.0';n.queue=[];
+      t=b.createElement(e);t.async=true;t.src=v;
+      s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s);
+    })(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    window.fbq('init',metaId);
+    window.fbq('track','PageView');
+  }
+
+  if(tiktokId && !window.__domaroTikTokPixelLoaded){
+    window.__domaroTikTokPixelLoaded=true;
+    (function(w,d,t){
+      w.TiktokAnalyticsObject=t;
+      const ttq=w[t]=w[t]||[];
+      ttq.methods=['page','track','identify','instances','debug','on','off','once','ready','alias','group','enableCookie','disableCookie'];
+      ttq.setAndDefer=function(obj,method){obj[method]=function(){obj.push([method].concat(Array.prototype.slice.call(arguments,0)));};};
+      for(let i=0;i<ttq.methods.length;i++) ttq.setAndDefer(ttq,ttq.methods[i]);
+      ttq.instance=function(id){const inst=ttq._i?.[id]||[];for(let i=0;i<ttq.methods.length;i++)ttq.setAndDefer(inst,ttq.methods[i]);return inst;};
+      ttq.load=function(id,options){
+        const src='https://analytics.tiktok.com/i18n/pixel/events.js';
+        ttq._i=ttq._i||{};ttq._i[id]=[];ttq._i[id]._u=src;
+        ttq._t=ttq._t||{};ttq._t[id]=+new Date();
+        ttq._o=ttq._o||{};ttq._o[id]=options||{};
+        const script=d.createElement('script');script.type='text/javascript';script.async=true;
+        script.src=src+'?sdkid='+encodeURIComponent(id)+'&lib='+encodeURIComponent(t);
+        const first=d.getElementsByTagName('script')[0];first.parentNode.insertBefore(script,first);
+      };
+    })(window,document,'ttq');
+    window.ttq.load(tiktokId);
+    window.ttq.page();
+  }
+}
+
+function trackMeta(eventName,data={}){
+  try{
+    if(typeof window.fbq==='function') window.fbq('track',eventName,data);
+  }catch(_){}
+  try{
+    if(window.ttq && typeof window.ttq.track==='function'){
+      const tikTokEvent=eventName==='Purchase' ? 'CompletePayment' : eventName;
+      window.ttq.track(tikTokEvent,data);
+    }
+  }catch(_){}
+}
 
 function getCart(){
   try{
@@ -177,6 +229,7 @@ async function loadCatalog(){
     window.DOMARO_CATALOG_UNAVAILABLE=false;
     window.DOMARO_STORE_SETTINGS=storeSettings;
     initAnalytics();
+    initAdPixels();
     applyEntryGateWallpaper();
     window.dispatchEvent(new CustomEvent('domaro:catalog-ready',{detail:{products,storeSettings}}));
   }catch(err){
