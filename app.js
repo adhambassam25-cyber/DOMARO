@@ -697,7 +697,7 @@ function updateProductSEO(p){
       "@type":"BreadcrumbList",
       "itemListElement":[
         {"@type":"ListItem","position":1,"name":"Home","item":location.origin+"/"},
-        {"@type":"ListItem","position":2,"name":"Shop","item":location.origin+"/shop.html"},
+        {"@type":"ListItem","position":2,"name":"Shop","item":location.origin+"/shop"},
         {"@type":"ListItem","position":3,"name":p.name,"item":productUrl}
       ]
     });

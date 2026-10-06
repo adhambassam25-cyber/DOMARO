@@ -149,27 +149,27 @@
     },
     {
       "source": "/brands/:slug",
-      "destination": "/shop.html"
+      "destination": "/seo-generated/brands/:slug.html"
     },
     {
       "source": "/boxes",
-      "destination": "/shop.html"
+      "destination": "/seo-generated/categories/boxes.html"
     },
     {
       "source": "/unisex",
-      "destination": "/shop.html"
+      "destination": "/seo-generated/categories/unisex.html"
     },
     {
       "source": "/women",
-      "destination": "/shop.html"
+      "destination": "/seo-generated/categories/women.html"
     },
     {
       "source": "/men",
-      "destination": "/shop.html"
+      "destination": "/seo-generated/categories/men.html"
     },
     {
       "source": "/products/:id",
-      "destination": "/product.html"
+      "destination": "/seo-generated/products/:id.html"
     }
   ],
   "redirects": [
