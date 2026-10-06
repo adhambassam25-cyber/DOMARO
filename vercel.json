@@ -174,6 +174,11 @@
   ],
   "redirects": [
     {
+      "source": "/product.html",
+      "destination": "/shop",
+      "permanent": true
+    },
+    {
       "source": "/index.html",
       "destination": "/",
       "permanent": true
