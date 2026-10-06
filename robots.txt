@@ -1,10 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /admin.html
-Disallow: /checkout.html
-Disallow: /cart.html
-Disallow: /account.html
-Disallow: /track.html
+Disallow: /seo-generated/
 
 Sitemap: https://domaro-eg.com/sitemap.xml
 
