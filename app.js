@@ -1353,6 +1353,31 @@ function renderCheckout(){
         closeReview();
 
         const newOrderNumber=result?.orderNumber || 'Order received';
+
+        // Send transactional emails after the order is safely created.
+        // Email delivery must never block checkout success.
+        try{
+          fetch('/api/order-email',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+              orderNumber:newOrderNumber,
+              phone:pendingPayload?.p_phone || '',
+              email:pendingPayload?.p_email || null,
+              customer:{
+                firstName:pendingPayload?.p_first_name || '',
+                lastName:pendingPayload?.p_last_name || '',
+                governorate:pendingPayload?.p_governorate || '',
+                area:pendingPayload?.p_area || '',
+                building:pendingPayload?.p_building || '',
+                address:pendingPayload?.p_address || '',
+                notes:pendingPayload?.p_notes || ''
+              }
+            })
+          }).catch(()=>{});
+        }catch(_){}
+
+
         const checkoutPage=document.querySelector('.checkout-page');
         const pageHero=document.querySelector('.page-hero');
 
