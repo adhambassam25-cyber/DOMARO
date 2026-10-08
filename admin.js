@@ -1349,6 +1349,31 @@ async function openOrderDetails(orderId){
   orderDetailsModal.hidden=false;
   document.body.style.overflow='hidden';
 
+
+  orderDetailsContent.querySelector('.instapay-view')?.addEventListener('click',async()=>{
+    try{
+      const path=order.payment_proof_path;
+      const response=await fetch(`${SUPABASE_URL}/storage/v1/object/sign/instapay-proofs/${encodeURIComponent(path)}`,{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({expiresIn:120})});
+      if(!response.ok)throw new Error('Cannot open receipt');
+      const result=await response.json();
+      const signed=result.signedURL||result.signedUrl;
+      if(!signed)throw new Error('Receipt URL unavailable');
+      window.open(signed.startsWith('http')?signed:`${SUPABASE_URL}/storage/v1${signed.startsWith('/')?'':'/'}${signed}`,'_blank','noopener,noreferrer');
+    }catch(err){alert(err.message);}
+  });
+  orderDetailsContent.querySelectorAll('.instapay-review').forEach(btn=>btn.addEventListener('click',async()=>{
+    const approve=btn.dataset.approve==='true';
+    if(!confirm(approve?'Confirm InstaPay funds arrived in the account?':'Reject this payment receipt?'))return;
+    btn.disabled=true;
+    try{
+      const res=await fetch(`${SUPABASE_URL}/rest/v1/rpc/review_instapay_payment`,{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({p_order_id:order.id,p_approve:approve})});
+      if(!res.ok)throw new Error('Could not update payment verification');
+      order.payment_status=approve?'approved':'rejected';
+      await loadOrders();
+      openOrderDetails(order.id);
+    }catch(err){alert(err.message);btn.disabled=false;}
+  }));
+
   const noteForm=document.getElementById('order-admin-note-form');
   noteForm?.addEventListener('submit',e=>{
     e.preventDefault();
