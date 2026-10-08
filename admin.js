@@ -1293,7 +1293,7 @@ async function openOrderDetails(orderId){
     <div class="admin-order-grid order-modal-grid">
       <div class="admin-order-section"><h3>CUSTOMER</h3><p><b>${esc(order.first_name)} ${esc(order.last_name)}</b></p><p><a href="tel:${esc(order.phone)}">${esc(order.phone)}</a></p></div>
       <div class="admin-order-section"><h3>DELIVERY</h3><p>${esc(order.governorate)} · ${esc(order.area)}</p><p>${esc(order.address)}</p>${order.building?`<p>${esc(order.building)}</p>`:''}</div>
-      <div class="admin-order-section"><h3>PAYMENT</h3><p>${esc(order.payment_method)}</p><p><b>${money(order.total)}</b></p></div>
+      <div class="admin-order-section"><h3>PAYMENT</h3><p>${esc(order.payment_method)}</p><p><b>${money(order.total)}</b></p>${order.payment_method==='InstaPay'?`<p>Status: <b>${esc(order.payment_status||'awaiting_proof')}</b></p>${order.payment_proof_path?`<button type="button" class="instapay-view" data-order-id="${esc(order.id)}">VIEW RECEIPT</button>`:'<p>Receipt not uploaded</p>'}${order.payment_status==='pending_verification'?`<button type="button" class="instapay-review" data-order-id="${esc(order.id)}" data-approve="true">APPROVE</button><button type="button" class="instapay-review" data-order-id="${esc(order.id)}" data-approve="false">REJECT</button>`:''}` : ''}</div>
     </div>
 
     <div class="admin-items-block"><h3>ITEMS</h3>${productsHtml || '<div class="meta">No items found.</div>'}</div>
