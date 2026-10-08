@@ -386,23 +386,36 @@
         <div>
           <div class="eyebrow" style="color:#766b5d">INVENTORY ACCOUNTING</div>
           <h2>STOCK & SUPPLIERS</h2>
-          <p class="admin-panel-intro">Track stock value, supplier purchases, payables and profitability by product and brand.</p>
+          <p class="admin-panel-intro">Track stock value, supplier purchases, supplier payments and historical profitability without changing old order costs.</p>
         </div>
       </div>
 
       <div class="accounting-v2-grid">
-        <div class="dashboard-card accounting-card"><div class="dashboard-card-head"><div><span>INVENTORY</span><h3>STOCK VALUE</h3></div></div><div class="accounting-metric-list">
-          <div><span>Tracked units</span><b id="inventory-stock-units">0</b></div>
-          <div><span>Cost value</span><b id="inventory-stock-cost">0 EGP</b></div>
-          <div><span>Retail value</span><b id="inventory-stock-retail">0 EGP</b></div>
-          <div><span>Potential margin</span><b id="inventory-stock-margin">0 EGP</b></div>
-        </div></div>
-        <div class="dashboard-card accounting-card"><div class="dashboard-card-head"><div><span>SUPPLIERS</span><h3>PAYABLES</h3></div></div><div class="accounting-metric-list">
-          <div><span>Supplier payable</span><b id="inventory-supplier-payable">0 EGP</b></div>
-          <div><span>Draft purchases</span><b id="inventory-draft-purchases">0</b></div>
-          <div><span>Received purchases</span><b id="inventory-received-purchases">0</b></div>
-        </div></div>
-        <div class="dashboard-card accounting-card"><div class="dashboard-card-head"><div><span>CATALOG</span><h3>ACTIVE VARIANTS</h3></div></div><div class="accounting-coverage"><b id="inventory-active-variants">0</b><p>Active purchasable variants used for stock valuation.</p></div></div>
+        <div class="dashboard-card accounting-card">
+          <div class="dashboard-card-head"><div><span>INVENTORY</span><h3>STOCK VALUE</h3></div></div>
+          <div class="accounting-metric-list">
+            <div><span>Tracked units</span><b id="inventory-stock-units">0</b></div>
+            <div><span>Cost value</span><b id="inventory-stock-cost">0 EGP</b></div>
+            <div><span>Retail value</span><b id="inventory-stock-retail">0 EGP</b></div>
+            <div><span>Potential margin</span><b id="inventory-stock-margin">0 EGP</b></div>
+          </div>
+        </div>
+        <div class="dashboard-card accounting-card">
+          <div class="dashboard-card-head"><div><span>SUPPLIERS</span><h3>PAYABLES</h3></div></div>
+          <div class="accounting-metric-list">
+            <div><span>Total purchases</span><b id="inventory-total-purchases">0 EGP</b></div>
+            <div><span>Total payments</span><b id="inventory-total-payments">0 EGP</b></div>
+            <div><span>Supplier payable</span><b id="inventory-supplier-payable">0 EGP</b></div>
+          </div>
+        </div>
+        <div class="dashboard-card accounting-card">
+          <div class="dashboard-card-head"><div><span>CATALOG QUALITY</span><h3>COST COVERAGE</h3></div></div>
+          <div class="accounting-metric-list">
+            <div><span>Tracked variants</span><b id="inventory-tracked-variants">0</b></div>
+            <div><span>Untracked variants</span><b id="inventory-untracked-variants">0</b></div>
+            <div><span>Missing cost</span><b id="inventory-uncosted-variants">0</b></div>
+          </div>
+        </div>
       </div>
 
       <div class="accounting-inventory-grid">
@@ -414,20 +427,22 @@
             <input id="inventory-supplier-phone" placeholder="Phone">
             <input id="inventory-supplier-email" type="email" placeholder="Email">
             <input id="inventory-supplier-notes" placeholder="Notes">
-            <div class="accounting-expense-buttons"><button id="inventory-supplier-save" class="admin-primary-btn" type="submit">ADD SUPPLIER</button><button id="inventory-supplier-cancel" class="admin-secondary-btn" type="button" hidden>CANCEL</button></div>
+            <div class="accounting-expense-buttons">
+              <button id="inventory-supplier-save" class="admin-primary-btn" type="submit">ADD SUPPLIER</button>
+              <button id="inventory-supplier-cancel" class="admin-secondary-btn" type="button" hidden>CANCEL</button>
+            </div>
           </form>
           <div id="inventory-supplier-error" class="admin-error"></div>
           <div id="inventory-suppliers-list" class="inventory-suppliers-list"></div>
         </div>
 
         <div class="dashboard-card accounting-card">
-          <div class="dashboard-card-head"><div><span>NEW STOCK</span><h3>CREATE PURCHASE</h3></div></div>
+          <div class="dashboard-card-head"><div><span>NEW STOCK</span><h3>RECEIVE PURCHASE</h3></div></div>
+          <p class="inventory-help">Receiving a purchase adds stock immediately and recalculates weighted-average cost.</p>
           <form id="inventory-purchase-form" class="inventory-purchase-form">
             <select id="inventory-purchase-supplier" required><option value="">Select supplier</option></select>
             <input id="inventory-purchase-date" type="date" required>
-            <input id="inventory-purchase-invoice" placeholder="Invoice reference">
-            <input id="inventory-purchase-extra" type="number" min="0" step="0.01" value="0" placeholder="Extra costs">
-            <input id="inventory-purchase-paid" type="number" min="0" step="0.01" value="0" placeholder="Amount paid">
+            <input id="inventory-purchase-reference" placeholder="Invoice / reference">
             <input id="inventory-purchase-notes" placeholder="Notes">
             <div class="inventory-purchase-lines">
               <div class="inventory-purchase-line">
@@ -439,34 +454,71 @@
             </div>
             <div class="accounting-expense-buttons">
               <button id="inventory-add-line" class="admin-secondary-btn" type="button">+ LINE</button>
-              <button id="inventory-purchase-save" class="admin-primary-btn" type="submit">CREATE PURCHASE</button>
+              <button id="inventory-purchase-save" class="admin-primary-btn" type="submit">RECEIVE PURCHASE</button>
             </div>
           </form>
           <div id="inventory-purchase-error" class="admin-error"></div>
         </div>
       </div>
 
+      <div class="accounting-inventory-grid">
+        <div class="dashboard-card accounting-card">
+          <div class="dashboard-card-head"><div><span>SUPPLIER CASH</span><h3>RECORD PAYMENT</h3></div></div>
+          <form id="inventory-payment-form" class="inventory-payment-form">
+            <select id="inventory-payment-supplier" required><option value="">Select supplier</option></select>
+            <select id="inventory-payment-purchase"><option value="">Supplier-level payment</option></select>
+            <input id="inventory-payment-date" type="date" required>
+            <input id="inventory-payment-amount" type="number" min="0.01" step="0.01" placeholder="Amount" required>
+            <input id="inventory-payment-method" placeholder="Cash / Transfer / Card">
+            <input id="inventory-payment-reference" placeholder="Reference">
+            <input id="inventory-payment-notes" placeholder="Notes">
+            <button class="admin-primary-btn" type="submit">RECORD PAYMENT</button>
+          </form>
+          <div id="inventory-payment-error" class="admin-error"></div>
+        </div>
+
+        <div class="dashboard-card accounting-card">
+          <div class="dashboard-card-head"><div><span>SUPPLIER BALANCES</span><h3>PAYABLES BY SUPPLIER</h3></div></div>
+          <div class="accounting-table-wrap">
+            <table class="accounting-table"><thead><tr><th>SUPPLIER</th><th>PURCHASES</th><th>PAID</th><th>BALANCE</th></tr></thead><tbody id="inventory-supplier-balance-body"></tbody></table>
+          </div>
+        </div>
+      </div>
+
       <div class="dashboard-card accounting-card">
-        <div class="dashboard-card-head"><div><span>PURCHASES</span><h3>PURCHASE REGISTER</h3></div></div>
-        <div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>NUMBER</th><th>DATE</th><th>SUPPLIER</th><th>STATUS</th><th>TOTAL</th><th>PAID</th><th>PAYABLE</th><th></th></tr></thead><tbody id="inventory-purchases-body"></tbody></table></div>
+        <div class="dashboard-card-head"><div><span>STOCK VALUATION</span><h3>INVENTORY ON HAND</h3></div></div>
+        <div class="accounting-table-wrap">
+          <table class="accounting-table inventory-stock-table"><thead><tr><th>PRODUCT / VARIANT</th><th>BRAND</th><th>QTY</th><th>AVG COST</th><th>SELLING</th><th>STOCK VALUE</th><th>UNIT MARGIN</th><th>MARGIN %</th></tr></thead><tbody id="inventory-stock-body"></tbody></table>
+        </div>
+      </div>
+
+      <div class="dashboard-card accounting-card">
+        <div class="dashboard-card-head"><div><span>PURCHASES</span><h3>PURCHASE HISTORY</h3></div></div>
+        <div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>DATE</th><th>SUPPLIER</th><th>REFERENCE</th><th>ITEMS</th><th>TOTAL</th></tr></thead><tbody id="inventory-purchases-body"></tbody></table></div>
         <div id="inventory-purchases-empty" class="admin-empty compact" hidden>No purchases yet.</div>
+      </div>
+
+      <div class="dashboard-card accounting-card">
+        <div class="dashboard-card-head"><div><span>SUPPLIER PAYMENTS</span><h3>PAYMENT HISTORY</h3></div></div>
+        <div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>DATE</th><th>SUPPLIER</th><th>PURCHASE</th><th>METHOD</th><th>REFERENCE</th><th>AMOUNT</th></tr></thead><tbody id="inventory-payments-body"></tbody></table></div>
+        <div id="inventory-payments-empty" class="admin-empty compact" hidden>No supplier payments yet.</div>
       </div>
 
       <div class="accounting-inventory-grid">
         <div class="dashboard-card accounting-card">
           <div class="dashboard-card-head"><div><span>PROFITABILITY</span><h3>BY PRODUCT</h3></div></div>
-          <div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>PRODUCT</th><th>UNITS</th><th>REVENUE</th><th>COGS</th><th>PROFIT</th></tr></thead><tbody id="inventory-product-profit-body"></tbody></table></div>
+          <div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>PRODUCT</th><th>UNITS</th><th>REVENUE</th><th>COGS</th><th>PROFIT</th><th>MARGIN</th></tr></thead><tbody id="inventory-product-profit-body"></tbody></table></div>
         </div>
         <div class="dashboard-card accounting-card">
           <div class="dashboard-card-head"><div><span>PROFITABILITY</span><h3>BY BRAND</h3></div></div>
-          <div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>BRAND</th><th>UNITS</th><th>REVENUE</th><th>COGS</th><th>PROFIT</th></tr></thead><tbody id="inventory-brand-profit-body"></tbody></table></div>
+          <div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>BRAND</th><th>UNITS</th><th>REVENUE</th><th>COGS</th><th>PROFIT</th><th>MARGIN</th></tr></thead><tbody id="inventory-brand-profit-body"></tbody></table></div>
         </div>
       </div>
 
       <div class="dashboard-card accounting-card">
-        <div class="dashboard-card-head"><div><span>AUDIT TRAIL</span><h3>INVENTORY MOVEMENTS</h3></div></div>
-        <div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>DATE</th><th>VARIANT</th><th>TYPE</th><th>QTY</th><th>BEFORE</th><th>AFTER</th><th>COST</th><th>REFERENCE</th></tr></thead><tbody id="inventory-movements-body"></tbody></table></div>
-        <div id="inventory-movements-empty" class="admin-empty compact" hidden>No inventory movements yet.</div>
+        <div class="dashboard-card-head"><div><span>AUDIT TRAIL</span><h3>PURCHASE STOCK MOVEMENTS</h3></div></div>
+        <div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>DATE</th><th>VARIANT</th><th>TYPE</th><th>QTY</th><th>COST</th><th>REFERENCE</th></tr></thead><tbody id="inventory-movements-body"></tbody></table></div>
+        <div id="inventory-movements-empty" class="admin-empty compact" hidden>No purchase movements yet.</div>
       </div>
     </div>
 
@@ -969,6 +1021,6 @@
       SUPABASE_KEY: "sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c"
     };
   </script>
-  <script src="admin.js?v=30.10.0"></script><script src="accounting-admin.js?v=1.0.0"></script><script src="accounting-v2.js?v=1.0.0"></script><script src="inventory-accounting.js?v=1.0.0"></script><script src="v30-admin.js?v=30.9.0"></script>
+  <script src="admin.js?v=30.10.0"></script><script src="accounting-admin.js?v=1.0.0"></script><script src="accounting-v2.js?v=1.0.0"></script><script src="inventory-accounting.js?v=2.0.0"></script><script src="v30-admin.js?v=30.9.0"></script>
 </body>
 </html>
