@@ -22,7 +22,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=30.8.4">
-</head><body><div class="topbar">DELIVERY ACROSS EGYPT</div>
+<style>.payment-choice{display:flex;gap:18px;flex-wrap:wrap;margin:18px 0}.payment-choice label{padding:13px;border:1px solid #999;border-radius:5px;cursor:pointer}.instapay-upload{max-width:440px;margin:20px auto}.instapay-upload input{display:block;margin:10px auto}.instapay-upload button{padding:12px;cursor:pointer}</style></head><body><div class="topbar">DELIVERY ACROSS EGYPT</div>
 <header>
   <div class="container nav">
     <a class="logo" href="index.html">DOMARO<small>FRAGRANCES</small></a>
@@ -90,7 +90,7 @@
         <div><label>Detailed address</label><textarea id="address" required placeholder="Street name, landmark and full delivery address"></textarea></div>
         <div><label>Order notes</label><textarea id="notes" class="small-textarea" placeholder="Optional notes for delivery"></textarea></div>
 
-        <div class="payment-box">
+        <div class="payment-choice"><label><input type="radio" name="domaro-payment" value="cod" checked> Cash on Delivery</label> <label><input type="radio" name="domaro-payment" value="instapay"> InstaPay</label></div><div id="instapay-instructions" class="payment-box" hidden><div><b>InstaPay Transfer</b><span>Transfer to 01206574174, then upload the screenshot after placing the order.</span></div></div><div class="payment-box">
           <div>
             <b>Cash on Delivery</b>
             <span>Pay when your order arrives.</span>
@@ -122,7 +122,7 @@
         <div><span>Shipping</span><span id="checkout-shipping">—</span></div>
         <div class="checkout-grand"><b>Total</b><b id="checkout-total">0 EGP</b></div>
       </div>
-      <div class="cod-note">Payment method: <b>Cash on Delivery</b></div>
+      <div class="cod-note">Payment method: <b id="payment-label">Cash on Delivery</b></div>
     </aside>
   </div>
 
