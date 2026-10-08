@@ -28,7 +28,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=30.10.0">
+  <link rel="stylesheet" href="style.css?v=30.11.0">
 </head>
 <body class="admin-body">
   <header class="admin-topbar">
@@ -267,6 +267,77 @@
           <tbody id="accounting-monthly-body"></tbody>
         </table>
       </div>
+    </div>
+
+    
+    <div class="accounting-v2-grid">
+      <div class="dashboard-card accounting-card">
+        <div class="dashboard-card-head"><div><span>SHIPPING ECONOMICS</span><h3>SHIPPING P/L</h3></div></div>
+        <div class="accounting-metric-list">
+          <div><span>Shipping collected</span><b id="accounting-v2-shipping-collected">0 EGP</b></div>
+          <div><span>Actual courier cost</span><b id="accounting-v2-shipping-cost">0 EGP</b></div>
+          <div><span>Shipping profit / loss</span><b id="accounting-v2-shipping-profit">0 EGP</b></div>
+        </div>
+      </div>
+      <div class="dashboard-card accounting-card">
+        <div class="dashboard-card-head"><div><span>COD COLLECTIONS</span><h3>COLLECTION STATUS</h3></div></div>
+        <div class="accounting-metric-list">
+          <div><span>Expected COD</span><b id="accounting-v2-cod-expected">0 EGP</b></div>
+          <div><span>Collected</span><b id="accounting-v2-cod-collected">0 EGP</b></div>
+          <div><span>Outstanding</span><b id="accounting-v2-cod-outstanding">0 EGP</b></div>
+        </div>
+      </div>
+      <div class="dashboard-card accounting-card">
+        <div class="dashboard-card-head"><div><span>SETTLEMENTS</span><h3>RECONCILIATION</h3></div></div>
+        <div class="accounting-metric-list">
+          <div><span>Expected settlement</span><b id="accounting-v2-settlement-expected">0 EGP</b></div>
+          <div><span>Received</span><b id="accounting-v2-settlement-received">0 EGP</b></div>
+          <div><span>Fees</span><b id="accounting-v2-settlement-fees">0 EGP</b></div>
+          <div><span>Variance</span><b id="accounting-v2-settlement-variance">0 EGP</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="accounting-expenses-section">
+      <div class="admin-dashboard-head accounting-expense-head">
+        <div><div class="eyebrow" style="color:#766b5d">ORDER FINANCE</div><h2>DELIVERED ORDER RECONCILIATION</h2>
+        <p class="admin-panel-intro">Record actual courier cost and COD collection for each delivered order.</p></div>
+      </div>
+      <div class="accounting-table-wrap">
+        <table class="accounting-table accounting-order-finance-table">
+          <thead><tr><th>ORDER</th><th>TOTAL</th><th>SHIP CHARGED</th><th>ACTUAL COURIER</th><th>COD COLLECTED</th><th>COLLECTED DATE</th><th>REFERENCE</th><th></th></tr></thead>
+          <tbody id="accounting-order-finance-body"></tbody>
+        </table>
+      </div>
+      <div id="accounting-order-finance-empty" class="admin-empty compact" hidden>No delivered orders in this period.</div>
+      <div id="accounting-order-finance-error" class="admin-error"></div>
+    </div>
+
+    <div class="accounting-expenses-section">
+      <div class="admin-dashboard-head accounting-expense-head">
+        <div><div class="eyebrow" style="color:#766b5d">CASH & BANK</div><h2>SETTLEMENT REGISTER</h2>
+        <p class="admin-panel-intro">Reconcile courier COD, payment gateway or bank settlements. Fees are deducted from Net Profit.</p></div>
+      </div>
+      <form id="accounting-settlement-form" class="accounting-settlement-form">
+        <input id="accounting-settlement-id" type="hidden">
+        <label><span>DATE</span><input id="accounting-settlement-date" type="date" required></label>
+        <label><span>TYPE</span><select id="accounting-settlement-type" required><option value="courier_cod">Courier COD</option><option value="payment_gateway">Payment Gateway</option><option value="bank">Bank</option><option value="other">Other</option></select></label>
+        <label><span>PROVIDER</span><input id="accounting-settlement-provider" required maxlength="120" placeholder="Courier / Paymob / Bank"></label>
+        <label><span>EXPECTED</span><input id="accounting-settlement-expected" type="number" min="0" step="0.01" value="0" required></label>
+        <label><span>RECEIVED</span><input id="accounting-settlement-received" type="number" min="0" step="0.01" value="0" required></label>
+        <label><span>FEES</span><input id="accounting-settlement-fees" type="number" min="0" step="0.01" value="0" required></label>
+        <label><span>REFERENCE</span><input id="accounting-settlement-reference" maxlength="120" placeholder="Transfer / batch ref"></label>
+        <label class="accounting-settlement-notes"><span>NOTES</span><input id="accounting-settlement-notes" maxlength="300"></label>
+        <div class="accounting-expense-buttons"><button id="accounting-settlement-save" class="admin-primary-btn" type="submit">ADD SETTLEMENT</button><button id="accounting-settlement-cancel" class="admin-secondary-btn" type="button" hidden>CANCEL EDIT</button></div>
+      </form>
+      <div id="accounting-settlement-error" class="admin-error"></div>
+      <div class="accounting-table-wrap">
+        <table class="accounting-table">
+          <thead><tr><th>DATE</th><th>TYPE</th><th>PROVIDER</th><th>EXPECTED</th><th>RECEIVED</th><th>FEES</th><th>VARIANCE</th><th></th></tr></thead>
+          <tbody id="accounting-settlements-body"></tbody>
+        </table>
+      </div>
+      <div id="accounting-settlements-empty" class="admin-empty compact" hidden>No settlements in this period.</div>
     </div>
 
     <div class="accounting-expenses-section">
@@ -808,6 +879,6 @@
       SUPABASE_KEY: "sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c"
     };
   </script>
-  <script src="admin.js?v=30.10.0"></script><script src="accounting-admin.js?v=1.0.0"></script><script src="v30-admin.js?v=30.9.0"></script>
+  <script src="admin.js?v=30.10.0"></script><script src="accounting-admin.js?v=1.0.0"></script><script src="accounting-v2.js?v=1.0.0"></script><script src="v30-admin.js?v=30.9.0"></script>
 </body>
 </html>

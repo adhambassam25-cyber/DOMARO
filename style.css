@@ -2800,3 +2800,17 @@ body.shop-filter-open{overflow:hidden}
   .accounting-expense-description{grid-column:auto}
   .accounting-expense-buttons{flex-direction:column;align-items:stretch}
 }
+
+/* DOMARO Accounting V2 */
+.accounting-v2-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:0 0 24px}
+.accounting-subtext{display:block;color:#8a8075;font-size:8px;margin-top:4px;white-space:nowrap}
+.accounting-inline-input{min-width:105px;width:100%;padding:8px 9px;border:1px solid #d3c9bc;background:#fff;font-size:10px}
+.accounting-inline-input:disabled{background:#eee9e2;color:#aaa}
+.accounting-inline-save{padding:9px 11px}
+.accounting-order-finance-table{min-width:1120px}
+.accounting-settlement-form{display:grid;grid-template-columns:130px 160px 1fr 130px 130px 110px;gap:10px;background:#f8f4ee;border:1px solid #d8cfc2;padding:16px;margin-bottom:8px;align-items:end}
+.accounting-settlement-form label{display:flex;flex-direction:column;gap:6px;font-size:8px;letter-spacing:1px;color:#6e655c}
+.accounting-settlement-form input,.accounting-settlement-form select{width:100%;background:#fff}
+.accounting-settlement-notes{grid-column:span 3}
+@media(max-width:1100px){.accounting-v2-grid{grid-template-columns:1fr}.accounting-settlement-form{grid-template-columns:1fr 1fr 1fr}.accounting-settlement-notes{grid-column:span 2}}
+@media(max-width:700px){.accounting-settlement-form{grid-template-columns:1fr}.accounting-settlement-notes{grid-column:auto}}
