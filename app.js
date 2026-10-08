@@ -1173,6 +1173,12 @@ function renderCheckout(){
 
   function fieldValue(id){ return document.getElementById(id)?.value.trim() || ''; }
 
+  const paymentMethod=()=>document.querySelector('input[name="domaro-payment"]:checked')?.value==='instapay'?'instapay':'cod';
+  document.querySelectorAll('input[name="domaro-payment"]').forEach(r=>r.addEventListener('change',()=>{
+    const chosen=paymentMethod()==='instapay';
+    const info=document.getElementById('instapay-instructions');if(info)info.hidden=!chosen;
+    const label=document.getElementById('payment-label');if(label)label.textContent=chosen?'InstaPay':'Cash on Delivery';
+  }));
   function validateCheckout(){
     checkoutError.textContent='';
     const fields=[
@@ -1273,7 +1279,7 @@ function renderCheckout(){
           <div class="review-grand"><span>Total</span><b>${money(currentTotal())}</b></div>
         </div>
       </div>
-      <div class="review-payment">PAYMENT METHOD <b>Cash on Delivery</b></div>`;
+      <div class="review-payment">PAYMENT METHOD <b>${paymentMethod()==='instapay'?'InstaPay':'Cash on Delivery'}</b></div>`;
 
     reviewModal.hidden=false;
     reviewModal.setAttribute('aria-hidden','false');
@@ -1320,7 +1326,7 @@ function renderCheckout(){
       confirmBtn.textContent='PLACING ORDER...';
 
       try{
-        const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/place_order_v30`,{
+        const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${paymentMethod()==='instapay'?'place_instapay_order':'place_order_v30'}`,{
           method:'POST',
           headers:customerAuthHeaders({
             'Content-Type':'application/json',
@@ -1336,6 +1342,7 @@ function renderCheckout(){
           throw new Error(result?.message || result?.error || 'Could not place order. Please try again.');
         }
 
+        if(paymentMethod()==='instapay') pendingPayload.__instapay=true;
         trackMeta('Purchase',{
           content_ids:cart.map(item=>item.id),
           contents:cart.map(item=>{
@@ -1393,6 +1400,7 @@ function renderCheckout(){
               <div class="success-order-number">${escapeTrackHtml(newOrderNumber)}</div>
               <button class="copy-order-btn" id="copy-order-number" type="button" data-order-number="${escapeTrackHtml(newOrderNumber)}">COPY ORDER NUMBER</button>
               <p>Keep this number to track your order.</p>
+              ${pendingPayload?.__instapay?`<div class="instapay-upload"><h3>InstaPay: Payment Pending Verification</h3><p>Transfer ${money(currentTotal())} to <b>01206574174</b> then upload screenshot:</p><input id="instapay-proof" type="file" accept="image/png,image/jpeg,image/webp"><button id="instapay-upload-btn" type="button">UPLOAD RECEIPT</button><p id="instapay-upload-result"></p></div>` : ''}
               <div class="success-actions">
                 <a class="btn dark" href="track.html?order=${encodeURIComponent(newOrderNumber)}">TRACK YOUR ORDER</a>
                 <a class="btn track-secondary" href="shop.html">CONTINUE SHOPPING</a>
@@ -1400,6 +1408,22 @@ function renderCheckout(){
             </section>`;
         }
 
+        const receiptBtn=document.getElementById('instapay-upload-btn');
+        receiptBtn?.addEventListener('click',async()=>{
+          const input=document.getElementById('instapay-proof'),msg=document.getElementById('instapay-upload-result'),file=input?.files?.[0];
+          if(!file || !['image/png','image/jpeg','image/webp'].includes(file.type) || file.size>5242880){msg.textContent='Select JPG, PNG or WebP under 5 MB.';return;}
+          receiptBtn.disabled=true;msg.textContent='Uploading...';
+          try{
+            const extension=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+            const random=new Uint8Array(24);crypto.getRandomValues(random);
+            const path=Array.from(random,v=>v.toString(16).padStart(2,'0')).join('')+'.'+extension;
+            const up=await fetch(`${SUPABASE_URL}/storage/v1/object/instapay-proofs/${path}`,{method:'POST',headers:customerAuthHeaders({'Content-Type':file.type}),body:file});
+            if(!up.ok)throw new Error('Upload failed.');
+            const save=await fetch(`${SUPABASE_URL}/rest/v1/rpc/submit_instapay_proof`,{method:'POST',headers:customerAuthHeaders({'Content-Type':'application/json'}),body:JSON.stringify({p_order_number:newOrderNumber,p_checkout_token:pendingPayload.p_checkout_token,p_path:path})});
+            if(!save.ok)throw new Error('Receipt uploaded but could not be linked to order. Contact support with your order number.');
+            msg.textContent='Receipt submitted. We will verify your payment.';receiptBtn.hidden=true;input.hidden=true;
+          }catch(err){msg.textContent=err.message;}finally{receiptBtn.disabled=false;}
+        });
         const copyOrderBtn=document.getElementById('copy-order-number');
         if(copyOrderBtn){
           copyOrderBtn.addEventListener('click',async()=>{
