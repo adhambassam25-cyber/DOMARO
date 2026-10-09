@@ -143,29 +143,51 @@ const V30_TRANSLATIONS={
   'JOIN OUR NEWSLETTER':'انضم لقائمتنا البريدية','SHOP FRAGRANCES':'تسوق العطور','BACK TO SHOP':'العودة للمتجر','CONTINUE SHOPPING':'متابعة التسوق',
   'WHO ARE YOU':'لمن','SHOPPING FOR?':'تتسوق؟','Choose a collection to enter.':'اختر المجموعة للدخول.','WELCOME TO DOMARO':'مرحبًا بك في دومارو'
 };
+Object.assign(V30_TRANSLATIONS,{"BOXES":"بوكسات الهدايا","GIFT BOXES":"بوكسات الهدايا","FRAGRANCES":"العطور","FILTERS":"الفلاتر","REFINE YOUR SELECTION":"تصفية النتائج","CATEGORY":"التصنيف","BRAND":"الماركة","AVAILABILITY":"التوفر","IN STOCK":"متوفر","RESET FILTERS":"إلغاء الفلاتر","DONE":"تم","THUMBNAIL":"صور","FRAGRANCE GUIDE":"دليل العطور","FAQ":"الأسئلة الشائعة","SHIPPING":"الشحن","RETURNS & EXCHANGES":"الاسترجاع والاستبدال","Modern fragrances designed to leave a lasting impression.":"عطور مميزة تترك انطباعًا لا يُنسى.","© 2026 DOMARO. ALL RIGHTS RESERVED.":"© 2026 دومارو. جميع الحقوق محفوظة.","SHOPPING BAG":"حقيبة التسوق","YOUR SELECTION":"اختياراتك","Review your DOMARO fragrances before checkout.":"راجع عطورك قبل إتمام الطلب.","Calculated at checkout":"يُحسب عند إتمام الطلب","PROCEED TO CHECKOUT":"متابعة لإتمام الطلب","CASH ON DELIVERY":"الدفع عند الاستلام","Enter your delivery details and review your order before placing it.":"أدخل بيانات التوصيل وراجع طلبك قبل التأكيد.","01 — DELIVERY DETAILS":"01 — بيانات التوصيل","02 — ORDER SUMMARY":"02 — ملخص الطلب","First name":"الاسم الأول","Last name":"اسم العائلة","Mobile number":"رقم الموبايل","Governorate":"المحافظة","Select governorate":"اختر المحافظة","Select governorate first":"اختر المحافظة أولًا","Area / District":"المنطقة / الحي","Email (optional)":"البريد الإلكتروني (اختياري)","Building / Floor / Apartment":"المبنى / الدور / الشقة","Detailed address":"العنوان بالتفصيل","Order notes":"ملاحظات الطلب","Select your governorate to calculate delivery.":"اختر محافظتك لحساب التوصيل.","InstaPay Transfer":"تحويل إنستاباي","InstaPay":"إنستاباي","PAYMENT SCREENSHOT (REQUIRED)":"صورة إثبات التحويل (مطلوبة)","JPG, PNG or WebP — max 5 MB. Your payment will be verified manually.":"JPG أو PNG أو WebP — حتى 5 ميجابايت. سيتم تأكيد التحويل يدويًا.","You will review your delivery details and final total before the order is placed.":"ستراجع بيانات التوصيل والإجمالي النهائي قبل إرسال الطلب.","Browse the currently available DOMARO collection.":"تصفح العطور المتاحة حاليًا في دومارو.","DOMARO COLLECTION":"مجموعة دومارو","DOMARO FRAGRANCE JOURNAL":"مجلة دومارو للعطور","NOT SURE WHICH SCENT TO CHOOSE?":"مش عارف تختار أي عطر؟","READ THE FRAGRANCE GUIDE →":"اقرأ دليل العطور ←","SHOP PERFUMES IN EGYPT":"تسوق العطور في مصر","DISCOVER YOUR NEXT SIGNATURE SCENT":"اكتشف عطرك المميز القادم","MEN'S PERFUMES":"عطور رجالية","WOMEN'S PERFUMES":"عطور نسائية","UNISEX & ARABIC SCENTS":"عطور للجنسين وروائح عربية","SHOP MEN →":"تسوق الرجالي ←","SHOP WOMEN →":"تسوق الحريمي ←","SHOP UNISEX →":"تسوق للجنسين ←","ORDER STATUS":"حالة الطلب","Enter your order number and the same mobile number used at checkout.":"أدخل رقم الطلب ورقم الموبايل المستخدم وقت الشراء.","SECURE ORDER LOOKUP":"استعلام آمن عن الطلب","Where is my order?":"أين طلبي؟","For your privacy, both details must match the information saved with your order.":"لحماية خصوصيتك، يجب أن تتطابق البيانات مع المسجلة في الطلب.","CUSTOMER CARE":"خدمة العملاء","Clear guidance for return and exchange requests.":"تفاصيل واضحة عن طلبات الاسترجاع والاستبدال.","Return and exchange windows":"مدد الاسترجاع والاستبدال","14 days of delivery":"14 يومًا من الاستلام","30 days of delivery":"30 يومًا من الاستلام","Fragrance seals and eligibility":"أختام العطور وشروط الاسترجاع","Eligible requests":"الطلبات المؤهلة","Opened fragrance products":"العطور المفتوحة","Condition of returned items":"حالة المنتجات المرتجعة","Shipping & refunds":"الشحن واسترداد المبلغ","Return delivery costs":"تكلفة شحن المرتجعات","Refund processing time":"مدة معالجة الاسترداد","How to request a return or exchange":"طريقة طلب الاسترجاع أو الاستبدال","ALREADY RECEIVED YOUR ORDER?":"استلمت طلبك بالفعل؟","START AN AFTER-SALES REQUEST":"قدّم طلب خدمة ما بعد البيع","REQUEST RETURN / EXCHANGE":"طلب استرجاع / استبدال","HELP & SUPPORT":"المساعدة والدعم","FAQ | DOMARO":"الأسئلة الشائعة | دومارو","Answers to common questions about DOMARO orders, delivery, tracking and returns.":"إجابات عن الأسئلة الشائعة حول الطلبات والتوصيل والتتبع والاسترجاع.","Frequently asked questions":"الأسئلة الشائعة","Do you deliver across Egypt?":"هل التوصيل متاح لكل المحافظات؟","How can I track my order?":"إزاي أتابع طلبي؟","Can I return or exchange a fragrance?":"هل يمكن استرجاع أو استبدال عطر؟","How do I contact DOMARO?":"إزاي أتواصل مع دومارو؟","SHIPPING | DOMARO":"الشحن | دومارو","Shipping information for DOMARO orders across Egypt.":"تفاصيل توصيل طلبات دومارو في جميع أنحاء مصر.","Shipping across Egypt":"التوصيل في جميع أنحاء مصر","DOMARO ships orders across Egypt. Shipping fees vary by governorate and delivery area.":"دومارو بتوصل لجميع محافظات مصر. رسوم الشحن بتختلف حسب المحافظة والمنطقة.","Delivery fees":"رسوم التوصيل","Delivery timing":"مدة التوصيل","Order details":"تفاصيل الطلب","OUR STORY":"قصتنا","ABOUT DOMARO":"عن دومارو","More than a fragrance. A statement of presence.":"أكثر من مجرد عطر، حضور مميز.","Made to become part of your identity.":"ليكون جزءًا من هويتك.","Our direction":"رؤيتنا","GET IN TOUCH":"تواصل معنا","Questions, orders or collaborations — send us a message.":"للاستفسارات والطلبات والتعاون، ابعتلنا رسالة.","General inquiry":"استفسار عام","Order support":"مساعدة بخصوص طلب","Wholesale / collaboration":"الجملة / التعاون","SEND MESSAGE":"إرسال الرسالة","DOMARO CUSTOMER":"عميل دومارو","MY ACCOUNT":"حسابي","Your orders, profile and saved fragrances in one place.":"طلباتك وبياناتك والعطور المحفوظة في مكان واحد.","SIGN IN":"تسجيل الدخول","WELCOME BACK":"أهلًا برجوعك","Email":"البريد الإلكتروني","Password":"كلمة المرور","NEW CUSTOMER":"عميل جديد","CREATE ACCOUNT":"إنشاء حساب","Mobile":"الموبايل","WELCOME":"مرحبًا","LOG OUT":"تسجيل الخروج","PROFILE":"الملف الشخصي","YOUR DETAILS":"بياناتك","SAVE PROFILE":"حفظ البيانات","ORDER HISTORY":"سجل الطلبات","YOUR ORDERS":"طلباتك","SAVED FOR LATER":"محفوظة لوقت لاحق","YOUR WISHLIST":"مفضلتك","Select item":"اختر المنتج","Select reason":"اختر السبب","Return":"استرجاع","Exchange":"استبدال","Request type":"نوع الطلب","Item":"المنتج","Reason":"السبب","Details":"التفاصيل","SUBMIT REQUEST":"إرسال الطلب","SUBMITTING…":"جارٍ الإرسال…","AFTER-SALES":"خدمة ما بعد البيع","RETURN OR EXCHANGE":"استرجاع أو استبدال","VIEW POLICY →":"عرض السياسة ←","Request received":"تم استلام الطلب","Under review":"قيد المراجعة","Approved":"تمت الموافقة","Rejected":"مرفوض","Item received":"تم استلام المنتج","Refunded":"تم رد المبلغ","Completed":"مكتمل","Closed":"مغلق","Cairo":"القاهرة","Giza":"الجيزة","Alexandria":"الإسكندرية","Qalyubia":"القليوبية","Sharqia":"الشرقية","Dakahlia":"الدقهلية","Gharbia":"الغربية","Monufia":"المنوفية","Beheira":"البحيرة","Kafr El Sheikh":"كفر الشيخ","Damietta":"دمياط","Port Said":"بورسعيد","Ismailia":"الإسماعيلية","Suez":"السويس","Fayoum":"الفيوم","Beni Suef":"بني سويف","Minya":"المنيا","Assiut":"أسيوط","Sohag":"سوهاج","Qena":"قنا","Luxor":"الأقصر","Aswan":"أسوان","Red Sea":"البحر الأحمر","New Valley":"الوادي الجديد","Matrouh":"مطروح","North Sinai":"شمال سيناء","South Sinai":"جنوب سيناء"});
 function getLanguage(){ return localStorage.getItem('domaro_lang')==='ar'?'ar':'en'; }
 function translateTextNodes(root=document.body){
-  if(getLanguage()!=='ar') return;
-  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(node){
-    if(!node.parentElement || ['SCRIPT','STYLE','TEXTAREA','INPUT'].includes(node.parentElement.tagName)) return NodeFilter.FILTER_REJECT;
-    return NodeFilter.FILTER_ACCEPT;
-  }});
-  const nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
-  nodes.forEach(node=>{
-    const raw=node.nodeValue; const t=raw.trim(); if(!t) return;
-    if(!node.parentElement.dataset.enText) node.parentElement.dataset.enText=t;
-    const tr=V30_TRANSLATIONS[t] || V30_TRANSLATIONS[t.toUpperCase()];
-    if(tr) node.nodeValue=raw.replace(t,tr);
-  });
-  document.documentElement.lang='ar'; document.documentElement.dir='rtl'; document.body.classList.add('lang-ar');
+  if(getLanguage()!=='ar' || !root) return;
+  const translate=(node)=>{
+    const raw=node.nodeValue, t=raw.trim(); if(!t) return;
+    const tr=V30_TRANSLATIONS[t]||V30_TRANSLATIONS[t.toUpperCase()];
+    if(tr&&tr!==t) node.nodeValue=raw.replace(t,tr);
+  };
+  const translateAttrs=el=>{
+    for(const attr of ['placeholder','aria-label','title']){
+      const original=el.getAttribute?.(attr);if(!original)continue;
+      const translated=V30_TRANSLATIONS[original.trim()]||V30_TRANSLATIONS[original.trim().toUpperCase()];
+      if(translated)el.setAttribute(attr,translated);
+    }
+  };
+  const visit=element=>{
+    if(element.nodeType===Node.TEXT_NODE){if(element.parentElement&&!['SCRIPT','STYLE','TEXTAREA','OPTION'].includes(element.parentElement.tagName))translate(element);return;}
+    if(element.nodeType!==Node.ELEMENT_NODE||['SCRIPT','STYLE','NOSCRIPT'].includes(element.tagName))return;
+    translateAttrs(element);
+    const walker=document.createTreeWalker(element,NodeFilter.SHOW_TEXT);
+    let node;while((node=walker.nextNode())){if(node.parentElement&&!['SCRIPT','STYLE','TEXTAREA'].includes(node.parentElement.tagName))translate(node);}
+    element.querySelectorAll('[placeholder],[aria-label],[title]').forEach(translateAttrs);
+  };
+  visit(root);
+  document.documentElement.lang='ar';document.documentElement.dir='rtl';document.body.classList.add('lang-ar');
   document.querySelectorAll('.nav-lang-text').forEach(x=>x.textContent='EN');
 }
+let domaroLangObserver=null;
+function watchArabicContent(){
+  if(domaroLangObserver||getLanguage()!=='ar')return;
+  domaroLangObserver=new MutationObserver(records=>{
+    const added=new Set();
+    for(const rec of records){if(rec.type==='childList')for(const node of rec.addedNodes)added.add(node);}
+    for(const node of added){if(node.isConnected&&node!==document.documentElement)translateTextNodes(node);}
+  });
+  domaroLangObserver.observe(document.body,{childList:true,subtree:true});
+}
+
 function restoreEnglish(){
   document.querySelectorAll('[data-en-text]').forEach(el=>{ if(el.childNodes.length===1 && el.firstChild.nodeType===3) el.textContent=el.dataset.enText; });
   document.documentElement.lang='en'; document.documentElement.dir='ltr'; document.body.classList.remove('lang-ar');
   document.querySelectorAll('.nav-lang-text').forEach(x=>x.textContent='AR');
 }
-function applyLanguage(){ getLanguage()==='ar'?translateTextNodes():restoreEnglish(); }
+function applyLanguage(){ if(getLanguage()==='ar'){ translateTextNodes();watchArabicContent(); }else restoreEnglish(); }
 function setLanguage(lang){ localStorage.setItem('domaro_lang',lang==='ar'?'ar':'en'); location.reload(); }
 
 function updateHomeProof(catalog=[]){
