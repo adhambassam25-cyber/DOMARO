@@ -1,7 +1,6 @@
 const sharp = require('sharp');
 const SUPABASE_URL='https://zuqjxcsjjgotwwmlvxmf.supabase.co';
 const SUPABASE_KEY='sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c';
-module.exports.config={api:{bodyParser:false}};
 module.exports=async function(req,res){
  if(req.method!=='POST')return res.status(405).end();
  const token=String(req.headers.authorization||'');
@@ -33,3 +32,5 @@ module.exports=async function(req,res){
   return res.status(200).send(result);
  }catch(err){console.error('Product image optimize:',err.message);return res.status(422).json({error:'Image optimization unavailable'});}
 };
+
+module.exports.config={api:{bodyParser:false}};
