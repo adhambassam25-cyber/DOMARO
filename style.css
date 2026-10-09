@@ -2840,3 +2840,11 @@ body.shop-filter-open{overflow:hidden}
 
 /* Payment choices: ensure hidden panels override flex layout */
 .checkout-page .payment-box[hidden]{display:none!important}
+
+/* Storefront Arabic layout */
+html[lang="ar"] body{direction:rtl;text-align:right}
+html[lang="ar"] input,html[lang="ar"] textarea,html[lang="ar"] select{text-align:right}
+html[lang="ar"] .nav,html[lang="ar"] .shop-toolbar,html[lang="ar"] .footer-grid{direction:rtl}
+html[lang="ar"] .logo,html[lang="ar"] .product-card,html[lang="ar"] .product-image{direction:ltr}
+html[lang="ar"] .logo{text-align:center}
+html[lang="ar"] .nav-lang-text{direction:ltr}
