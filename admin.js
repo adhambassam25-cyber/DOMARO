@@ -1371,12 +1371,13 @@ async function openOrderDetails(orderId){
       const res=await fetch(`${SUPABASE_URL}/rest/v1/rpc/review_instapay_payment`,{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({p_order_id:order.id,p_approve:approve,p_reason:reason})});
       if(!res.ok)throw new Error('Could not update payment verification');
       order.payment_status=approve?'approved':'rejected';
-      if(!approve){
-        try{
-          const notice=await fetch('/api/payment-rejected-email',{method:'POST',headers:{...authHeaders({'Content-Type':'application/json'})},body:JSON.stringify({orderNumber:order.order_number,reason})});
-          if(!notice.ok)alert('Payment rejected, but email notification failed. Please contact the customer.');
-        }catch(_){alert('Payment rejected, but email notification failed.');}
-      }
+      try{
+        const endpoint=approve?'/api/payment-approved-email':'/api/payment-rejected-email';
+        const notice=await fetch(endpoint,{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({orderNumber:order.order_number,reason})});
+        if(!notice.ok)throw new Error('Email notification request failed');
+        const result=await notice.json();
+        if(result.emailSent===false)alert('Payment updated, but no customer email is saved for this order.');
+      }catch(_){alert('Payment status updated, but email notification failed. Please contact the customer.');}
       await loadOrders();
       openOrderDetails(order.id);
     }catch(err){alert(err.message);btn.disabled=false;}
