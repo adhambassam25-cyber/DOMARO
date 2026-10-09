@@ -89,6 +89,12 @@
    does not jump into view and shift when products are inserted. */
 #shop-products:empty{min-height:460px}
 @media(max-width:760px){#shop-products:empty{min-height:850px}}
+
+/* Compact catalog navigation; no effect on filtering or product data. */
+.domaro-category-nav{display:flex;align-items:center;gap:9px;overflow-x:auto;white-space:nowrap;scrollbar-width:thin;padding:3px 0 19px;margin:0 0 3px; -webkit-overflow-scrolling:touch}
+.domaro-category-nav a{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;padding:9px 14px;border:1px solid rgba(130,124,118,.34);border-radius:999px;color:inherit;text-decoration:none;font:500 11px/1.3 Inter,Arial,sans-serif;letter-spacing:.065em;transition:border-color .2s,background-color .2s}
+.domaro-category-nav a:hover,.domaro-category-nav a:focus-visible{border-color:currentColor;background:rgba(128,128,128,.08)}
+@media(max-width:760px){.domaro-category-nav{gap:7px;padding-bottom:15px}.domaro-category-nav a{padding:9px 12px;font-size:10px}}
 </style><script type="application/ld+json" id="domaro-organization-schema">
 {
   "@context": "https://schema.org",
@@ -163,6 +169,7 @@
 </header>
 <section class="page-hero shop-page-hero"><div class="eyebrow">DOMARO COLLECTION</div><h1 id="shop-context-title">SHOP FRAGRANCES</h1><p id="shop-context-sub">Browse the currently available DOMARO collection.</p></section>
 <section class="section"><div class="container">
+  <nav class="domaro-category-nav" aria-label="Browse fragrance categories"><a href="/shop">SHOP ALL</a><a href="/men">MEN</a><a href="/women">WOMEN</a><a href="/unisex">UNISEX</a><a href="/boxes">GIFT BOXES</a></nav>
   <div class="shop-toolbar">
     <button class="shop-filter-trigger" id="shop-filter-trigger" type="button" aria-expanded="false" aria-controls="shop-filter-drawer">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"></path></svg>
