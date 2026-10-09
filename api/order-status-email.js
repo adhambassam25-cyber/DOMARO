@@ -1,3 +1,4 @@
+const {brandedEmail,trackLink}=require('./email-template');
 const BASE='https://zuqjxcsjjgotwwmlvxmf.supabase.co';
 const KEY='sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c';
 module.exports=async(req,res)=>{
@@ -22,7 +23,7 @@ module.exports=async(req,res)=>{
   const labels={confirmed:'Order Confirmed',shipped:'Order Shipped',delivered:'Order Delivered',cancelled:'Order Cancelled',screenshot_uploaded:'New InstaPay Screenshot Uploaded'};
   const title=labels[event],link='https://domaro-eg.com/track.html?order='+encodeURIComponent(orderNumber);
   const message=event==='screenshot_uploaded'?'A customer uploaded a new InstaPay payment screenshot for order '+orderNumber+'. Review it in DOMARO Admin.':'Your DOMARO order '+orderNumber+' status is now '+title+'. Track your order: '+link;
-  const send=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+process.env.RESEND_API_KEY,'Content-Type':'application/json','Idempotency-Key':'domaro-'+event+'-'+orderNumber},body:JSON.stringify({from:'DOMARO Orders <orders@domaro-eg.com>',to:[to],subject:'DOMARO — '+title+' — '+orderNumber,text:message})});
+  const send=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+process.env.RESEND_API_KEY,'Content-Type':'application/json','Idempotency-Key':'domaro-'+event+'-'+orderNumber},body:JSON.stringify({from:'DOMARO Orders <orders@domaro-eg.com>',to:[to],subject:'DOMARO — '+title+' — '+orderNumber,text:message,html:brandedEmail({eyebrow:'ORDER STATUS',title,description:message,rows:[['Order Number',orderNumber],['Status',title]],buttonLabel:event==='screenshot_uploaded'?'OPEN ADMIN DASHBOARD':'TRACK YOUR ORDER',buttonUrl:event==='screenshot_uploaded'?'https://domaro-eg.com/admin.html':link})})});
   const result=await send.json().catch(()=>null);
   if(!send.ok)throw Error(result?.message||'Email provider rejected request');
   await rpc('finalize_order_email_event',{p_order_number:orderNumber,p_event_key:event,p_recipient:to,p_success:true,p_provider_id:result?.id||null,p_error:null});
