@@ -630,8 +630,10 @@ function upsertMeta(selector, attrName, attrValue, content){
 function updateProductSEO(p){
   try{
     const productUrl=`${location.origin}${productPath(p.id)}`;
-    const title=`${p.name} Perfume in Egypt | ${p.brand || 'DOMARO'} | DOMARO`;
-    const description=(p.desc || `Shop ${p.name} perfume in Egypt at DOMARO. View fragrance notes, size, availability and current price with delivery across Egypt.`).replace(/\s+/g,' ').trim().slice(0,155);
+    const seoBrand=String(p.brand || 'DOMARO').replace(/\\s*\\([^)]*\\)/g,'').trim();
+    const title=`${seoBrand} ${p.name} | Perfumes in Egypt | DOMARO`;
+    const audience={men:"men's",women:"women's",unisex:"unisex",boxes:"gift set"}[String(p.cat||'').toLowerCase()]||'';
+    const description=(p.desc || `Explore ${seoBrand} ${p.name} at DOMARO Egypt. See available ${audience ? audience+' ' : ''}fragrance options, current prices, sizes and delivery across Egypt.`).replace(/\s+/g,' ').trim().slice(0,155);
     document.title=title;
     const desc=document.head.querySelector('meta[name="description"]');
     if(desc) desc.setAttribute('content',description);
