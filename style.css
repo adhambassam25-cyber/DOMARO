@@ -2837,3 +2837,6 @@ body.shop-filter-open{overflow:hidden}
 .inventory-payment-form button{grid-column:1/-1}
 .inventory-stock-table{min-width:980px}
 @media(max-width:650px){.inventory-payment-form{grid-template-columns:1fr}.inventory-payment-form button{grid-column:auto}}
+
+/* Payment choices: ensure hidden panels override flex layout */
+.checkout-page .payment-box[hidden]{display:none!important}
