@@ -1596,6 +1596,7 @@ function renderTrackingResult(order){
         const saved=await fetch(SUPABASE_URL+'/rest/v1/rpc/resubmit_instapay_proof',{method:'POST',headers:customerAuthHeaders({'Content-Type':'application/json'}),body:JSON.stringify({p_order_number:order.order_number,p_phone:document.getElementById('track-phone').value.trim(),p_path:path})});
         if(!saved.ok)throw new Error('Could not register the new screenshot.');
         msg.textContent='New screenshot received. Payment pending verification.';btn.hidden=true;
+        fetch('/api/proof-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderNumber:order.order_number,phone:document.getElementById('track-phone').value.trim(),path})}).catch(()=>{});
       }catch(err){msg.textContent=err.message;btn.disabled=false;}
     });
   }
