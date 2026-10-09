@@ -1986,15 +1986,32 @@ imageInput.addEventListener('change',()=>{
 });
 
 async function uploadProductImage(productId,file){
-  const safeName=String(file.name || 'image.jpg').toLowerCase().replace(/[^a-z0-9.]+/g,'-');
+  let uploadFile=file;
+  // Optimization is best-effort: original image is always the safe fallback.
+  if(file.size<=4*1024*1024 && /^image\/(png|jpeg|webp)$/.test(file.type)){
+    try{
+      const optimized=await fetch('/api/optimize-product-image',{
+        method:'POST',
+        headers:authHeaders({'Content-Type':file.type}),
+        body:file
+      });
+      if(optimized.ok && optimized.status===200 && optimized.headers.get('content-type')?.includes('image/webp')){
+        const blob=await optimized.blob();
+        if(blob.size>0 && blob.size<file.size){
+          uploadFile=new File([blob],file.name.replace(/\.[^.]+$/,'')+'.webp',{type:'image/webp'});
+        }
+      }
+    }catch(err){ console.warn('Using original product image:',err); }
+  }
+  const safeName=String(uploadFile.name || 'image.jpg').toLowerCase().replace(/[^a-z0-9.]+/g,'-');
   const objectName=`${productId}/${Date.now()}-${safeName}`;
   const response=await fetch(`${SUPABASE_URL}/storage/v1/object/products/${objectName.split('/').map(encodeURIComponent).join('/')}`,{
     method:'POST',
     headers:authHeaders({
-      'Content-Type':file.type || 'application/octet-stream',
+      'Content-Type':uploadFile.type || 'application/octet-stream',
       'x-upsert':'true'
     }),
-    body:file
+    body:uploadFile
   });
   const data=await response.json().catch(()=>({}));
   if(!response.ok) throw new Error(data?.message || data?.error || 'Could not upload image.');
