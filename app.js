@@ -1574,6 +1574,31 @@ function renderTrackingResult(order){
         <span>ORDER TOTAL</span><strong>${money(order.total)}</strong>
       </div>
     </div>`;
+  if(order.payment_method==='InstaPay'){
+    const status=order.payment_status||'awaiting_proof';
+    const reason=order.payment_rejection_reason||'We could not verify the previous screenshot.';
+    const panel=document.createElement('section');
+    panel.style.cssText='padding:22px;border:1px solid #d5c8bc;background:#fff;margin:20px 0';
+    panel.innerHTML='<h3>IN STAPAY PAYMENT — '+escapeTrackHtml(status.replaceAll('_',' ').toUpperCase())+'</h3>'+
+      (status==='rejected'?'<p>'+escapeTrackHtml(reason)+'</p><p>Your order is still open. Upload a new payment screenshot below.</p><input type="file" id="retry-instapay-file" accept="image/jpeg,image/png,image/webp"><button type="button" id="retry-instapay-btn" class="btn dark" style="margin-top:12px">UPLOAD NEW SCREENSHOT</button><p id="retry-instapay-message"></p>':
+       '<p>'+(status==='approved'?'Payment verified.':'We will review your payment before confirming your order.')+'</p>');
+    box.appendChild(panel);
+    if(status==='rejected')panel.querySelector('#retry-instapay-btn').addEventListener('click',async()=>{
+      const btn=panel.querySelector('#retry-instapay-btn'),msg=panel.querySelector('#retry-instapay-message'),file=panel.querySelector('#retry-instapay-file').files[0];
+      if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5242880){msg.textContent='Select a JPG, PNG or WebP screenshot under 5 MB.';return;}
+      btn.disabled=true;msg.textContent='Uploading...';
+      try{
+        const random=new Uint8Array(24);crypto.getRandomValues(random);
+        const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+        const path=Array.from(random,b=>b.toString(16).padStart(2,'0')).join('')+'.'+ext;
+        const upload=await fetch(SUPABASE_URL+'/storage/v1/object/instapay-proofs/'+path,{method:'POST',headers:customerAuthHeaders({'Content-Type':file.type}),body:file});
+        if(!upload.ok)throw new Error('Could not upload screenshot.');
+        const saved=await fetch(SUPABASE_URL+'/rest/v1/rpc/resubmit_instapay_proof',{method:'POST',headers:customerAuthHeaders({'Content-Type':'application/json'}),body:JSON.stringify({p_order_number:order.order_number,p_phone:document.getElementById('track-phone').value.trim(),p_path:path})});
+        if(!saved.ok)throw new Error('Could not register the new screenshot.');
+        msg.textContent='New screenshot received. Payment pending verification.';btn.hidden=true;
+      }catch(err){msg.textContent=err.message;btn.disabled=false;}
+    });
+  }
   box.hidden=false;
   box.scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -1626,6 +1651,10 @@ function initOrderTracking(){
       if(!data){
         error.textContent='No matching order was found. Check the order number and mobile number and try again.';
         return;
+      }
+      if(data.payment_method==='InstaPay'){
+        const pay=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_instapay_tracking',{method:'POST',headers:{'apikey':SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_order_number:orderNumber,p_phone:phone})});
+        if(pay.ok)Object.assign(data,(await pay.json())||{});
       }
       renderTrackingResult(data);
     }catch(err){
