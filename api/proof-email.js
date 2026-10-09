@@ -1,3 +1,4 @@
+const {brandedEmail,trackLink}=require('./email-template');
 const URL='https://zuqjxcsjjgotwwmlvxmf.supabase.co';
 const KEY='sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c';
 module.exports=async function(req,res){
@@ -8,6 +9,6 @@ module.exports=async function(req,res){
  if(!verified.ok||await verified.json()!==true)return res.status(403).end();
  const key=process.env.RESEND_API_KEY;
  if(!key)return res.status(503).end();
- const sent=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json','Idempotency-Key':'domaro-proof-'+path},body:JSON.stringify({from:'DOMARO Orders <orders@domaro-eg.com>',to:[process.env.ORDER_NOTIFICATION_EMAIL||'domaro.eg@gmail.com'],subject:'DOMARO new payment proof — '+orderNumber,text:'A new InstaPay proof was submitted for '+orderNumber+'. Please review it in the DOMARO admin dashboard.'})});
+ const sent=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json','Idempotency-Key':'domaro-proof-'+path},body:JSON.stringify({from:'DOMARO Orders <orders@domaro-eg.com>',to:[process.env.ORDER_NOTIFICATION_EMAIL||'domaro.eg@gmail.com'],subject:'DOMARO new payment proof — '+orderNumber,text:'A new InstaPay proof was submitted for '+orderNumber+'. Please review it in the DOMARO admin dashboard.',html:brandedEmail({eyebrow:'ADMIN NOTIFICATION',title:'New InstaPay Screenshot Uploaded',description:'A customer has submitted a new payment screenshot for review.',rows:[['Order Number',orderNumber],['Payment Method','InstaPay']],buttonLabel:'OPEN ADMIN DASHBOARD',buttonUrl:'https://domaro-eg.com/admin.html'})})});
  return res.status(sent.ok?200:502).json({ok:sent.ok});
 };
