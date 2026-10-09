@@ -21,7 +21,7 @@ module.exports=async(req,res)=>{
   if(!order.email)return res.status(200).json({ok:true,emailSent:false,reason:'Customer email not provided'});
   const safeReason=String(order.reason||reason||'Payment screenshot could not be verified.').slice(0,500);
   const text='Your DOMARO order '+orderNumber+' has been received, but the InstaPay payment screenshot was rejected. Reason: '+safeReason+' Your order is still open. Please open https://domaro-eg.com/track.html?order='+orderNumber+' and enter your mobile number to upload a new screenshot. Check your original transfer before making another payment.';
-  const sent=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+resendKey,'Content-Type':'application/json','Idempotency-Key':'domaro-rejected-'+orderNumber+'-'+Buffer.from(safeReason).toString('hex').slice(0,80)},body:JSON.stringify({from:'DOMARO Orders <orders@domaro-eg.com>',to:[order.email],subject:'DOMARO payment needs attention — '+orderNumber,text})});
+  const sent=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+resendKey,'Content-Type':'application/json','Idempotency-Key':'domaro-rejected-'+orderNumber+'-'+String(order.proof_path||'unknown').slice(0,90)},body:JSON.stringify({from:'DOMARO Orders <orders@domaro-eg.com>',to:[order.email],subject:'DOMARO payment needs attention — '+orderNumber,text})});
   if(!sent.ok)throw new Error('Resend failed');
   return res.status(200).json({ok:true,emailSent:true});
  }catch(e){console.error('payment notice failed',e.message);return res.status(500).json({error:'Could not send payment notification'});}
