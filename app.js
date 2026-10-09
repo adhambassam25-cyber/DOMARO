@@ -1177,6 +1177,7 @@ function renderCheckout(){
   document.querySelectorAll('input[name="domaro-payment"]').forEach(r=>r.addEventListener('change',()=>{
     const chosen=paymentMethod()==='instapay';
     const info=document.getElementById('instapay-instructions');if(info)info.hidden=!chosen;
+    const cod=document.getElementById('cod-instructions');if(cod)cod.hidden=chosen;
     const label=document.getElementById('payment-label');if(label)label.textContent=chosen?'InstaPay':'Cash on Delivery';
   }));
   function validateCheckout(){
@@ -1215,6 +1216,13 @@ function renderCheckout(){
       return false;
     }
 
+    if(paymentMethod()==='instapay'){
+      const proof=document.getElementById('instapay-checkout-proof')?.files?.[0];
+      if(!proof || !['image/jpeg','image/png','image/webp'].includes(proof.type) || proof.size>5242880){
+        checkoutError.textContent='Please attach a JPG, PNG or WebP payment screenshot under 5 MB.';
+        return false;
+      }
+    }
     if(hasUnavailable){
       checkoutError.textContent='One or more items are out of stock. Please return to your cart and remove them.';
       return false;
@@ -1326,6 +1334,20 @@ function renderCheckout(){
       confirmBtn.textContent='PLACING ORDER...';
 
       try{
+        let instapayUploadedPath=null;
+        if(paymentMethod()==='instapay'){
+          const file=document.getElementById('instapay-checkout-proof')?.files?.[0];
+          if(!file || !['image/jpeg','image/png','image/webp'].includes(file.type) || file.size>5242880) throw new Error('Please attach a valid payment screenshot under 5 MB.');
+          confirmBtn.textContent='UPLOADING RECEIPT...';
+          const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+          const random=new Uint8Array(24);crypto.getRandomValues(random);
+          instapayUploadedPath=Array.from(random,v=>v.toString(16).padStart(2,'0')).join('')+'.'+ext;
+          const uploaded=await fetch(`${SUPABASE_URL}/storage/v1/object/instapay-proofs/${instapayUploadedPath}`,{
+            method:'POST',headers:customerAuthHeaders({'Content-Type':file.type,'x-upsert':'false'}),body:file
+          });
+          if(!uploaded.ok)throw new Error('Payment screenshot upload failed. Please try again.');
+          confirmBtn.textContent='PLACING ORDER...';
+        }
         const response=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${paymentMethod()==='instapay'?'place_instapay_order':'place_order_v30'}`,{
           method:'POST',
           headers:customerAuthHeaders({
@@ -1342,7 +1364,19 @@ function renderCheckout(){
           throw new Error(result?.message || result?.error || 'Could not place order. Please try again.');
         }
 
-        if(paymentMethod()==='instapay') pendingPayload.__instapay=true;
+        if(paymentMethod()==='instapay' && instapayUploadedPath){
+          const linked=await fetch(`${SUPABASE_URL}/rest/v1/rpc/submit_instapay_proof`,{
+            method:'POST',headers:customerAuthHeaders({'Content-Type':'application/json'}),
+            body:JSON.stringify({p_order_number:result.orderNumber,p_checkout_token:pendingPayload.p_checkout_token,p_path:instapayUploadedPath})
+          });
+          if(!linked.ok){
+            pendingPayload.__instapay=true;
+            pendingPayload.__proofLinkFailed=true;
+          }else{
+            pendingPayload.__instapay=true;
+            pendingPayload.__proofLinked=true;
+          }
+        }
         trackMeta('Purchase',{
           content_ids:cart.map(item=>item.id),
           contents:cart.map(item=>{
@@ -1394,13 +1428,13 @@ function renderCheckout(){
           checkoutPage.innerHTML=`
             <section class="order-success order-success-only">
               <div class="success-mark">✓</div>
-              <div class="eyebrow" style="color:#766b5d">ORDER CONFIRMED</div>
+              <div class="eyebrow" style="color:#766b5d">${pendingPayload?.__instapay?'ORDER RECEIVED — PAYMENT UNDER REVIEW':'ORDER CONFIRMED'}</div>
               <h2>Thank you for your order.</h2>
               <p class="success-label">YOUR ORDER NUMBER</p>
               <div class="success-order-number">${escapeTrackHtml(newOrderNumber)}</div>
               <button class="copy-order-btn" id="copy-order-number" type="button" data-order-number="${escapeTrackHtml(newOrderNumber)}">COPY ORDER NUMBER</button>
-              <p>Keep this number to track your order.</p>
-              ${pendingPayload?.__instapay?`<div class="instapay-upload"><h3>InstaPay: Payment Pending Verification</h3><p>Transfer ${money(currentTotal())} to <b>01206574174</b> then upload screenshot:</p><input id="instapay-proof" type="file" accept="image/png,image/jpeg,image/webp"><button id="instapay-upload-btn" type="button">UPLOAD RECEIPT</button><p id="instapay-upload-result"></p></div>` : ''}
+              <p>Keep this number to track your order.</p>${pendingPayload?.__proofLinked?'<p>Your payment screenshot was submitted successfully. Payment pending manual verification.</p>':''}
+              ${pendingPayload?.__instapay && !pendingPayload?.__proofLinked?`<div class="instapay-upload"><h3>InstaPay: Payment Pending Verification</h3><p>Transfer ${money(currentTotal())} to <b>01206574174</b> then upload screenshot:</p><input id="instapay-proof" type="file" accept="image/png,image/jpeg,image/webp"><button id="instapay-upload-btn" type="button">UPLOAD RECEIPT</button><p id="instapay-upload-result"></p></div>` : ''}
               <div class="success-actions">
                 <a class="btn dark" href="track.html?order=${encodeURIComponent(newOrderNumber)}">TRACK YOUR ORDER</a>
                 <a class="btn track-secondary" href="shop.html">CONTINUE SHOPPING</a>
