@@ -137,7 +137,7 @@ module.exports = async function handler(req, res) {
       `
         <div style="font-size:12px;letter-spacing:2px;color:#7c756d;font-weight:700;">NEW ORDER</div>
         <h1 style="margin:8px 0 4px;font-size:26px;color:#171615;">${escapeHtml(order.order_number)}</h1>
-        <p style="margin:0 0 24px;color:#67615a;">A new Cash on Delivery order has been placed on DOMARO.</p>
+        <p style="margin:0 0 24px;color:#67615a;">A new order has been placed on DOMARO.</p>
 
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:22px;">
           <tr><td style="padding:7px 0;color:#77716a;">Customer</td><td style="padding:7px 0;text-align:right;font-weight:700;">${escapeHtml(customer.firstName)} ${escapeHtml(customer.lastName)}</td></tr>
@@ -174,11 +174,11 @@ module.exports = async function handler(req, res) {
 
     if (customerEmail) {
       const customerHtml = emailShell(
-        `Your DOMARO order ${order.order_number} is confirmed`,
+        `Your DOMARO order ${order.order_number} has been received`,
         `
-          <div style="font-size:12px;letter-spacing:2px;color:#7c756d;font-weight:700;">ORDER CONFIRMED</div>
+          <div style="font-size:12px;letter-spacing:2px;color:#7c756d;font-weight:700;">ORDER RECEIVED</div>
           <h1 style="margin:8px 0 10px;font-size:26px;color:#171615;">Thank you for your order.</h1>
-          <p style="margin:0 0 22px;color:#67615a;line-height:1.7;">We have received your order and will prepare it for delivery. Keep your order number below for tracking.</p>
+          <p style="margin:0 0 22px;color:#67615a;line-height:1.7;">We have received your order. If you selected InstaPay, payment verification is required before processing. Keep your order number below for tracking.</p>
 
           <div style="padding:18px;background:#0a0a0a;color:#ffffff;text-align:center;margin-bottom:22px;">
             <div style="font-size:11px;letter-spacing:2px;color:#c9c5bf;">YOUR ORDER NUMBER</div>
@@ -201,7 +201,7 @@ module.exports = async function handler(req, res) {
       sends.push(
         sendEmail({
           to: customerEmail,
-          subject: `DOMARO order confirmed — ${order.order_number}`,
+          subject: `DOMARO order received — ${order.order_number}`,
           html: customerHtml,
           idempotencyKey: `domaro-customer-${order.order_number}`
         })
