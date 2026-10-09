@@ -120,6 +120,10 @@
   "outputDirectory": ".",
   "rewrites": [
     {
+      "source": "/fragrance-guide",
+      "destination": "/fragrance-guide.html"
+    },
+    {
       "source": "/shop",
       "destination": "/shop.html"
     },
@@ -216,6 +220,11 @@
     {
       "source": "/contact.html",
       "destination": "/contact",
+      "permanent": true
+    },
+    {
+      "source": "/fragrance-guide.html",
+      "destination": "/fragrance-guide",
       "permanent": true
     }
   ]
