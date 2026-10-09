@@ -1363,12 +1363,20 @@ async function openOrderDetails(orderId){
   });
   orderDetailsContent.querySelectorAll('.instapay-review').forEach(btn=>btn.addEventListener('click',async()=>{
     const approve=btn.dataset.approve==='true';
-    if(!confirm(approve?'Confirm InstaPay funds arrived in the account?':'Reject this payment receipt?'))return;
+    const reason=approve?null:prompt('Reason for rejecting payment (visible to customer):','Payment could not be verified. Please upload a clearer screenshot.');
+    if(!approve && (!reason || reason.trim().length<5))return;
+    if(approve && !confirm('Confirm InstaPay funds arrived in the account?'))return;
     btn.disabled=true;
     try{
-      const res=await fetch(`${SUPABASE_URL}/rest/v1/rpc/review_instapay_payment`,{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({p_order_id:order.id,p_approve:approve})});
+      const res=await fetch(`${SUPABASE_URL}/rest/v1/rpc/review_instapay_payment`,{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({p_order_id:order.id,p_approve:approve,p_reason:reason})});
       if(!res.ok)throw new Error('Could not update payment verification');
       order.payment_status=approve?'approved':'rejected';
+      if(!approve){
+        try{
+          const notice=await fetch('/api/payment-rejected-email',{method:'POST',headers:{...authHeaders({'Content-Type':'application/json'})},body:JSON.stringify({orderNumber:order.order_number,reason})});
+          if(!notice.ok)alert('Payment rejected, but email notification failed. Please contact the customer.');
+        }catch(_){alert('Payment rejected, but email notification failed.');}
+      }
       await loadOrders();
       openOrderDetails(order.id);
     }catch(err){alert(err.message);btn.disabled=false;}
