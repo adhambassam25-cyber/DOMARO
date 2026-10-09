@@ -18,7 +18,7 @@ module.exports=async function handler(req,res){
  const apiKey=process.env.RESEND_API_KEY;
  if(!apiKey)return res.status(503).json({error:'Contact service is temporarily unavailable.'});
  try{
-  const html=brandedEmail({eyebrow:'CUSTOMER INQUIRY',title:'New Contact Message',description:'A customer sent an inquiry through the DOMARO website.',rows:[['Customer',escape(first+' '+last)],['Email',escape(email)],['Phone',escape(phone||'Not provided')],['Subject',escape(topic)]],rawContent:'<p style="white-space:pre-wrap;line-height:1.7">'+escape(message)+'</p>',buttonLabel:'OPEN ADMIN DASHBOARD',buttonUrl:'https://domaro-eg.com/admin.html'});
+  const html=brandedEmail({eyebrow:'CUSTOMER INQUIRY',title:'New Contact Message',description:'A customer sent an inquiry through the DOMARO website.',rows:[['Customer',first+' '+last],['Email',email],['Phone',phone||'Not provided'],['Subject',topic]],rawContent:'<p style="white-space:pre-wrap;line-height:1.7">'+escape(message)+'</p>',buttonLabel:'OPEN ADMIN DASHBOARD',buttonUrl:'https://domaro-eg.com/admin.html'});
   const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({from:'DOMARO Orders <orders@domaro-eg.com>',to:['domaro.eg@gmail.com'],reply_to:email,subject:'DOMARO Contact — '+topic,html,text:'Name: '+first+' '+last+'\nEmail: '+email+'\nPhone: '+phone+'\nSubject: '+topic+'\n\n'+message})});
   if(!response.ok){console.error('Contact Resend failure',response.status,await response.text());recent.delete(key);return res.status(502).json({error:'Could not send your message right now. Please try again.'})}
   return res.status(200).json({ok:true});
