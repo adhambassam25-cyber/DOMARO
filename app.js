@@ -1579,7 +1579,7 @@ function renderTrackingResult(order){
     const reason=order.payment_rejection_reason||'We could not verify the previous screenshot.';
     const panel=document.createElement('section');
     panel.style.cssText='padding:22px;border:1px solid #d5c8bc;background:#fff;margin:20px 0';
-    panel.innerHTML='<h3>IN STAPAY PAYMENT — '+escapeTrackHtml(status.replaceAll('_',' ').toUpperCase())+'</h3>'+
+    panel.innerHTML='<h3>INSTAPAY PAYMENT — '+escapeTrackHtml(status.replaceAll('_',' ').toUpperCase())+'</h3>'+
       (status==='rejected'?'<p>'+escapeTrackHtml(reason)+'</p><p>Your order is still open. Upload a new payment screenshot below.</p><input type="file" id="retry-instapay-file" accept="image/jpeg,image/png,image/webp"><button type="button" id="retry-instapay-btn" class="btn dark" style="margin-top:12px">UPLOAD NEW SCREENSHOT</button><p id="retry-instapay-message"></p>':
        '<p>'+(status==='approved'?'Payment verified.':'We will review your payment before confirming your order.')+'</p>');
     box.appendChild(panel);
