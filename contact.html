@@ -87,13 +87,15 @@
       <p><b>Instagram</b><br><a href="https://www.instagram.com/domaro.fragrances/" target="_blank" rel="noopener noreferrer">@domaro.fragrances</a></p>
       <p><b>Delivery</b><br>Egypt</p>
     </div>
-    <form data-demo-form>
-      <div class="form-row"><input required placeholder="First name"><input required placeholder="Last name"></div>
-      <input required type="email" placeholder="Email address">
-      <input placeholder="Phone number">
-      <select><option>General inquiry</option><option>Order support</option><option>Wholesale / collaboration</option></select>
-      <textarea required placeholder="Your message"></textarea>
-      <button class="add-btn">SEND MESSAGE</button>
+    <form id="domaro-contact-form">
+      <div class="form-row"><input name="firstName" required maxlength="60" autocomplete="given-name" placeholder="First name"><input name="lastName" required maxlength="60" autocomplete="family-name" placeholder="Last name"></div>
+      <input name="email" required type="email" maxlength="160" autocomplete="email" placeholder="Email address">
+      <input name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="Phone number">
+      <select name="topic"><option>General inquiry</option><option>Order support</option><option>Wholesale / collaboration</option></select>
+      <textarea name="message" required minlength="10" maxlength="3000" placeholder="Your message"></textarea>
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+      <button class="add-btn" type="submit">SEND MESSAGE</button>
+      <p id="contact-form-feedback" role="status" aria-live="polite"></p>
     </form>
   </div>
 </main>
@@ -120,4 +122,20 @@
     <div class="copyright"><span>© 2026 DOMARO. ALL RIGHTS RESERVED.</span><span>A SCENT THAT BECOMES YOU.</span></div>
   </div>
 </footer>
-<script src="app.js?v=30.10.0"></script><script src="v30-customer.js?v=30.4"></script></body></html>
+<script src="app.js?v=30.10.0"></script><script src="v30-customer.js?v=30.4"></script><script>
+document.getElementById('domaro-contact-form').addEventListener('submit',async function(event){
+ event.preventDefault();
+ const form=this,button=form.querySelector('[type="submit"]'),feedback=document.getElementById('contact-form-feedback');
+ if(button.disabled)return;
+ const data=Object.fromEntries(new FormData(form).entries());
+ button.disabled=true;button.textContent='SENDING...';feedback.textContent='';
+ try{
+  const response=await fetch('/api/contact-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(result.error||'Unable to send your message.');
+  feedback.textContent='Your message has been sent successfully. We will get back to you soon.';
+  form.reset();
+ }catch(error){feedback.textContent=error.message||'Unable to send your message. Please try again.'}
+ finally{button.disabled=false;button.textContent='SEND MESSAGE'}
+});
+</script></body></html>
