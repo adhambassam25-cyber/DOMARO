@@ -234,11 +234,13 @@ async function buildSeoPages(){
     if(!id) continue;
     const canonical=SITE_ORIGIN+'/products/'+encodeURIComponent(id);
     const image=absoluteSiteUrl(product.image_path);
+    const seoBrand=String(product.brand||'DOMARO').replace(/\\s*\\([^)]*\\)/g,'').trim();
+    const audience={men:"men's",women:"women's",unisex:"unisex",boxes:"gift set"}[String(product.category||'').toLowerCase()]||'';
     const description=trimDescription(
       product.description,
-      `Shop ${product.name} perfume in Egypt at DOMARO. View fragrance notes, availability, current price and delivery information.`
+      `Explore ${seoBrand} ${product.name} at DOMARO Egypt. See available ${audience ? audience+' ' : ''}fragrance options, current prices, sizes and delivery across Egypt.`
     );
-    const title=`${product.name} Perfume in Egypt | ${product.brand||'DOMARO'} | DOMARO`;
+    const title=`${seoBrand} ${product.name} | Perfumes in Egypt | DOMARO`;
     let html=setHeadSeo(productTemplate,{title,description,canonical,image,ogType:'product'});
 
     const productVariants=variantsByProduct.get(id)||[];
