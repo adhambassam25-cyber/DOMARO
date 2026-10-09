@@ -23,34 +23,8 @@ function isValidPhone(value) {
   return /^01[0125][0-9]{8}$/.test(String(value || '').replace(/\s+/g, ''));
 }
 
-function emailShell(preheader, content) {
-  return `<!doctype html>
-<html>
-  <body style="margin:0;background:#f3f1ed;font-family:Arial,Helvetica,sans-serif;color:#171615;">
-    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(preheader)}</div>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f1ed;padding:28px 12px;">
-      <tr>
-        <td align="center">
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border:1px solid #e4e0da;">
-            <tr>
-              <td style="background:#090909;color:#ffffff;padding:24px 28px;text-align:center;letter-spacing:4px;font-size:20px;font-weight:700;">DOMARO</td>
-            </tr>
-            <tr>
-              <td style="padding:30px 28px;">${content}</td>
-            </tr>
-            <tr>
-              <td style="padding:20px 28px;background:#f8f7f4;color:#6b665f;font-size:12px;line-height:1.6;text-align:center;">
-                DOMARO Fragrances · Egypt<br>
-                <a href="https://domaro-eg.com" style="color:#171615;">domaro-eg.com</a>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>`;
-}
+const {brandedEmail}=require('./email-template');
+function emailShell(preheader,content){return brandedEmail({title:preheader,description:'Your DOMARO order details are below.',note:'Thank you for shopping with DOMARO.'}).replace('</td></tr><tr><td style="padding:20px',content+'</td></tr><tr><td style="padding:20px');}
 
 function itemsHtml(items) {
   return (Array.isArray(items) ? items : []).map(item => `
