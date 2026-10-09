@@ -84,6 +84,11 @@
     letter-spacing:1.2px;
   }
 }
+
+/* Reserve the first catalog rows while Supabase loads, so below-fold SEO content
+   does not jump into view and shift when products are inserted. */
+#shop-products:empty{min-height:460px}
+@media(max-width:760px){#shop-products:empty{min-height:850px}}
 </style><script type="application/ld+json" id="domaro-organization-schema">
 {
   "@context": "https://schema.org",
