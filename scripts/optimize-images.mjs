@@ -291,6 +291,7 @@ const staticPages=[
   ['https://domaro-eg.com/', '1.0'],
   ['https://domaro-eg.com/shop', '0.9'],
   ['https://domaro-eg.com/brands', '0.8'],
+  ['https://domaro-eg.com/fragrance-guide', '0.7'],
   ['https://domaro-eg.com/men', '0.9'],
   ['https://domaro-eg.com/women', '0.9'],
   ['https://domaro-eg.com/unisex', '0.9'],
