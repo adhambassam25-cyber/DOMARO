@@ -24,7 +24,7 @@ function isValidPhone(value) {
 }
 
 const {brandedEmail}=require('./email-template');
-function emailShell(preheader,content){return brandedEmail({title:preheader,description:'Your DOMARO order details are below.',note:'Thank you for shopping with DOMARO.'}).replace('</td></tr><tr><td style="padding:20px',content+'</td></tr><tr><td style="padding:20px');}
+function emailShell(preheader,content){return brandedEmail({title:preheader,description:'',rawContent:content});}
 
 function itemsHtml(items) {
   return (Array.isArray(items) ? items : []).map(item => `
