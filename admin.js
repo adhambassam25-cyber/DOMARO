@@ -1448,7 +1448,14 @@ async function updateOrderStatus(orderId,status,button){
     if(response.status===403) throw new Error('This account does not have permission to update order status.');
     if(!response.ok) throw new Error(data?.message || 'Could not update order status.');
     const target=allOrders.find(o=>o.id===orderId);
+    const previousStatus=target?.status;
     if(target) target.status=data?.status || status;
+    if(target && previousStatus!==target.status && ['confirmed','shipped','delivered','cancelled'].includes(target.status)){
+      try{
+        const notice=await fetch('/api/order-status-email',{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({orderNumber:target.order_number,event:target.status})});
+        if(!notice.ok)throw new Error('Notification not sent');
+      }catch(_){alert('Order status saved, but customer email notification failed.');}
+    }
     renderStats();
     renderOrders();
     await loadDashboardStats();
