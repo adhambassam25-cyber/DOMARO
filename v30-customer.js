@@ -144,29 +144,60 @@ const V30_TRANSLATIONS={
   'WHO ARE YOU':'لمن','SHOPPING FOR?':'تتسوق؟','Choose a collection to enter.':'اختر المجموعة للدخول.','WELCOME TO DOMARO':'مرحبًا بك في دومارو'
 };
 function getLanguage(){ return localStorage.getItem('domaro_lang')==='ar'?'ar':'en'; }
+// Safe, incremental translation; never traverse and mutate the entire DOM in one blocking task.
+let domaroTranslateRun=0;
+const domaroOriginalText=new WeakMap();
 function translateTextNodes(root=document.body){
-  if(getLanguage()!=='ar') return;
-  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(node){
-    if(!node.parentElement || ['SCRIPT','STYLE','TEXTAREA','INPUT'].includes(node.parentElement.tagName)) return NodeFilter.FILTER_REJECT;
-    return NodeFilter.FILTER_ACCEPT;
-  }});
-  const nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
-  nodes.forEach(node=>{
-    const raw=node.nodeValue; const t=raw.trim(); if(!t) return;
-    if(!node.parentElement.dataset.enText) node.parentElement.dataset.enText=t;
-    const tr=V30_TRANSLATIONS[t] || V30_TRANSLATIONS[t.toUpperCase()];
-    if(tr) node.nodeValue=raw.replace(t,tr);
-  });
-  document.documentElement.lang='ar'; document.documentElement.dir='rtl'; document.body.classList.add('lang-ar');
+  if(getLanguage()!=='ar'||!root)return;
+  const run=++domaroTranslateRun;
+  document.documentElement.lang='ar';
+  document.documentElement.dir='rtl';
+  document.body.classList.add('lang-ar');
   document.querySelectorAll('.nav-lang-text').forEach(x=>x.textContent='EN');
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{
+    acceptNode(node){
+      const parent=node.parentElement;
+      if(!parent||['SCRIPT','STYLE','NOSCRIPT','TEXTAREA'].includes(parent.tagName)||!node.nodeValue.trim())return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  // Collect candidates without mutating markup during traversal; avoid expensive full-page rewrites.
+  const candidates=[];
+  let node;
+  while((node=walker.nextNode())){
+    const text=node.nodeValue.trim();
+    if(V30_TRANSLATIONS[text]||V30_TRANSLATIONS[text.toUpperCase()])candidates.push(node);
+    if(candidates.length>1500)break;
+  }
+  let position=0;
+  function batch(){
+    if(run!==domaroTranslateRun||getLanguage()!=='ar')return;
+    const end=Math.min(position+35,candidates.length);
+    for(;position<end;position++){
+      const n=candidates[position];if(!n.isConnected)continue;
+      const original=domaroOriginalText.get(n)||n.nodeValue;
+      const text=original.trim();
+      const translated=V30_TRANSLATIONS[text]||V30_TRANSLATIONS[text.toUpperCase()];
+      if(translated){domaroOriginalText.set(n,original);n.nodeValue=original.replace(text,translated);}
+    }
+    if(position<candidates.length)setTimeout(batch,0);
+  }
+  batch();
 }
 function restoreEnglish(){
-  document.querySelectorAll('[data-en-text]').forEach(el=>{ if(el.childNodes.length===1 && el.firstChild.nodeType===3) el.textContent=el.dataset.enText; });
-  document.documentElement.lang='en'; document.documentElement.dir='ltr'; document.body.classList.remove('lang-ar');
+  ++domaroTranslateRun;
+  document.documentElement.lang='en';document.documentElement.dir='ltr';
+  document.body.classList.remove('lang-ar');
   document.querySelectorAll('.nav-lang-text').forEach(x=>x.textContent='AR');
+  // Reload only when switching back to English to restore original HTML safely.
 }
-function applyLanguage(){ getLanguage()==='ar'?translateTextNodes():restoreEnglish(); }
-function setLanguage(lang){ localStorage.setItem('domaro_lang',lang==='ar'?'ar':'en'); location.reload(); }
+function applyLanguage(){if(getLanguage()==='ar')translateTextNodes();else restoreEnglish();}
+function setLanguage(lang){
+  const next=lang==='ar'?'ar':'en';
+  localStorage.setItem('domaro_lang',next);
+  if(next==='en'){location.reload();return;}
+  applyLanguage();
+}
 
 function updateHomeProof(catalog=[]){
   const proof=document.querySelector('.hero-proof');
