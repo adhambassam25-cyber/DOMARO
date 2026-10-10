@@ -2861,3 +2861,15 @@ html[lang="ar"] .nav-lang-text{direction:ltr}
   font-variant-numeric: lining-nums tabular-nums;
   letter-spacing: 0;
 }
+
+/* Customer checkout confirmation: distinguish digits from letters in order IDs. */
+.order-success .success-order-number,
+.order-success #order-number {
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-size: clamp(18px, 3.6vw, 28px);
+  letter-spacing: .015em;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
