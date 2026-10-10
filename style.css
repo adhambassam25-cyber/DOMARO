@@ -2848,3 +2848,16 @@ html[lang="ar"] .nav,html[lang="ar"] .shop-toolbar,html[lang="ar"] .footer-grid{
 html[lang="ar"] .logo,html[lang="ar"] .product-card,html[lang="ar"] .product-image{direction:ltr}
 html[lang="ar"] .logo{text-align:center}
 html[lang="ar"] .nav-lang-text{direction:ltr}
+
+/* DOMARO Admin: legible numerals in revenue and KPI cards.
+   Retain existing sizes, colors, labels and luxury serif headings. */
+.admin-body .sales-kpi > b,
+.admin-body .accounting-kpi > b,
+.admin-body .admin-stat > b,
+.admin-body .dashboard-comparison-card > b,
+.admin-body .accounting-coverage > b {
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: 0;
+}
