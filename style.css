@@ -2873,3 +2873,19 @@ html[lang="ar"] .nav-lang-text{direction:ltr}
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
+
+/* Clear order identifiers across existing and new orders; display only, never change IDs. */
+.admin-body .admin-order-number,
+.admin-body .sales-recent-row > div > b,
+.admin-body .customer-order-row > div > b,
+.admin-body .customer-profile-hero > div > b,
+.account-order-card h3,
+.track-result-head h2,
+#track-order-number {
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: .015em;
+  overflow-wrap: anywhere;
+}
+#track-order-number {font-weight: 500;}
