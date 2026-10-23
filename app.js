@@ -297,7 +297,7 @@ function domaroArabicDisplay(value){
     'The Set Includes:':'تتضمن المجموعة:','Featuring:':'تضم المجموعة:','AVAILABLE SIZE':'المقاس المتاح',
     'ALL BRANDS':'كل الماركات','SIZES':'المقاسات','OUT OF STOCK':'غير متوفر','SELECT SIZE':'اختر المقاس',
     'ADD TO CART':'أضف إلى السلة','FROM':'ابتداءً من','LIVE PRODUCT':'منتج متاح','LIVE PRODUCTS':'منتجات متاحة',
-    'AVAILABLE SIZES':'المقاسات المتاحة','PRODUCT INFORMATION':'معلومات المنتج','THE STORY':'قصة العطر',
+    'AVAILABLE SIZES':'المقاسات المتاحة','Brand':'الماركة','Category':'الفئة','Size':'المقاس','Price':'السعر','DELIVERY':'التوصيل','Cairo & Giza: delivery within a maximum of 2 days. Other governorates may vary depending on destination, courier availability and order volume. The delivery fee is calculated automatically at checkout based on your governorate and area.':'القاهرة والجيزة: التوصيل خلال مدة أقصاها يومان. قد تختلف مدة التوصيل للمحافظات الأخرى حسب الوجهة وتوافر شركة الشحن وحجم الطلبات. تُحسب رسوم التوصيل تلقائيًا عند إتمام الطلب وفقًا للمحافظة والمنطقة.','PRODUCT INFORMATION':'معلومات المنتج','THE STORY':'قصة العطر',
     'THE SCENT':'الرائحة','THE COMPOSITION':'التركيبة'
   };
   if(dict[original.trim()]) return dict[original.trim()];
