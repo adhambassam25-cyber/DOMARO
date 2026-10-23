@@ -308,7 +308,7 @@ function domaroArabicDisplay(value){
   return out;
 }
 function domaroArabicProductCopy(product, field){
-  if((localStorage.getItem('domaro_lang')||'en')!=='ar') return String(product?.[field]||'');
+  if((localStorage.getItem('domaro_lang')||'en')!=='ar') return field==='storyText' ? String(product?.story||product?.desc||'') : String(product?.[field]||'');
   const name=domaroArabicDisplay(product?.name||'');
   const brand=domaroArabicDisplay(product?.brand||'');
   const notes=[product?.topNotes,product?.heartNotes,product?.baseNotes,product?.keyNotes].filter(Boolean).map(domaroArabicDisplay).join('، ');
