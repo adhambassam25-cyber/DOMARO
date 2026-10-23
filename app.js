@@ -252,33 +252,78 @@ function applyEntryGateWallpaper(){
   }
 }
 
-// Arabic display translations only; never modifies canonical catalog/Supabase data.
+// Arabic display translations only; canonical catalog data stays unchanged.
 function domaroArabicDisplay(value){
   const original=String(value ?? '');
   if((localStorage.getItem('domaro_lang')||'en')!=='ar') return original;
   const dict={
-    'Hook Blue':'هوك بلو','Arrogate Blue':'أروجيت بلو','Arrogate Pink':'أروجيت بينك',
-    'Wild Colt':'وايلد كولت','Gris Erik':'جريس إيريك','Miss Flora':'ميس فلورا',
-    'Lipstick':'ليبستيك','Strick Black':'ستريك بلاك','Strike Black':'ستريك بلاك',
-    'Frankel Elixer':'فرانكل إليكسير','Frankel Elixir':'فرانكل إليكسير',
-    'Special Musk':'سبيشال مسك','Dkhooni':'دخوني','Black Diamond':'بلاك دايموند',
-    'Men':'رجالي','Women':'حريمي','Unisex':'للجنسين','Boxes':'علب',
-    'Citrus':'حمضيات','Bergamot':'برغموت','Lemon':'ليمون','Orange':'برتقال','Apple':'تفاح','Pear':'كمثرى',
-    'Lavender':'لافندر','Rose':'ورد','Jasmine':'ياسمين','Vanilla':'فانيليا','Musk':'مسك','Amber':'عنبر',
-    'Oud':'عود','Sandalwood':'خشب الصندل','Cedarwood':'خشب الأرز','Patchouli':'باتشولي','Vetiver':'فيتيفر',
-    'Leather':'جلد','Spices':'توابل','Pink Pepper':'فلفل وردي','Black Pepper':'فلفل أسود','Cardamom':'هيل',
-    'Tonka Bean':'حبوب التونكا','Coconut':'جوز الهند','Saffron':'زعفران','Incense':'بخور','White Musk':'مسك أبيض',
-    'Woody':'خشبي','Fresh':'منعش','Floral':'زهري','Sweet':'حلو','Oriental':'شرقي','Aquatic':'مائي',
-    'TOP NOTES':'المقدمة','HEART NOTES':'القلب','BASE NOTES':'القاعدة','KEY NOTES':'النوتات الأساسية',
-    'MEN':'رجالي','WOMEN':'حريمي','UNISEX':'للجنسين','ALL BRANDS':'كل الماركات','SIZES':'مقاسات'
+    'IBRAQ Mini Diamond Collection':'مجموعة إبراق الماسية المصغّرة',
+    'IBRAQ Tobacco Collection Gift Set – 9 Pieces':'طقم إبراق لمجموعة التوباكو – ٩ قطع',
+    'Nude Coral Diamond':'نيود كورال دايموند','Emerald Soul Diamond':'إميرالد سول دايموند',
+    'Grey Pearl Diamond':'جراي بيرل دايموند','White Regent Diamond':'وايت ريجنت دايموند',
+    'Black Carbon Diamond':'بلاك كاربون دايموند','Purple Heart Diamond':'بيربل هارت دايموند',
+    'Strike Black':'سترايك بلاك','Strick Black':'ستريك بلاك','Black Diamond – Incense':'بلاك دايموند – بخور',
+    'Pink Queen':'بينك كوين','Frankel Black Elixir':'فرانكل بلاك إليكسير','Frankel Elixer':'فرانكل إليكسير',
+    'Frankel Elixir':'فرانكل إليكسير','Arrogate Blue':'أروجيت بلو','Arrogate Pink':'أروجيت بينك',
+    'Pink Diamond – Sakura':'بينك دايموند – ساكورا','Hook Blue':'هوك بلو','Wild Colt Elixir':'وايلد كولت إليكسير',
+    'Wild Colt Bakhur':'وايلد كولت بخور','Wild Colt':'وايلد كولت','Gris Erik':'جريس إيريك',
+    'Musk Al-Layl':'مسك الليل','Signature Silver':'سيجنتشر سيلفر','Golden Sheikh Zayed / Zayed':'جولدن الشيخ زايد / زايد',
+    'Fearless':'فيرلس','Blue Laverne Sport':'بلو لافيرن سبورت','Dangerous Arrogate':'دينجرس أروجيت',
+    "La'dor Santorini":'لادور سانتوريني','Special Musk':'سبيشال مسك','Abaq Pomegranate Musk':'عبق مسك الرمان',
+    'Musk Al-Qamar':'مسك القمر','Musk Al-Shams':'مسك الشمس','Powder Musk':'باودر مسك','Musk Al-Fajr':'مسك الفجر',
+    'Private 2 December':'برايفت ٢ ديسمبر','Crown Spirit':'كراون سبيريت','Miss Flora':'ميس فلورا','Lipstick':'ليبستيك',
+    'Dkhooni':'دخوني','ASSAF':'عساف','Laverne':'لافيرن','Dkhoon Emirates':'دخون الإمارات',
+    'IBRAQ (Ibrahim Al-Qurashi)':'إبراق (إبراهيم القرشي)','Ibrahim Al-Qurashi':'إبراهيم القرشي',
+    'Men':'رجالي','Women':'حريمي','Unisex':'للجنسين','Gift Box':'علبة هدايا','Eau de Parfum':'ماء عطر',
+    'TOP NOTES':'نوتات المقدمة','HEART NOTES':'نوتات القلب','BASE NOTES':'نوتات القاعدة','KEY NOTES':'النوتات الأساسية',
+    'Bergamot':'برغموت','Grapefruit':'جريب فروت','Blackcurrant':'الكشمش الأسود','Black Currant':'الكشمش الأسود',
+    'Pineapple':'أناناس','Cinnamon':'قرفة','Citron':'أترج','Cardamom':'هيل','Pink Pepper':'فلفل وردي',
+    'Patchouli':'باتشولي','Vetiver':'فيتيفر','Aquatic Notes':'نوتات مائية','Birch':'خشب البتولا','Incense':'بخور',
+    'Sandalwood':'خشب الصندل','Vanilla':'فانيليا','Amber':'عنبر','Leather':'جلد','Smoke':'دخان','Oud':'عود',
+    'Rose':'ورد','Gardenia':'غاردينيا','Caramel':'كراميل','Musk':'مسك','Lemon':'ليمون','Iris':'سوسن',
+    'Violet':'بنفسج','Basil':'ريحان','Cedarwood':'خشب الأرز','Orange Blossom':'زهر البرتقال','Coconut':'جوز الهند',
+    'Guaiac Wood':'خشب الغاياك','Cashmeran':'كاشميران','Almond':'لوز','Neroli':'نيرولي','Apricot':'مشمش',
+    'Pear':'كمثرى','Jasmine':'ياسمين','Cashmere Wood':'خشب الكشمير','Peony':'فاوانيا','Mandarin':'يوسفي',
+    'Lily':'زنبق','Cherry Blossom':'زهر الكرز','White Musk':'مسك أبيض','Ginger':'زنجبيل','Myrrh':'مُرّ',
+    'Tonka Bean':'حبوب التونكا','Fig':'تين','Tea':'شاي','Oak Moss':'طحلب البلوط','Aromatic Woods':'أخشاب عطرية',
+    'Orange':'برتقال','Peach':'خوخ','Lemon Blossom':'زهر الليمون','Pineapple':'أناناس','Mango':'مانجو',
+    'Piña Colada':'بينا كولادا','Yogurt':'زبادي','Vanilla Sugar':'سكر الفانيليا','Amberwood':'خشب العنبر',
+    'Fruits':'فواكه','Saffron':'زعفران','Peach Blossom':'زهر الخوخ','White Flowers':'زهور بيضاء',
+    'Citrus Blossoms':'أزهار الحمضيات','Greek Tobacco':'تبغ يوناني','Brazilian Tobacco':'تبغ برازيلي',
+    'Spanish Tobacco':'تبغ إسباني','French Tobacco':'تبغ فرنسي','Arabian Tobacco':'تبغ عربي',
+    'Dominican Tobacco':'تبغ دومينيكاني','Cuban Tobacco':'تبغ كوبي','Jamaican Tobacco':'تبغ جامايكي',
+    'Mexican Tobacco':'تبغ مكسيكي','Six distinctive signatures. One refined collection.':'ستة عطور مميزة في مجموعة واحدة راقية.',
+    'Nine signatures. One exceptional collection.':'تسعة عطور مميزة في مجموعة استثنائية.',
+    'The Set Includes:':'تتضمن المجموعة:','Featuring:':'تضم المجموعة:','AVAILABLE SIZE':'المقاس المتاح',
+    'ALL BRANDS':'كل الماركات','SIZES':'المقاسات','OUT OF STOCK':'غير متوفر','SELECT SIZE':'اختر المقاس',
+    'ADD TO CART':'أضف إلى السلة','FROM':'ابتداءً من','LIVE PRODUCT':'منتج متاح','LIVE PRODUCTS':'منتجات متاحة',
+    'AVAILABLE SIZES':'المقاسات المتاحة','PRODUCT INFORMATION':'معلومات المنتج','THE STORY':'قصة العطر',
+    'THE SCENT':'الرائحة','THE COMPOSITION':'التركيبة'
   };
   if(dict[original.trim()]) return dict[original.trim()];
   let out=original;
   for(const key of Object.keys(dict).sort((a,b)=>b.length-a.length)){
-    const escaped=key;
-    out=out.replace(new RegExp('(^|[^A-Za-z])'+escaped+'(?=$|[^A-Za-z])','gi'),(m,p)=>p+dict[key]);
+    out=out.replace(new RegExp('(^|[^A-Za-z])'+key+'(?=$|[^A-Za-z])','gi'),(m,p)=>p+dict[key]);
   }
   return out;
+}
+function domaroArabicProductCopy(product, field){
+  if((localStorage.getItem('domaro_lang')||'en')!=='ar') return String(product?.[field]||'');
+  const name=domaroArabicDisplay(product?.name||'');
+  const brand=domaroArabicDisplay(product?.brand||'');
+  const notes=[product?.topNotes,product?.heartNotes,product?.baseNotes,product?.keyNotes].filter(Boolean).map(domaroArabicDisplay).join('، ');
+  if(field==='storyText' && product?.name==='Arrogate Blue'){
+    return 'رحلة من الانتعاش تبدأ بنفحات البرغموت والزنجبيل، ثم تكشف عن قلب غني بخشب الصندل والياسمين. وتستقر الرائحة على قاعدة دافئة من الباتشولي والمسك لتمنحك إحساسًا أنيقًا ومتوازنًا.';
+  }
+  if(field==='desc'){
+    if(String(product?.cat||'').toLowerCase()==='boxes'){
+      return 'اكتشف مجموعة مختارة من العطور المميزة من '+brand+'، مقدمة في علبة هدايا أنيقة. تمنحك المجموعة تنوعًا من الروائح لتجربتها أو إهدائها، مع توضيح أحجام العطور ومحتويات المجموعة أدناه.';
+    }
+    const gender=String(product?.cat||'').toLowerCase()==='men'?'رجالي':String(product?.cat||'').toLowerCase()==='women'?'نسائي':'للجنسين';
+    return name+' من '+brand+' عطر '+gender+' بطابع مميز يجمع بين الأناقة والحضور الخاص. اكتشف تفاصيل الرائحة والنوتات العطرية لتختار ما يناسب ذوقك ومناسباتك. '+(notes?'وتضم النوتات العطرية: '+notes+'.':'');
+  }
+  if(field==='storyText') return name+' يعكس شخصية عطرية مميزة وتوازنًا بين النفحات المختلفة، ليمنحك تجربة تناسب ذوقك وتكمل حضورك في مختلف المناسبات.';
+  return String(product?.[field]||'');
 }
 
 function productCard(p, priority=false){
