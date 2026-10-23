@@ -257,23 +257,7 @@ function domaroArabicDisplay(value){
   const original=String(value ?? '');
   if((localStorage.getItem('domaro_lang')||'en')!=='ar') return original;
   const dict={
-    'IBRAQ Mini Diamond Collection':'مجموعة إبراق الماسية المصغّرة',
-    'IBRAQ Tobacco Collection Gift Set – 9 Pieces':'طقم إبراق لمجموعة التوباكو – ٩ قطع',
-    'Nude Coral Diamond':'نيود كورال دايموند','Emerald Soul Diamond':'إميرالد سول دايموند',
-    'Grey Pearl Diamond':'جراي بيرل دايموند','White Regent Diamond':'وايت ريجنت دايموند',
-    'Black Carbon Diamond':'بلاك كاربون دايموند','Purple Heart Diamond':'بيربل هارت دايموند',
-    'Strike Black':'سترايك بلاك','Strick Black':'ستريك بلاك','Black Diamond – Incense':'بلاك دايموند – بخور',
-    'Pink Queen':'بينك كوين','Frankel Black Elixir':'فرانكل بلاك إليكسير','Frankel Elixer':'فرانكل إليكسير',
-    'Frankel Elixir':'فرانكل إليكسير','Arrogate Blue':'أروجيت بلو','Arrogate Pink':'أروجيت بينك',
-    'Pink Diamond – Sakura':'بينك دايموند – ساكورا','Hook Blue':'هوك بلو','Wild Colt Elixir':'وايلد كولت إليكسير',
-    'Wild Colt Bakhur':'وايلد كولت بخور','Wild Colt':'وايلد كولت','Gris Erik':'جريس إيريك',
-    'Musk Al-Layl':'مسك الليل','Signature Silver':'سيجنتشر سيلفر','Golden Sheikh Zayed / Zayed':'جولدن الشيخ زايد / زايد',
-    'Fearless':'فيرلس','Aura':'أورا','Tiamo':'تيامو','Blue Laverne Sport':'بلو لافيرن سبورت','Dangerous Arrogate':'دينجرس أروجيت',
     "La'dor Santorini":'لادور سانتوريني','Special Musk':'سبيشال مسك','Abaq Pomegranate Musk':'عبق مسك الرمان',
-    'Musk Al-Qamar':'مسك القمر','Musk Al-Shams':'مسك الشمس','Powder Musk':'باودر مسك','Musk Al-Fajr':'مسك الفجر',
-    'Private 2 December':'برايفت ٢ ديسمبر','Crown Spirit':'كراون سبيريت','Miss Flora':'ميس فلورا','Lipstick':'ليبستيك',
-    'Dkhooni':'دخوني','ASSAF':'عساف','Laverne':'لافيرن','Dkhoon Emirates':'دخون الإمارات',
-    'IBRAQ (Ibrahim Al-Qurashi)':'إبراق (إبراهيم القرشي)','Ibrahim Al-Qurashi':'إبراهيم القرشي',
     'Men':'رجالي','Women':'حريمي','Unisex':'للجنسين','Gift Box':'علبة هدايا','Eau de Parfum':'ماء عطر',
     'TOP NOTES':'نوتات المقدمة','HEART NOTES':'نوتات القلب','BASE NOTES':'نوتات القاعدة','KEY NOTES':'النوتات الأساسية',
     'Lychee':'ليتشي','Rhubarb':'راوند','Nutmeg':'جوزة الطيب','Turkish Rose':'ورد تركي','Petalia':'بيتـاليا','Haitian Vetiver':'فيتيفر هايتي','Calypso':'كاليبسو','Red Berries':'توت أحمر','Ylang-Ylang':'يلانغ يلانغ','Orris':'جذر السوسن','Meringue':'ميرينغ','Elemi':'إليمي','Bourbon':'بوربون','Sweet Almond':'لوز حلو','Ambroxan':'أمبروكسان','Powdery Notes':'نفحات بودرية','Precious Woods':'أخشاب فاخرة','Oakmoss':'طحلب البلوط','Suede':'جلد شمواه','Birch Flower':'زهرة البتولا','Bergamot':'برغموت','Grapefruit':'جريب فروت','Blackcurrant':'الكشمش الأسود','Black Currant':'الكشمش الأسود',
