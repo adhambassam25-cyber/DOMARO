@@ -2889,3 +2889,203 @@ html[lang="ar"] .nav-lang-text{direction:ltr}
   overflow-wrap: anywhere;
 }
 #track-order-number {font-weight: 500;}
+
+
+/* DOMARO mobile Admin polish — Accounting first (UI-only; no financial logic changes). */
+.admin-body #admin-accounting-panel,
+.admin-body #admin-accounting-panel * {
+  box-sizing: border-box;
+}
+.admin-body #admin-accounting-panel {
+  min-width: 0;
+  max-width: 100%;
+}
+.admin-body #admin-accounting-panel .accounting-head,
+.admin-body #admin-accounting-panel .accounting-expense-head {
+  min-width: 0;
+  gap: 16px;
+}
+.admin-body #admin-accounting-panel .accounting-head > div:first-child,
+.admin-body #admin-accounting-panel .accounting-expense-head > div:first-child {
+  min-width: 0;
+}
+.admin-body #admin-accounting-panel .accounting-head h1,
+.admin-body #admin-accounting-panel .accounting-expense-head h2 {
+  overflow-wrap: anywhere;
+  line-height: 1.12;
+}
+.admin-body #admin-accounting-panel .accounting-card,
+.admin-body #admin-accounting-panel .dashboard-card,
+.admin-body #admin-accounting-panel .accounting-support-grid > *,
+.admin-body #admin-accounting-panel .accounting-inventory-grid > *,
+.admin-body #admin-accounting-panel .accounting-v2-grid > * {
+  min-width: 0;
+}
+.admin-body #admin-accounting-panel .accounting-table-wrap {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.admin-body #admin-accounting-panel .accounting-table {
+  width: 100%;
+}
+.admin-body #admin-accounting-panel .accounting-table th,
+.admin-body #admin-accounting-panel .accounting-table td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.admin-body #admin-accounting-panel .accounting-table td {
+  line-height: 1.45;
+}
+.admin-body #admin-accounting-panel .accounting-kpi {
+  min-width: 0;
+}
+.admin-body #admin-accounting-panel .accounting-kpi > b {
+  max-width: 100%;
+  font-size: clamp(17px, 4.5vw, 26px);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.admin-body #admin-accounting-panel .accounting-kpi > span,
+.admin-body #admin-accounting-panel .accounting-kpi > small {
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.admin-body #admin-accounting-panel .accounting-metric-list > div {
+  min-width: 0;
+  align-items: flex-start;
+  gap: 12px;
+}
+.admin-body #admin-accounting-panel .accounting-metric-list > div > span {
+  min-width: 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.admin-body #admin-accounting-panel .accounting-metric-list > div > b {
+  flex: 0 1 auto;
+  min-width: 0;
+  text-align: right;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.admin-body #admin-accounting-panel .accounting-coverage > b {
+  font-size: clamp(30px, 9vw, 46px);
+  line-height: 1.2;
+}
+.admin-body #admin-accounting-panel .accounting-expense-form,
+.admin-body #admin-accounting-panel .accounting-settlement-form,
+.admin-body #admin-accounting-panel .inventory-simple-form,
+.admin-body #admin-accounting-panel .inventory-purchase-form,
+.admin-body #admin-accounting-panel .inventory-payment-form {
+  min-width: 0;
+}
+.admin-body #admin-accounting-panel .accounting-expense-form input,
+.admin-body #admin-accounting-panel .accounting-expense-form select,
+.admin-body #admin-accounting-panel .accounting-settlement-form input,
+.admin-body #admin-accounting-panel .accounting-settlement-form select,
+.admin-body #admin-accounting-panel .inventory-simple-form input,
+.admin-body #admin-accounting-panel .inventory-purchase-form input,
+.admin-body #admin-accounting-panel .inventory-purchase-form select,
+.admin-body #admin-accounting-panel .inventory-payment-form input,
+.admin-body #admin-accounting-panel .inventory-payment-form select {
+  min-width: 0;
+  max-width: 100%;
+}
+.admin-body #admin-accounting-panel .inventory-purchase-line {
+  min-width: 0;
+}
+.admin-body #admin-accounting-panel .inventory-purchase-line > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.admin-body #admin-accounting-panel .inventory-supplier-row {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.admin-body #admin-accounting-panel .inventory-supplier-row > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.admin-body #admin-accounting-panel .accounting-row-actions {
+  flex-wrap: wrap;
+}
+.admin-body #admin-accounting-panel button,
+.admin-body #admin-accounting-panel select,
+.admin-body #admin-accounting-panel input {
+  max-width: 100%;
+}
+@media (max-width: 700px) {
+  .admin-body #admin-accounting-panel .accounting-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+  .admin-body #admin-accounting-panel .accounting-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+    min-width: 0;
+  }
+  .admin-body #admin-accounting-panel .accounting-actions select {
+    grid-column: 1 / -1;
+  }
+  .admin-body #admin-accounting-panel .accounting-actions button {
+    width: 100%;
+    min-width: 0;
+    white-space: normal;
+  }
+  .admin-body #admin-accounting-panel .accounting-kpis {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .admin-body #admin-accounting-panel .accounting-kpi {
+    padding: 16px;
+    min-height: 0;
+  }
+  .admin-body #admin-accounting-panel .accounting-support-grid,
+  .admin-body #admin-accounting-panel .accounting-inventory-grid,
+  .admin-body #admin-accounting-panel .accounting-v2-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .admin-body #admin-accounting-panel .accounting-card {
+    padding: 16px;
+  }
+  .admin-body #admin-accounting-panel .accounting-expenses-section {
+    margin-top: 22px;
+    padding-top: 22px;
+  }
+  .admin-body #admin-accounting-panel .accounting-expense-head h2 {
+    font-size: clamp(25px, 7vw, 32px);
+  }
+  .admin-body #admin-accounting-panel .accounting-expense-form,
+  .admin-body #admin-accounting-panel .accounting-settlement-form {
+    padding: 12px;
+    gap: 12px;
+  }
+  .admin-body #admin-accounting-panel .accounting-row-actions {
+    justify-content: flex-start;
+  }
+}
+@media (max-width: 380px) {
+  .admin-body #admin-accounting-panel .accounting-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .admin-body #admin-accounting-panel .accounting-actions select {
+    grid-column: auto;
+  }
+  .admin-body #admin-accounting-panel .accounting-metric-list > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .admin-body #admin-accounting-panel .accounting-metric-list > div > b {
+    text-align: left;
+  }
+}
