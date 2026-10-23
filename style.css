@@ -3176,3 +3176,35 @@ html[lang="ar"] .nav-lang-text{direction:ltr}
     min-width: 760px;
   }
 }
+
+
+/* Keep every Accounting date input inside its own form/card on narrow screens. */
+.admin-body #admin-accounting-panel input[type="date"] {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+.admin-body #admin-accounting-panel form label,
+.admin-body #admin-accounting-panel .accounting-form label,
+.admin-body #admin-accounting-panel .accounting-settlement-form label,
+.admin-body #admin-accounting-panel .accounting-expense-form label,
+.admin-body #admin-accounting-panel .inventory-purchase-form label,
+.admin-body #admin-accounting-panel .inventory-payment-form label {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.admin-body #admin-accounting-panel form,
+.admin-body #admin-accounting-panel .accounting-card {
+  min-width: 0;
+  max-width: 100%;
+}
+@media (max-width: 700px) {
+  .admin-body #admin-accounting-panel input[type="date"] {
+    font-size: 13px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
