@@ -393,12 +393,14 @@ function domaroTranslateValue(value){
 }
 function translateTextNodes(root=document.body){
   if(!root)return;
-  const run=++domaroTranslateRun;
   const isArabic=getLanguage()==='ar';
-  document.documentElement.lang=isArabic?'ar':'en';
-  document.documentElement.dir=isArabic?'rtl':'ltr';
-  if(document.body)document.body.classList.toggle('lang-ar',isArabic);
-  document.querySelectorAll('.nav-lang-text').forEach(x=>x.textContent=isArabic?'EN':'AR');
+  // Only update document-wide language state for a full-page translation.
+  if(root===document.body){
+    document.documentElement.lang=isArabic?'ar':'en';
+    document.documentElement.dir=isArabic?'rtl':'ltr';
+    document.body.classList.toggle('lang-ar',isArabic);
+    document.querySelectorAll('.nav-lang-text').forEach(x=>{x.textContent=isArabic?'EN':'AR';});
+  }
   const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
   let node;
   while((node=walker.nextNode())){
@@ -406,21 +408,25 @@ function translateTextNodes(root=document.body){
     if(!parent||['SCRIPT','STYLE','NOSCRIPT','TEXTAREA'].includes(parent.tagName)||parent.closest('.product-name,.product-brand,[data-product-name],[data-product-brand],.brand-name,.logo'))continue;
     if(!domaroOriginalNodes.has(node))domaroOriginalNodes.set(node,node.nodeValue);
     const original=domaroOriginalNodes.get(node);
-    node.nodeValue=isArabic?domaroTranslateValue(original):original;
+    const translated=isArabic?domaroTranslateValue(original):original;
+    if(node.nodeValue!==translated)node.nodeValue=translated;
   }
-  // Translate common UI attributes, retaining their originals for a clean English restore.
+  // Limit attribute work to this subtree so newly rendered cards don't rescan the whole page.
+  const elements=[];
+  if(root.nodeType===Node.ELEMENT_NODE)elements.push(root);
+  if(root.querySelectorAll)elements.push(...root.querySelectorAll('*'));
   const attrs=['placeholder','aria-label','title'];
-  document.querySelectorAll('*').forEach(el=>{
-    if(el.closest('.product-name,.product-brand,[data-product-name],[data-product-brand],.brand-name,.logo'))return;
-    attrs.forEach(attr=>{
-      if(!el.hasAttribute(attr))return;
+  for(const el of elements){
+    if(el.closest('.product-name,.product-brand,[data-product-name],[data-product-brand],.brand-name,.logo'))continue;
+    for(const attr of attrs){
+      if(!el.hasAttribute(attr))continue;
       const key='data-domaro-original-'+attr;
       if(!el.hasAttribute(key))el.setAttribute(key,el.getAttribute(attr));
       const original=el.getAttribute(key);
-      const translated=domaroTranslateValue(original);
-      if(isArabic)el.setAttribute(attr,translated);else el.setAttribute(attr,original);
-    });
-  });
+      const translated=isArabic?domaroTranslateValue(original):original;
+      if(el.getAttribute(attr)!==translated)el.setAttribute(attr,translated);
+    }
+  }
 }
 function restoreEnglish(){ translateTextNodes(document.body); }
 function applyLanguage(){ translateTextNodes(document.body); }
