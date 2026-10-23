@@ -323,6 +323,7 @@ function domaroArabicProductCopy(product, field){
     return name+' من '+brand+' عطر '+gender+' بطابع مميز يجمع بين الأناقة والحضور الخاص. اكتشف تفاصيل الرائحة والنوتات العطرية لتختار ما يناسب ذوقك ومناسباتك. '+(notes?'وتضم النوتات العطرية: '+notes+'.':'');
   }
   if(field==='storyText') return name+' يعكس شخصية عطرية مميزة وتوازنًا بين النفحات المختلفة، ليمنحك تجربة تناسب ذوقك وتكمل حضورك في مختلف المناسبات.';
+  if(field==='storyText') return String(product?.story||product?.desc||'');
   return String(product?.[field]||'');
 }
 
@@ -813,7 +814,7 @@ function renderProductDetail(){
   const variants=(p.variants||[]).filter(v=>v.active!==false);
   const initialVariant=variantForProduct(p,null);
   const brandLabel=p.brand ? escapeTrackHtml(domaroArabicDisplay(p.brand)) : 'دومارو';
-  const storyText=p.story || p.desc || '';
+  const storyText=(localStorage.getItem('domaro_lang')||'en')==='ar' ? domaroArabicProductCopy(p,'storyText') : (p.story || p.desc || '');
   const hasSplitNotes=Boolean(p.topNotes || p.heartNotes || p.baseNotes);
   const hasKeyNotes=Boolean(p.keyNotes);
   const gallery=[{path:p.img,alt:p.name},...(p.gallery||[]).filter(g=>g.path && g.path!==p.img)];
@@ -858,7 +859,7 @@ function renderProductDetail(){
         <div class="price product-detail-price" id="product-selected-price" style="font-size:22px;margin:18px 0">${Number(initialVariant?.compareAtPrice ?? p.compareAtPrice)>Number(initialVariant?.price ?? p.price)?`<span class="old-price">${money(initialVariant?.compareAtPrice ?? p.compareAtPrice)}</span><span class="sale-price">${money(initialVariant?.price ?? p.price)}</span>`:money(initialVariant?.price ?? p.price)}</div>
         <div class="stock-line" id="product-selected-stock"><span class="stock-dot ${variantAvailable(initialVariant) ? '' : 'stock-dot-out'}"></span>${variantAvailable(initialVariant) ? (initialVariant.stockQuantity === null ? 'AVAILABLE' : `${initialVariant.stockQuantity} IN STOCK`) : 'OUT OF STOCK'}</div>
         ${variantButtons}
-        ${p.desc ? `<p class="product-short-desc">${escapeTrackHtml(domaroArabicDisplay(p.desc))}</p>` : ''}
+        ${p.desc ? `<p class="product-short-desc">${escapeTrackHtml(domaroArabicProductCopy(p,'desc'))}</p>` : ''}
         <div class="qty"><button id="minus">−</button><input id="qty" type="number" min="1" max="10" value="1"><button id="plus">+</button></div>
         <div class="product-buy-row"><button class="add-btn" id="add" ${variantAvailable(initialVariant) ? '' : 'disabled'}>${variantAvailable(initialVariant) ? 'ADD TO CART' : 'OUT OF STOCK'}</button><button class="wishlist-product-btn" id="wishlist-product-btn" type="button" aria-label="Add to wishlist">♡</button></div>
         <div class="product-service-row">
@@ -878,7 +879,7 @@ function renderProductDetail(){
     </div>
 
     <div class="product-accordion-wide accordion">
-      <details open><summary>PRODUCT INFORMATION</summary><p>${p.brand ? `Brand: ${escapeTrackHtml(p.brand)}<br>` : ''}Size: <span id="product-info-size">${escapeTrackHtml(domaroArabicDisplay(initialVariant?.size || p.size))}</span><br>Category: ${escapeTrackHtml(String(p.cat || '').charAt(0).toUpperCase()+String(p.cat || '').slice(1))}<br>Price: <span id="product-info-price">${money(initialVariant?.price ?? p.price)}</span></p></details>
+      <details open><summary>PRODUCT INFORMATION</summary><p>${p.brand ? `${escapeTrackHtml(domaroArabicDisplay('Brand'))}: ${escapeTrackHtml(domaroArabicDisplay(p.brand))}<br>` : ''}Size: <span id="product-info-size">${escapeTrackHtml(domaroArabicDisplay(initialVariant?.size || p.size))}</span><br>${escapeTrackHtml(domaroArabicDisplay('Category'))}: ${escapeTrackHtml(domaroArabicDisplay(String(p.cat || '').charAt(0).toUpperCase()+String(p.cat || '').slice(1)))}<br>Price: <span id="product-info-price">${money(initialVariant?.price ?? p.price)}</span></p></details>
       <details><summary>DELIVERY</summary><p>Cairo &amp; Giza: delivery within a maximum of 2 days. Other governorates may vary depending on destination, courier availability and order volume. The delivery fee is calculated automatically at checkout based on your governorate and area.</p></details>
     </div>
     <section id="product-recommendations" class="product-recommendations-v30"></section>`;
