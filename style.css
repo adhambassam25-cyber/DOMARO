@@ -3112,3 +3112,30 @@ html[lang="ar"] .nav-lang-text{direction:ltr}
 .admin-body #admin-accounting-panel .inventory-payment-form > input {
   min-width: 0;
 }
+
+
+/* Consistent date controls across the Accounting registers. */
+.admin-body #admin-accounting-panel #accounting-settlement-date,
+.admin-body #admin-accounting-panel #accounting-expense-date,
+.admin-body #admin-accounting-panel #inventory-payment-date,
+.admin-body #admin-accounting-panel #inventory-purchase-date {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 10px;
+  border: 1px solid #d3c9bc;
+  border-radius: 2px;
+  background-color: #fff;
+  color: #252422;
+  font: 500 13px/1.4 Inter, Arial, Helvetica, sans-serif;
+  box-sizing: border-box;
+  color-scheme: light;
+}
+.admin-body #admin-accounting-panel #accounting-settlement-date:focus,
+.admin-body #admin-accounting-panel #accounting-expense-date:focus,
+.admin-body #admin-accounting-panel #inventory-payment-date:focus,
+.admin-body #admin-accounting-panel #inventory-purchase-date:focus {
+  outline: 2px solid #8a8075;
+  outline-offset: 1px;
+}
