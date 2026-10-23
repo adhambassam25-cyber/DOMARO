@@ -400,7 +400,7 @@ function restoreEnglish(){
   document.querySelectorAll('.nav-lang-text').forEach(x=>x.textContent='AR');
 }
 function applyLanguage(){ getLanguage()==='ar'?translateTextNodes():restoreEnglish(); }
-function setLanguage(lang){ localStorage.setItem('domaro_lang',lang==='ar'?'ar':'en'); location.reload(); }
+function setLanguage(lang){ const next=lang==='ar'?'ar':'en'; localStorage.setItem('domaro_lang',next); applyLanguage(); }
 
 function updateHomeProof(catalog=[]){
   const proof=document.querySelector('.hero-proof');
