@@ -275,7 +275,7 @@ function domaroArabicDisplay(value){
   if(dict[original.trim()]) return dict[original.trim()];
   let out=original;
   for(const key of Object.keys(dict).sort((a,b)=>b.length-a.length)){
-    const escaped=key.replace(/[.*+?^${}()|[\\]\\]/g,'\\function productCard(p, priority=false){');
+    const escaped=key;
     out=out.replace(new RegExp('(^|[^A-Za-z])'+escaped+'(?=$|[^A-Za-z])','gi'),(m,p)=>p+dict[key]);
   }
   return out;
