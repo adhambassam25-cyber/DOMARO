@@ -303,7 +303,7 @@ function productCard(p, priority=false){
       </div>
       <div class="product-info">
         ${brandLine}
-        <h3>${escapeTrackHtml(p.name)}</h3>
+        <h3>${escapeTrackHtml(domaroArabicDisplay(p.name))}</h3>
         <div class="meta">${escapeTrackHtml(domaroArabicDisplay(p.type))} · ${activeVariants.length>1 ? `${activeVariants.length} SIZES` : escapeTrackHtml(p.size)}</div>
         <div class="price-row"><span class="product-price-stack">${priceHtml}</span><span class="meta">${escapeTrackHtml(domaroArabicDisplay(String(p.cat || '').toUpperCase()))}</span></div>
       </div>
@@ -767,7 +767,7 @@ function renderProductDetail(){
 
   const variants=(p.variants||[]).filter(v=>v.active!==false);
   const initialVariant=variantForProduct(p,null);
-  const brandLabel=p.brand ? escapeTrackHtml(p.brand) : 'DOMARO EDIT';
+  const brandLabel=p.brand ? escapeTrackHtml(domaroArabicDisplay(p.brand)) : 'دومارو';
   const storyText=p.story || p.desc || '';
   const hasSplitNotes=Boolean(p.topNotes || p.heartNotes || p.baseNotes);
   const hasKeyNotes=Boolean(p.keyNotes);
@@ -778,12 +778,12 @@ function renderProductDetail(){
       <h2>THE COMPOSITION</h2>
       ${hasKeyNotes ? `
         <div class="scent-notes-grid scent-notes-grid-single">
-          <div class="scent-note-card scent-note-card-key"><span>01</span><b>KEY NOTES</b><p>${escapeTrackHtml(p.keyNotes)}</p></div>
+          <div class="scent-note-card scent-note-card-key"><span>01</span><b>KEY NOTES</b><p>${escapeTrackHtml(domaroArabicDisplay(p.keyNotes))}</p></div>
         </div>` : `
         <div class="scent-notes-grid">
-          ${p.topNotes ? `<div class="scent-note-card"><span>01</span><b>TOP NOTES</b><p>${escapeTrackHtml(p.topNotes)}</p></div>` : ''}
-          ${p.heartNotes ? `<div class="scent-note-card"><span>02</span><b>HEART NOTES</b><p>${escapeTrackHtml(p.heartNotes)}</p></div>` : ''}
-          ${p.baseNotes ? `<div class="scent-note-card"><span>03</span><b>BASE NOTES</b><p>${escapeTrackHtml(p.baseNotes)}</p></div>` : ''}
+          ${p.topNotes ? `<div class="scent-note-card"><span>01</span><b>TOP NOTES</b><p>${escapeTrackHtml(domaroArabicDisplay(p.topNotes))}</p></div>` : ''}
+          ${p.heartNotes ? `<div class="scent-note-card"><span>02</span><b>HEART NOTES</b><p>${escapeTrackHtml(domaroArabicDisplay(p.heartNotes))}</p></div>` : ''}
+          ${p.baseNotes ? `<div class="scent-note-card"><span>03</span><b>BASE NOTES</b><p>${escapeTrackHtml(domaroArabicDisplay(p.baseNotes))}</p></div>` : ''}
         </div>`}
     </section>` : '';
 
@@ -791,7 +791,7 @@ function renderProductDetail(){
     <span class="variant-selector-label">SELECT SIZE</span>
     <div class="variant-selector" id="variant-selector">
       ${variants.map((v,i)=>`<button type="button" class="variant-option ${v.id===initialVariant?.id?'active':''}" data-variant-id="${escapeTrackHtml(v.id||'')}">
-        <b>${escapeTrackHtml(v.label || v.size)}</b><span>${money(v.price)}</span>${variantAvailable(v)?'':'<small>OUT OF STOCK</small>'}
+        <b>${escapeTrackHtml(domaroArabicDisplay(v.label || v.size))}</b><span>${money(v.price)}</span>${variantAvailable(v)?'':'<small>OUT OF STOCK</small>'}
       </button>`).join('')}
     </div>
   </div>` : '';
@@ -799,21 +799,21 @@ function renderProductDetail(){
   detail.innerHTML=`
     <div class="product-main-grid">
       <div class="product-gallery-v30">
-        <div class="product-gallery real-photo product-gallery-main"><img id="product-main-image" src="${safeImageSrc(gallery[0]?.path || p.img)}" alt="${escapeTrackHtml(p.name)}" width="900" height="900" decoding="async" fetchpriority="high"></div>
+        <div class="product-gallery real-photo product-gallery-main"><img id="product-main-image" src="${safeImageSrc(gallery[0]?.path || p.img)}" alt="${escapeTrackHtml(domaroArabicDisplay(p.name))}" width="900" height="900" decoding="async" fetchpriority="high"></div>
         ${gallery.length>1?`<div class="product-gallery-thumbs">${gallery.map((g,i)=>`<button type="button" class="product-gallery-thumb ${i===0?'active':''}" data-gallery-src="${safeImageSrc(g.path)}"><img src="${safeImageSrc(g.path)}" alt="${escapeTrackHtml(g.alt||p.name)}" width="160" height="160" loading="lazy" decoding="async"></button>`).join('')}</div>`:''}
       </div>
       <div class="product-copy">
         <a class="product-brand-link" href="${p.brand ? brandPath(p.brand) : 'shop.html'}">${brandLabel}</a>
-        <h1>${escapeTrackHtml(p.name)}</h1>
+        <h1>${escapeTrackHtml(domaroArabicDisplay(p.name))}</h1>
         <div class="product-facts">
-          <span>${escapeTrackHtml(String(p.cat || '').toUpperCase())}</span>
-          <span id="product-selected-size">${escapeTrackHtml(initialVariant?.size || p.size)}</span>
-          <span>${escapeTrackHtml(p.type)}</span>
+          <span>${escapeTrackHtml(domaroArabicDisplay(String(p.cat || '').toUpperCase()))}</span>
+          <span id="product-selected-size">${escapeTrackHtml(domaroArabicDisplay(initialVariant?.size || p.size))}</span>
+          <span>${escapeTrackHtml(domaroArabicDisplay(p.type))}</span>
         </div>
         <div class="price product-detail-price" id="product-selected-price" style="font-size:22px;margin:18px 0">${Number(initialVariant?.compareAtPrice ?? p.compareAtPrice)>Number(initialVariant?.price ?? p.price)?`<span class="old-price">${money(initialVariant?.compareAtPrice ?? p.compareAtPrice)}</span><span class="sale-price">${money(initialVariant?.price ?? p.price)}</span>`:money(initialVariant?.price ?? p.price)}</div>
         <div class="stock-line" id="product-selected-stock"><span class="stock-dot ${variantAvailable(initialVariant) ? '' : 'stock-dot-out'}"></span>${variantAvailable(initialVariant) ? (initialVariant.stockQuantity === null ? 'AVAILABLE' : `${initialVariant.stockQuantity} IN STOCK`) : 'OUT OF STOCK'}</div>
         ${variantButtons}
-        ${p.desc ? `<p class="product-short-desc">${escapeTrackHtml(p.desc)}</p>` : ''}
+        ${p.desc ? `<p class="product-short-desc">${escapeTrackHtml(domaroArabicDisplay(p.desc))}</p>` : ''}
         <div class="qty"><button id="minus">−</button><input id="qty" type="number" min="1" max="10" value="1"><button id="plus">+</button></div>
         <div class="product-buy-row"><button class="add-btn" id="add" ${variantAvailable(initialVariant) ? '' : 'disabled'}>${variantAvailable(initialVariant) ? 'ADD TO CART' : 'OUT OF STOCK'}</button><button class="wishlist-product-btn" id="wishlist-product-btn" type="button" aria-label="Add to wishlist">♡</button></div>
         <div class="product-service-row">
@@ -827,13 +827,13 @@ function renderProductDetail(){
       ${storyText ? `<section class="product-story-section">
         <div class="editorial-kicker">THE STORY</div>
         <h2>A SCENT WITH A POINT OF VIEW</h2>
-        <p>${escapeTrackHtml(storyText)}</p>
+        <p>${escapeTrackHtml(domaroArabicDisplay(storyText))}</p>
       </section>` : ''}
       ${notesHtml}
     </div>
 
     <div class="product-accordion-wide accordion">
-      <details open><summary>PRODUCT INFORMATION</summary><p>${p.brand ? `Brand: ${escapeTrackHtml(p.brand)}<br>` : ''}Size: <span id="product-info-size">${escapeTrackHtml(initialVariant?.size || p.size)}</span><br>Category: ${escapeTrackHtml(String(p.cat || '').charAt(0).toUpperCase()+String(p.cat || '').slice(1))}<br>Price: <span id="product-info-price">${money(initialVariant?.price ?? p.price)}</span></p></details>
+      <details open><summary>PRODUCT INFORMATION</summary><p>${p.brand ? `Brand: ${escapeTrackHtml(p.brand)}<br>` : ''}Size: <span id="product-info-size">${escapeTrackHtml(domaroArabicDisplay(initialVariant?.size || p.size))}</span><br>Category: ${escapeTrackHtml(String(p.cat || '').charAt(0).toUpperCase()+String(p.cat || '').slice(1))}<br>Price: <span id="product-info-price">${money(initialVariant?.price ?? p.price)}</span></p></details>
       <details><summary>DELIVERY</summary><p>Cairo &amp; Giza: delivery within a maximum of 2 days. Other governorates may vary depending on destination, courier availability and order volume. The delivery fee is calculated automatically at checkout based on your governorate and area.</p></details>
     </div>
     <section id="product-recommendations" class="product-recommendations-v30"></section>`;
@@ -894,10 +894,10 @@ function renderCart(){
     subtotal += variant.price*item.qty;
     const available=variantAvailable(variant);
     return `<div class="cart-item">
-      <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy" decoding="async">
+      <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(domaroArabicDisplay(p.name))}" loading="lazy" decoding="async">
       <div>
-        <b>${escapeTrackHtml(p.name)}</b>
-        <div class="meta">${escapeTrackHtml(p.type)} · ${escapeTrackHtml(variant.label || variant.size)}</div>
+        <b>${escapeTrackHtml(domaroArabicDisplay(p.name))}</b>
+        <div class="meta">${escapeTrackHtml(domaroArabicDisplay(p.type))} · ${escapeTrackHtml(domaroArabicDisplay(variant.label || variant.size))}</div>
         <div style="margin-top:6px">${item.qty} × ${money(variant.price)}</div>
         ${available ? '' : '<div class="cart-warning">Currently out of stock — remove before checkout.</div>'}
         <button class="remove" type="button" data-remove-product="${escapeTrackHtml(p.id)}" data-remove-variant="${escapeTrackHtml(variant.id||'')}">Remove</button>
@@ -963,8 +963,8 @@ function renderCheckout(){
     if(!available) hasUnavailable=true;
     subtotal += variant.price*item.qty;
     return `<div class="checkout-product">
-      <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy" decoding="async">
-      <div><b>${escapeTrackHtml(p.name)}</b><div class="meta">${escapeTrackHtml(variant.label || variant.size)} · Qty ${item.qty}</div>${available ? '' : '<div class="cart-warning">Out of stock</div>'}</div>
+      <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(domaroArabicDisplay(p.name))}" loading="lazy" decoding="async">
+      <div><b>${escapeTrackHtml(domaroArabicDisplay(p.name))}</b><div class="meta">${escapeTrackHtml(domaroArabicDisplay(variant.label || variant.size))} · Qty ${item.qty}</div>${available ? '' : '<div class="cart-warning">Out of stock</div>'}</div>
       <div class="checkout-product-price">${money(variant.price*item.qty)}</div>
     </div>`;
   }).join('');
@@ -1293,7 +1293,7 @@ function renderCheckout(){
     const itemRows=cart.map(item=>{
       const {product:p,variant}=cartProduct(item);
       if(!p || !variant) return '';
-      return `<div class="review-item"><div><b>${escapeTrackHtml(p.name)}</b><span>${escapeTrackHtml(variant.label || variant.size)} · Qty ${item.qty}</span></div><strong>${money(variant.price*item.qty)}</strong></div>`;
+      return `<div class="review-item"><div><b>${escapeTrackHtml(domaroArabicDisplay(p.name))}</b><span>${escapeTrackHtml(domaroArabicDisplay(variant.label || variant.size))} · Qty ${item.qty}</span></div><strong>${money(variant.price*item.qty)}</strong></div>`;
     }).join('');
 
     reviewContent.innerHTML=`
@@ -1760,8 +1760,8 @@ function initGlobalSearch(){
         <div class="global-search-section-title">PRODUCTS</div>
         <div class="global-search-product-list">${productMatches.map(p=>`
           <a class="global-search-product" href="${productPath(p.id)}">
-            <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy">
-            <span><b>${escapeTrackHtml(p.name)}</b><small>${p.brand?escapeTrackHtml(p.brand)+' · ':''}${escapeTrackHtml(domaroArabicDisplay(p.size))}</small></span>
+            <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(domaroArabicDisplay(p.name))}" loading="lazy">
+            <span><b>${escapeTrackHtml(domaroArabicDisplay(p.name))}</b><small>${p.brand?escapeTrackHtml(p.brand)+' · ':''}${escapeTrackHtml(domaroArabicDisplay(p.size))}</small></span>
             <strong>${money(p.price)}</strong>
           </a>`).join('')}</div>
       </div>`:'';
