@@ -3226,3 +3226,19 @@ html[lang="ar"] .nav-lang-text{direction:ltr}
   margin-left: 4px;
   flex-shrink: 0;
 }
+
+
+/* Center Accounting date input boxes themselves within their form column. */
+.admin-body #admin-accounting-panel input[type="date"] {
+  justify-self: center !important;
+  margin-inline: auto !important;
+  width: calc(100% - 12px) !important;
+  max-width: calc(100% - 12px) !important;
+}
+.admin-body #admin-accounting-panel .accounting-settlement-form > label,
+.admin-body #admin-accounting-panel .accounting-expense-form > label,
+.admin-body #admin-accounting-panel .inventory-purchase-form > .inventory-date-field,
+.admin-body #admin-accounting-panel .inventory-payment-form > .inventory-date-field {
+  min-width: 0 !important;
+  width: 100%;
+}
