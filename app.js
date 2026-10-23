@@ -252,8 +252,37 @@ function applyEntryGateWallpaper(){
   }
 }
 
+// Arabic display translations only; never modifies canonical catalog/Supabase data.
+function domaroArabicDisplay(value){
+  const original=String(value ?? '');
+  if((localStorage.getItem('domaro_lang')||'en')!=='ar') return original;
+  const dict={
+    'Hook Blue':'هوك بلو','Arrogate Blue':'أروجيت بلو','Arrogate Pink':'أروجيت بينك',
+    'Wild Colt':'وايلد كولت','Gris Erik':'جريس إيريك','Miss Flora':'ميس فلورا',
+    'Lipstick':'ليبستيك','Strick Black':'ستريك بلاك','Strike Black':'ستريك بلاك',
+    'Frankel Elixer':'فرانكل إليكسير','Frankel Elixir':'فرانكل إليكسير',
+    'Special Musk':'سبيشال مسك','Dkhooni':'دخوني','Black Diamond':'بلاك دايموند',
+    'Men':'رجالي','Women':'حريمي','Unisex':'للجنسين','Boxes':'علب',
+    'Citrus':'حمضيات','Bergamot':'برغموت','Lemon':'ليمون','Orange':'برتقال','Apple':'تفاح','Pear':'كمثرى',
+    'Lavender':'لافندر','Rose':'ورد','Jasmine':'ياسمين','Vanilla':'فانيليا','Musk':'مسك','Amber':'عنبر',
+    'Oud':'عود','Sandalwood':'خشب الصندل','Cedarwood':'خشب الأرز','Patchouli':'باتشولي','Vetiver':'فيتيفر',
+    'Leather':'جلد','Spices':'توابل','Pink Pepper':'فلفل وردي','Black Pepper':'فلفل أسود','Cardamom':'هيل',
+    'Tonka Bean':'حبوب التونكا','Coconut':'جوز الهند','Saffron':'زعفران','Incense':'بخور','White Musk':'مسك أبيض',
+    'Woody':'خشبي','Fresh':'منعش','Floral':'زهري','Sweet':'حلو','Oriental':'شرقي','Aquatic':'مائي',
+    'TOP NOTES':'المقدمة','HEART NOTES':'القلب','BASE NOTES':'القاعدة','KEY NOTES':'النوتات الأساسية',
+    'MEN':'رجالي','WOMEN':'حريمي','UNISEX':'للجنسين','ALL BRANDS':'كل الماركات','SIZES':'مقاسات'
+  };
+  if(dict[original.trim()]) return dict[original.trim()];
+  let out=original;
+  for(const key of Object.keys(dict).sort((a,b)=>b.length-a.length)){
+    const escaped=key.replace(/[.*+?^${}()|[\\]\\]/g,'\\function productCard(p, priority=false){');
+    out=out.replace(new RegExp('(^|[^A-Za-z])'+escaped+'(?=$|[^A-Za-z])','gi'),(m,p)=>p+dict[key]);
+  }
+  return out;
+}
+
 function productCard(p, priority=false){
-  const brandLine=p.brand ? `<div class="product-brand">${escapeTrackHtml(p.brand)}</div>` : '';
+  const brandLine=p.brand ? `<div class="product-brand">${escapeTrackHtml(domaroArabicDisplay(p.brand))}</div>` : '';
   const activeVariants=(p.variants||[]).filter(v=>v.active!==false);
   const availableVariants=activeVariants.filter(variantAvailable);
   const prices=[...new Set(activeVariants.map(v=>Number(v.price)))];
@@ -270,13 +299,13 @@ function productCard(p, priority=false){
     <a class="product-card-link" href="${productUrl}">
       <div class="product-img real-photo">
         <span class="badge ${p.inStock ? '' : 'badge-out'}">${p.inStock ? p.badge : 'OUT OF STOCK'}</span>
-        <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" width="600" height="750" loading="${priority?'eager':'lazy'}" decoding="async" fetchpriority="${priority?'high':'low'}">
+        <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(domaroArabicDisplay(p.name))}" width="600" height="750" loading="${priority?'eager':'lazy'}" decoding="async" fetchpriority="${priority?'high':'low'}">
       </div>
       <div class="product-info">
         ${brandLine}
         <h3>${escapeTrackHtml(p.name)}</h3>
-        <div class="meta">${escapeTrackHtml(p.type)} · ${activeVariants.length>1 ? `${activeVariants.length} SIZES` : escapeTrackHtml(p.size)}</div>
-        <div class="price-row"><span class="product-price-stack">${priceHtml}</span><span class="meta">${escapeTrackHtml(String(p.cat || '').toUpperCase())}</span></div>
+        <div class="meta">${escapeTrackHtml(domaroArabicDisplay(p.type))} · ${activeVariants.length>1 ? `${activeVariants.length} SIZES` : escapeTrackHtml(p.size)}</div>
+        <div class="price-row"><span class="product-price-stack">${priceHtml}</span><span class="meta">${escapeTrackHtml(domaroArabicDisplay(String(p.cat || '').toUpperCase()))}</span></div>
       </div>
     </a>
     <button class="quick-add-btn" type="button" data-quick-add="${escapeTrackHtml(p.id)}" ${p.inStock ? '' : 'disabled'}>${quickLabel}</button>
@@ -1732,7 +1761,7 @@ function initGlobalSearch(){
         <div class="global-search-product-list">${productMatches.map(p=>`
           <a class="global-search-product" href="${productPath(p.id)}">
             <img src="${safeImageSrc(p.img)}" alt="${escapeTrackHtml(p.name)}" loading="lazy">
-            <span><b>${escapeTrackHtml(p.name)}</b><small>${p.brand?escapeTrackHtml(p.brand)+' · ':''}${escapeTrackHtml(p.size)}</small></span>
+            <span><b>${escapeTrackHtml(p.name)}</b><small>${p.brand?escapeTrackHtml(p.brand)+' · ':''}${escapeTrackHtml(domaroArabicDisplay(p.size))}</small></span>
             <strong>${money(p.price)}</strong>
           </a>`).join('')}</div>
       </div>`:'';
