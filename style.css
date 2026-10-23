@@ -3208,3 +3208,21 @@ html[lang="ar"] .nav-lang-text{direction:ltr}
     padding-right: 8px !important;
   }
 }
+
+
+/* Center native date controls consistently on mobile Accounting forms. */
+.admin-body #admin-accounting-panel input[type="date"] {
+  text-align: center !important;
+  text-align-last: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-inline: 6px !important;
+}
+.admin-body #admin-accounting-panel input[type="date"]::-webkit-date-and-time-value {
+  text-align: center;
+  margin: 0 auto;
+}
+.admin-body #admin-accounting-panel input[type="date"]::-webkit-calendar-picker-indicator {
+  margin-left: 4px;
+  flex-shrink: 0;
+}
