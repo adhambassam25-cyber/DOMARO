@@ -3242,3 +3242,47 @@ html[lang="ar"] .nav-lang-text{direction:ltr}
   min-width: 0 !important;
   width: 100%;
 }
+
+
+/* DOMARO Arabic UI: isolated, reversible refinements for the preview branch only. */
+.lang-ar body {
+  line-height: 1.7;
+}
+.lang-ar .navlinks,
+.lang-ar .navicons {
+  direction: rtl;
+}
+.lang-ar .product-info,
+.lang-ar .product-copy,
+.lang-ar .track-page,
+.lang-ar .checkout-page,
+.lang-ar footer,
+.lang-ar .account-page-v30,
+.lang-ar .page-content {
+  text-align: right;
+}
+/* Keep product names, prices, order IDs, email addresses and numeric fields readable. */
+.lang-ar input,
+.lang-ar textarea,
+.lang-ar select,
+.lang-ar .price,
+.lang-ar .price-row,
+.lang-ar [dir="ltr"] {
+  unicode-bidi: plaintext;
+}
+.lang-ar input[type="email"],
+.lang-ar input[type="tel"],
+.lang-ar input[type="number"],
+.lang-ar input[type="password"],
+.lang-ar input[type="date"],
+.lang-ar .order-number,
+.lang-ar .product-price,
+.lang-ar .price {
+  direction: ltr;
+  text-align: left;
+}
+.lang-ar button,
+.lang-ar .btn,
+.lang-ar .nav-action {
+  line-height: 1.6;
+}
