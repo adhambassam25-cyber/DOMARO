@@ -437,13 +437,13 @@
         </div>
 
         <div class="dashboard-card accounting-card">
-          <div class="dashboard-card-head"><div><span>NEW STOCK</span><h3>RECEIVE PURCHASE</h3></div></div>
-          <p class="inventory-help">Receiving a purchase adds stock immediately and recalculates weighted-average cost.</p>
+          <div class="dashboard-card-head"><div><span>INVENTORY</span><h3>ADD SUPPLIER PURCHASE</h3></div></div>
+          <p class="inventory-help">Enter the supplier invoice, then add each product, quantity and unit cost. Saving the purchase updates stock and average cost.</p>
           <form id="inventory-purchase-form" class="inventory-purchase-form">
             <select id="inventory-purchase-supplier" required><option value="">Select supplier</option></select>
-            <input id="inventory-purchase-date" type="date" required>
-            <input id="inventory-purchase-reference" placeholder="Invoice / reference">
-            <input id="inventory-purchase-notes" placeholder="Notes">
+            <label class="inventory-date-field"><span>PURCHASE DATE</span><input id="inventory-purchase-date" type="date" required></label>
+            <input id="inventory-purchase-reference" placeholder="Invoice number (optional)" aria-label="Invoice number (optional)">
+            <input id="inventory-purchase-notes" placeholder="Notes (optional)" aria-label="Purchase notes (optional)">
             <div class="inventory-purchase-lines">
               <div class="inventory-purchase-line">
                 <select class="inventory-line-variant" required><option value="">Select variant</option></select>
@@ -454,7 +454,7 @@
             </div>
             <div class="accounting-expense-buttons">
               <button id="inventory-add-line" class="admin-secondary-btn" type="button">+ LINE</button>
-              <button id="inventory-purchase-save" class="admin-primary-btn" type="submit">RECEIVE PURCHASE</button>
+              <button id="inventory-purchase-save" class="admin-primary-btn" type="submit">SAVE PURCHASE</button>
             </div>
           </form>
           <div id="inventory-purchase-error" class="admin-error"></div>
@@ -466,8 +466,8 @@
           <div class="dashboard-card-head"><div><span>SUPPLIER CASH</span><h3>RECORD PAYMENT</h3></div></div>
           <form id="inventory-payment-form" class="inventory-payment-form">
             <select id="inventory-payment-supplier" required><option value="">Select supplier</option></select>
-            <select id="inventory-payment-purchase"><option value="">Supplier-level payment</option></select>
-            <input id="inventory-payment-date" type="date" required>
+            <select id="inventory-payment-purchase"><option value="">Not linked to a specific purchase</option></select>
+            <label class="inventory-date-field"><span>PAYMENT DATE</span><input id="inventory-payment-date" type="date" required></label>
             <input id="inventory-payment-amount" type="number" min="0.01" step="0.01" placeholder="Amount" required>
             <input id="inventory-payment-method" placeholder="Cash / Transfer / Card">
             <input id="inventory-payment-reference" placeholder="Reference">
