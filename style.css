@@ -3139,3 +3139,40 @@ html[lang="ar"] .nav-lang-text{direction:ltr}
   outline: 2px solid #8a8075;
   outline-offset: 1px;
 }
+
+
+/* Fix narrow mobile Accounting tables: keep columns readable and scroll inside the card. */
+.admin-body #admin-accounting-panel .accounting-table-wrap {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto !important;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+.admin-body #admin-accounting-panel .accounting-table-wrap > .accounting-table {
+  width: max-content;
+  min-width: 720px;
+  table-layout: auto;
+}
+.admin-body #admin-accounting-panel .accounting-table-wrap > .accounting-table th,
+.admin-body #admin-accounting-panel .accounting-table-wrap > .accounting-table td {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.admin-body #admin-accounting-panel #inventory-purchases-body td:nth-child(4),
+.admin-body #admin-accounting-panel #inventory-payments-body td:nth-child(3) {
+  white-space: normal;
+  min-width: 240px;
+  max-width: 340px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .admin-body #admin-accounting-panel .accounting-table-wrap {
+    width: 100%;
+  }
+  .admin-body #admin-accounting-panel .accounting-table-wrap > .accounting-table {
+    min-width: 760px;
+  }
+}
