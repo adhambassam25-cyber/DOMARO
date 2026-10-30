@@ -257,6 +257,28 @@
       </div>
       <div class="dashboard-card accounting-card"><div class="dashboard-card-head"><div><span>MANUAL RECORDS</span><h3>CAPITAL &amp; CASH ENTRY HISTORY</h3></div></div><div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>DATE</th><th>TYPE</th><th>PARTNER</th><th>METHOD</th><th>REFERENCE / NOTES</th><th>AMOUNT</th><th></th></tr></thead><tbody id="accounting-capital-entries-body"></tbody></table></div><div id="accounting-capital-entries-empty" class="admin-empty compact" hidden>No capital or cash entries yet. Start by recording the opening cash balance and founder contributions.</div></div>
     </div>
+
+    <section class="dashboard-card accounting-card accounting-receivables">
+      <div class="dashboard-card-head"><div><span>ASSETS &amp; RECOVERIES</span><h3>OTHER RECEIVABLES &amp; RECOVERIES</h3></div><button id="accounting-receivables-refresh" class="admin-secondary-btn" type="button">REFRESH</button></div>
+      <p class="admin-panel-intro">Track money owed to DOMARO that is not a customer order or supplier purchase. Recovery entries reduce the outstanding balance; they are not new revenue.</p>
+      <div class="accounting-receivables-kpis">
+        <div><span>TOTAL RECORDED</span><b id="receivables-total">0 EGP</b></div>
+        <div><span>RECOVERED</span><b id="receivables-recovered">0 EGP</b></div>
+        <div><span>OUTSTANDING</span><b id="receivables-outstanding">0 EGP</b></div>
+      </div>
+      <form id="accounting-receivable-form" class="accounting-receivable-form">
+        <label><span>DATE</span><input id="receivable-date" type="date" required></label>
+        <label><span>PERSON / SUPPLIER</span><input id="receivable-counterparty" maxlength="160" required placeholder="Who owes DOMARO?"></label>
+        <label><span>CATEGORY</span><select id="receivable-category"><option>Fraud recovery</option><option>Supplier refund due</option><option>Customer / other refund due</option><option>Other receivable</option></select></label>
+        <label><span>AMOUNT (EGP)</span><input id="receivable-amount" type="number" min="0.01" step="0.01" required placeholder="0.00"></label>
+        <label><span>REFERENCE</span><input id="receivable-reference" maxlength="120" placeholder="Optional reference"></label>
+        <label><span>DESCRIPTION</span><input id="receivable-description" maxlength="300" placeholder="Reason / details"></label>
+        <div class="accounting-receivable-submit"><button id="receivable-save" class="admin-primary-btn" type="submit">ADD RECEIVABLE</button><span id="receivable-error" class="admin-error"></span></div>
+      </form>
+      <div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>DATE</th><th>PERSON / SUPPLIER</th><th>CATEGORY / DETAILS</th><th>AMOUNT</th><th>RECOVERED</th><th>OUTSTANDING</th><th>STATUS</th><th></th></tr></thead><tbody id="accounting-receivables-body"></tbody></table></div>
+      <div id="accounting-receivables-empty" class="admin-empty compact" hidden>No receivables recorded yet.</div>
+      <p id="accounting-receivables-error" class="admin-error"></p>
+    </section>
     <div class="accounting-kpis">
       <div class="accounting-kpi accounting-kpi-featured"><span>NET REVENUE</span><b id="accounting-net-revenue">0 EGP</b><small>Delivered revenue less refunds</small></div>
       <div class="accounting-kpi"><span>COGS</span><b id="accounting-cogs">0 EGP</b><small>Cost of delivered items</small></div>
@@ -1056,6 +1078,6 @@
       SUPABASE_KEY: "sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c"
     };
   </script>
-  <script src="admin.js?v=30.15.0"></script><script src="accounting-admin.js?v=1.0.0"></script><script src="accounting-v2.js?v=1.0.2"></script><script src="inventory-accounting.js?v=2.0.0"></script><script src="accounting-capital.js?v=1.0.2"></script><script src="v30-admin.js?v=30.9.0"></script>
+  <script src="admin.js?v=30.15.0"></script><script src="accounting-admin.js?v=1.0.0"></script><script src="accounting-v2.js?v=1.0.2"></script><script src="inventory-accounting.js?v=2.0.0"></script><script src="accounting-capital.js?v=1.0.2"></script><script src="accounting-receivables.js?v=1.0.0"></script><script src="v30-admin.js?v=30.9.0"></script>
 </body>
 </html>
