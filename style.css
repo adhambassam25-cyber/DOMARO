@@ -3242,3 +3242,14 @@ html[lang="ar"] .nav-lang-text{direction:ltr}
   min-width: 0 !important;
   width: 100%;
 }
+
+
+/* DOMARO capital and cash-flow overview */
+.accounting-capital-section{display:grid;gap:16px;margin:22px 0}
+.accounting-capital-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.accounting-capital-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.accounting-capital-form label{display:grid;gap:6px;font-size:9px;letter-spacing:1px;color:#776e65}
+.accounting-capital-form input,.accounting-capital-form select{width:100%;min-width:0;border:1px solid #d8cfc2;background:#fff;padding:12px;color:#171513;font:inherit;font-size:12px;border-radius:0}
+.accounting-capital-notes{grid-column:span 2}.accounting-capital-submit{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.accounting-capital-submit .admin-error{font-size:11px}
+@media(max-width:900px){.accounting-capital-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.accounting-capital-form{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.accounting-capital-kpis,.accounting-capital-form{grid-template-columns:1fr}.accounting-capital-notes{grid-column:auto}.accounting-capital-kpis .accounting-kpi{min-height:105px;padding:16px}.accounting-capital-kpis .accounting-kpi b{font-size:25px}}
