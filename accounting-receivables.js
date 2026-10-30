@@ -43,7 +43,7 @@
   const p={receivable_date:$('receivable-date').value,counterparty:$('receivable-counterparty').value.trim(),category:$('receivable-category').value,amount:Number($('receivable-amount').value),reference:$('receivable-reference').value.trim()||null,description:$('receivable-description').value.trim()||null};
   if(!p.receivable_date||!p.counterparty||!(p.amount>0)){$('receivable-error').textContent='Enter a date, person / supplier and positive amount.';return;}
   const btn=$('receivable-save');btn.disabled=true;
-  try{await api(SUPABASE_URL+'/rest/v1/accounting_other_receivables',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(p)});$('accounting-receivable-form').reset();$('receivable-date').value=today();await load();}
+  try{await api(SUPABASE_URL+'/rest/v1/accounting_other_receivables',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(p)});$('accounting-receivable-form').reset();$('receivable-date').value=today();await load();window.DOMARO_CAPITAL?.load?.();}
   catch(err){$('receivable-error').textContent=err.message||'Could not save receivable.';}
   finally{btn.disabled=false;}
  });
