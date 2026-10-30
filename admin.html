@@ -271,7 +271,7 @@
         <div class="accounting-metric-list">
           <div><span>Delivered revenue</span><b id="accounting-delivered-revenue">0 EGP</b></div>
           <div><span>Product sales after discounts</span><b id="accounting-product-sales">0 EGP</b></div>
-          <div><span>Shipping collected</span><b id="accounting-shipping">0 EGP</b></div>
+          <div><span>Delivery fees collected</span><b id="accounting-shipping">0 EGP</b></div>
           <div><span>Discounts given</span><b id="accounting-discounts">0 EGP</b></div>
           <div><span>Refunds</span><b id="accounting-refunds">0 EGP</b></div>
           <div><span>Delivered orders</span><b id="accounting-orders">0</b></div>
@@ -306,19 +306,19 @@
     
     <div class="accounting-v2-grid">
       <div class="dashboard-card accounting-card">
-        <div class="dashboard-card-head"><div><span>SHIPPING ECONOMICS</span><h3>SHIPPING P/L</h3></div></div>
+        <div class="dashboard-card-head"><div><span>DOMARO DELIVERY</span><h3>DELIVERY COST SUMMARY</h3></div></div>
         <div class="accounting-metric-list">
           <div><span>Shipping collected</span><b id="accounting-v2-shipping-collected">0 EGP</b></div>
-          <div><span>Actual courier cost</span><b id="accounting-v2-shipping-cost">0 EGP</b></div>
+          <div><span>Actual delivery expense</span><b id="accounting-v2-shipping-cost">0 EGP</b></div>
           <div><span>Shipping profit / loss</span><b id="accounting-v2-shipping-profit">0 EGP</b></div>
         </div>
       </div>
       <div class="dashboard-card accounting-card">
-        <div class="dashboard-card-head"><div><span>COD COLLECTIONS</span><h3>COLLECTION STATUS</h3></div></div>
+        <div class="dashboard-card-head"><div><span>COD ORDERS</span><h3>CUSTOMER COLLECTION STATUS</h3></div></div>
         <div class="accounting-metric-list">
-          <div><span>Expected COD</span><b id="accounting-v2-cod-expected">0 EGP</b></div>
-          <div><span>Collected</span><b id="accounting-v2-cod-collected">0 EGP</b></div>
-          <div><span>Outstanding</span><b id="accounting-v2-cod-outstanding">0 EGP</b></div>
+          <div><span>Expected from COD orders</span><b id="accounting-v2-cod-expected">0 EGP</b></div>
+          <div><span>Collected directly by DOMARO</span><b id="accounting-v2-cod-collected">0 EGP</b></div>
+          <div><span>Still outstanding</span><b id="accounting-v2-cod-outstanding">0 EGP</b></div>
         </div>
       </div>
       <div class="dashboard-card accounting-card">
@@ -334,12 +334,12 @@
 
     <div class="accounting-expenses-section">
       <div class="admin-dashboard-head accounting-expense-head">
-        <div><div class="eyebrow" style="color:#766b5d">ORDER FINANCE</div><h2>DELIVERED ORDER RECONCILIATION</h2>
-        <p class="admin-panel-intro">Record actual courier cost and cash collected for each delivered order, including COD and prepaid orders.</p></div>
+        <div><div class="eyebrow" style="color:#766b5d">DIRECT CUSTOMER COLLECTION</div><h2>DELIVERED ORDER COLLECTIONS</h2>
+        <p class="admin-panel-intro">For each delivered order, record the actual delivery expense and the amount DOMARO received directly from the customer.</p></div>
       </div>
       <div class="accounting-table-wrap">
         <table class="accounting-table accounting-order-finance-table">
-          <thead><tr><th>ORDER</th><th>TOTAL</th><th>SHIP CHARGED</th><th>ACTUAL COURIER</th><th>AMOUNT COLLECTED</th><th>COLLECTED DATE</th><th>REFERENCE</th><th></th></tr></thead>
+          <thead><tr><th>ORDER</th><th>TOTAL</th><th>DELIVERY FEE</th><th>ACTUAL DELIVERY EXPENSE</th><th>COLLECTED BY DOMARO</th><th>COLLECTED DATE</th><th>REFERENCE</th><th></th></tr></thead>
           <tbody id="accounting-order-finance-body"></tbody>
         </table>
       </div>
@@ -347,7 +347,7 @@
       <div id="accounting-order-finance-error" class="admin-error"></div>
     </div>
 
-    <div class="accounting-expenses-section">
+    <div class="accounting-expenses-section" hidden>
       <div class="admin-dashboard-head accounting-expense-head">
         <div><div class="eyebrow" style="color:#766b5d">CASH & BANK</div><h2>SETTLEMENT REGISTER</h2>
         <p class="admin-panel-intro">Reconcile courier COD, payment gateway or bank settlements. Fees are deducted from Net Profit.</p></div>
@@ -1055,6 +1055,6 @@
       SUPABASE_KEY: "sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c"
     };
   </script>
-  <script src="admin.js?v=30.15.0"></script><script src="accounting-admin.js?v=1.0.0"></script><script src="accounting-v2.js?v=1.0.0"></script><script src="inventory-accounting.js?v=2.0.0"></script><script src="accounting-capital.js?v=1.0.2"></script><script src="v30-admin.js?v=30.9.0"></script>
+  <script src="admin.js?v=30.15.0"></script><script src="accounting-admin.js?v=1.0.0"></script><script src="accounting-v2.js?v=1.0.1"></script><script src="inventory-accounting.js?v=2.0.0"></script><script src="accounting-capital.js?v=1.0.2"></script><script src="v30-admin.js?v=30.9.0"></script>
 </body>
 </html>
