@@ -86,7 +86,7 @@
     if(!hasPermission('accounting'))return; const r=range();
     const rec=await api(SUPABASE_URL+'/rest/v1/rpc/accounting_reconciliation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({p_from:r.from,p_to:r.to})});
     set('accounting-v2-shipping-collected',money(rec.shipping_collected));set('accounting-v2-shipping-cost',money(rec.actual_shipping_cost));set('accounting-v2-shipping-profit',money(rec.shipping_profit));
-    set('accounting-v2-cod-expected',money(rec.cod_expected));set('accounting-v2-cod-collected',money(rec.cod_collected));set('accounting-v2-cod-outstanding',money(rec.cod_outstanding));
+    set('accounting-v2-cod-expected',money(rec.direct_expected));set('accounting-v2-cod-collected',money(rec.direct_collected));set('accounting-v2-cod-outstanding',money(rec.direct_outstanding));
     set('accounting-v2-settlement-expected',money(rec.settlement_expected));set('accounting-v2-settlement-received',money(rec.settlement_received));set('accounting-v2-settlement-fees',money(rec.settlement_fees));set('accounting-v2-settlement-variance',money(rec.settlement_variance));
     renderOrders(rec);
     let u=SUPABASE_URL+'/rest/v1/accounting_settlements?select=*&order=settlement_date.desc,created_at.desc';if(r.from)u+='&settlement_date=gte.'+encodeURIComponent(r.from);if(r.to)u+='&settlement_date=lte.'+encodeURIComponent(r.to);
