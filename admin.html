@@ -477,6 +477,7 @@
             <select id="inventory-purchase-supplier" required><option value="">Select supplier</option></select>
             <label class="inventory-date-field"><span>PURCHASE DATE</span><input id="inventory-purchase-date" type="date" required></label>
             <input id="inventory-purchase-reference" placeholder="Invoice number (optional)" aria-label="Invoice number (optional)">
+            <label class="inventory-date-field"><span>FUNDING SOURCE</span><select id="inventory-purchase-funding" required><option value="business_cash">Business Cash</option><option value="additional_capital">Additional Capital (50/50)</option></select></label>
             <input id="inventory-purchase-notes" placeholder="Notes (optional)" aria-label="Purchase notes (optional)">
             <div class="inventory-purchase-lines">
               <div class="inventory-purchase-line">
@@ -528,7 +529,7 @@
 
       <div class="dashboard-card accounting-card">
         <div class="dashboard-card-head"><div><span>PURCHASES</span><h3>PURCHASE HISTORY</h3></div></div>
-        <div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>DATE</th><th>SUPPLIER</th><th>REFERENCE</th><th>ITEMS</th><th>TOTAL</th></tr></thead><tbody id="inventory-purchases-body"></tbody></table></div>
+        <div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>DATE</th><th>SUPPLIER</th><th>REFERENCE</th><th>ITEMS</th><th>FUNDING SOURCE</th><th>TOTAL</th></tr></thead><tbody id="inventory-purchases-body"></tbody></table></div>
         <div id="inventory-purchases-empty" class="admin-empty compact" hidden>No purchases yet.</div>
       </div>
 
