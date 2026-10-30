@@ -38,12 +38,11 @@
   function renderOrders(rec){
     const rows=Array.isArray(rec?.orders)?rec.orders:[];
     body.innerHTML=rows.map(row=>{
-      const disabled=row.is_cod?'':'disabled';
       return '<tr><td><b>'+esc2(row.order_number)+'</b><small class="accounting-subtext">'+esc2(row.payment_method||'')+'</small></td>'+
       '<td>'+esc2(money(row.total))+'</td><td>'+esc2(money(row.shipping_collected))+'</td>'+
       '<td><input class="accounting-inline-input" data-fs="'+esc2(row.order_id)+'" type="number" min="0" step="0.01" value="'+Number(row.actual_shipping_cost||0)+'"></td>'+
-      '<td><input class="accounting-inline-input" data-fc="'+esc2(row.order_id)+'" type="number" min="0" step="0.01" value="'+Number(row.collected_amount||0)+'" '+disabled+'></td>'+
-      '<td><input class="accounting-inline-input" data-fd="'+esc2(row.order_id)+'" type="date" value="'+esc2(row.collected_at||'')+'" '+disabled+'></td>'+
+      '<td><input class="accounting-inline-input" data-fc="'+esc2(row.order_id)+'" type="number" min="0" step="0.01" value="'+Number(row.collected_amount||0)+'"></td>'+
+      '<td><input class="accounting-inline-input" data-fd="'+esc2(row.order_id)+'" type="date" value="'+esc2(row.collected_at||'')+'"></td>'+
       '<td><input class="accounting-inline-input" data-fr="'+esc2(row.order_id)+'" maxlength="120" value="'+esc2(row.courier_reference||'')+'" placeholder="Reference"></td>'+
       '<td><button class="admin-primary-btn accounting-inline-save" type="button" data-save-fin="'+esc2(row.order_id)+'">SAVE</button></td></tr>';
     }).join('');

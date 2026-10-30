@@ -223,6 +223,40 @@
     <div id="accounting-loading" class="admin-loading" hidden>Loading accounting…</div>
     <div id="accounting-error" class="admin-error"></div>
 
+
+    <div class="accounting-capital-section">
+      <div class="admin-dashboard-head accounting-expense-head"><div><div class="eyebrow" style="color:#766b5d">DOMARO FINANCIAL POSITION</div><h2>CAPITAL &amp; CASH FLOW</h2><p class="admin-panel-intro">Track founder funding, withdrawals, collected sales, cash paid and the current estimated cash position.</p></div><button id="accounting-capital-refresh" class="admin-secondary-btn" type="button">REFRESH FINANCIALS</button></div>
+      <div id="accounting-capital-loading" class="admin-loading" hidden>Loading financial position…</div><div id="accounting-capital-error" class="admin-error"></div>
+      <div class="accounting-capital-kpis">
+        <div class="accounting-kpi accounting-kpi-featured"><span>CURRENT ESTIMATED CASH</span><b id="capital-current-cash">—</b><small>Based on recorded cash movements</small></div>
+        <div class="accounting-kpi"><span>CAPITAL CONTRIBUTIONS</span><b id="capital-contributions">—</b><small>Founder / partner funding</small></div>
+        <div class="accounting-kpi"><span>OWNER WITHDRAWALS</span><b id="capital-withdrawals">—</b><small>Money taken out by owners</small></div>
+        <div class="accounting-kpi"><span>ORDER COLLECTIONS</span><b id="capital-order-collections">—</b><small>Recorded collected amounts</small></div>
+        <div class="accounting-kpi"><span>INVENTORY AT COST</span><b id="capital-inventory-value">—</b><small id="capital-inventory-note">Recorded stock value</small></div>
+        <div class="accounting-kpi accounting-kpi-profit"><span>NET PROFIT</span><b id="capital-net-profit">—</b><small>Accounting profit, not cash balance</small></div>
+      </div>
+      <div class="accounting-support-grid">
+       <div class="dashboard-card accounting-card"><div class="dashboard-card-head"><div><span>CASH MOVEMENT</span><h3>WHERE THE MONEY WENT</h3></div></div><div class="accounting-metric-list">
+        <div><span>Opening cash balance</span><b id="capital-opening-cash">—</b></div><div><span>Other income</span><b id="capital-other-income">—</b></div><div><span>Total cash in</span><b id="capital-cash-in">—</b></div><div><span>Supplier payments</span><b id="capital-supplier-payments">—</b></div><div><span>Operating expenses</span><b id="capital-operating-expenses">—</b></div><div><span>Actual shipping costs</span><b id="capital-shipping-cost">—</b></div><div><span>Settlement fees</span><b id="capital-settlement-fees">—</b></div><div><span>Other expenses</span><b id="capital-other-expenses">—</b></div><div><span>Total cash out (incl. withdrawals)</span><b id="capital-cash-out">—</b></div>
+       </div></div>
+       <div class="dashboard-card accounting-card"><div class="dashboard-card-head"><div><span>DATA COMPLETENESS</span><h3>FINANCIAL CHECK</h3></div></div><div class="accounting-metric-list">
+        <div><span>Delivered revenue</span><b id="capital-delivered-revenue">—</b></div><div><span>Cost coverage</span><b id="capital-cost-coverage">—</b></div><div><span>Stock units</span><b id="capital-inventory-units">—</b></div><div><span>Stock variants missing cost</span><b id="capital-missing-cost">—</b></div>
+       </div><p class="admin-panel-intro">Settlement received amounts are not counted again; they reconcile order collections. Do not enter supplier purchases again as other expenses.</p></div>
+      </div>
+      <div class="dashboard-card accounting-card"><div class="dashboard-card-head"><div><span>FOUNDERS &amp; CASH</span><h3>ADD CAPITAL OR CASH MOVEMENT</h3></div></div>
+       <form id="accounting-capital-form" class="accounting-capital-form">
+        <label><span>DATE</span><input id="capital-entry-date" type="date" required></label>
+        <label><span>ENTRY TYPE</span><select id="capital-entry-type" required><option value="opening_balance">Opening cash balance (one-time)</option><option value="capital_contribution">Capital contribution</option><option value="owner_withdrawal">Owner withdrawal</option><option value="other_income">Other income</option><option value="other_expense">Other cash expense</option></select></label>
+        <label><span>PARTNER / PERSON</span><input id="capital-entry-partner" maxlength="120" placeholder="Partner name"></label>
+        <label><span>AMOUNT (EGP)</span><input id="capital-entry-amount" type="number" min="0.01" step="0.01" required placeholder="0.00"></label>
+        <label><span>PAYMENT METHOD</span><select id="capital-entry-method"><option value="">Not specified</option><option>Cash</option><option>InstaPay</option><option>Bank transfer</option><option>Card</option><option>Other</option></select></label>
+        <label><span>REFERENCE</span><input id="capital-entry-reference" maxlength="120" placeholder="Transfer reference"></label>
+        <label class="accounting-capital-notes"><span>NOTES</span><input id="capital-entry-notes" maxlength="300" placeholder="What was this movement for?"></label>
+        <div class="accounting-capital-submit"><button id="capital-entry-save" class="admin-primary-btn" type="submit">SAVE ENTRY</button><span id="capital-entry-error" class="admin-error"></span></div>
+       </form>
+      </div>
+      <div class="dashboard-card accounting-card"><div class="dashboard-card-head"><div><span>MANUAL RECORDS</span><h3>CAPITAL &amp; CASH ENTRY HISTORY</h3></div></div><div class="accounting-table-wrap"><table class="accounting-table"><thead><tr><th>DATE</th><th>TYPE</th><th>PARTNER</th><th>METHOD</th><th>REFERENCE / NOTES</th><th>AMOUNT</th><th></th></tr></thead><tbody id="accounting-capital-entries-body"></tbody></table></div><div id="accounting-capital-entries-empty" class="admin-empty compact" hidden>No capital or cash entries yet. Start by recording the opening cash balance and founder contributions.</div></div>
+    </div>
     <div class="accounting-kpis">
       <div class="accounting-kpi accounting-kpi-featured"><span>NET REVENUE</span><b id="accounting-net-revenue">0 EGP</b><small>Delivered revenue less refunds</small></div>
       <div class="accounting-kpi"><span>COGS</span><b id="accounting-cogs">0 EGP</b><small>Cost of delivered items</small></div>
@@ -301,11 +335,11 @@
     <div class="accounting-expenses-section">
       <div class="admin-dashboard-head accounting-expense-head">
         <div><div class="eyebrow" style="color:#766b5d">ORDER FINANCE</div><h2>DELIVERED ORDER RECONCILIATION</h2>
-        <p class="admin-panel-intro">Record actual courier cost and COD collection for each delivered order.</p></div>
+        <p class="admin-panel-intro">Record actual courier cost and cash collected for each delivered order, including COD and prepaid orders.</p></div>
       </div>
       <div class="accounting-table-wrap">
         <table class="accounting-table accounting-order-finance-table">
-          <thead><tr><th>ORDER</th><th>TOTAL</th><th>SHIP CHARGED</th><th>ACTUAL COURIER</th><th>COD COLLECTED</th><th>COLLECTED DATE</th><th>REFERENCE</th><th></th></tr></thead>
+          <thead><tr><th>ORDER</th><th>TOTAL</th><th>SHIP CHARGED</th><th>ACTUAL COURIER</th><th>AMOUNT COLLECTED</th><th>COLLECTED DATE</th><th>REFERENCE</th><th></th></tr></thead>
           <tbody id="accounting-order-finance-body"></tbody>
         </table>
       </div>
@@ -1021,6 +1055,6 @@
       SUPABASE_KEY: "sb_publishable_gaSdKLisgpHYocKX5dYAmw_CZeW6s0c"
     };
   </script>
-  <script src="admin.js?v=30.15.0"></script><script src="accounting-admin.js?v=1.0.0"></script><script src="accounting-v2.js?v=1.0.0"></script><script src="inventory-accounting.js?v=2.0.0"></script><script src="v30-admin.js?v=30.9.0"></script>
+  <script src="admin.js?v=30.15.0"></script><script src="accounting-admin.js?v=1.0.0"></script><script src="accounting-v2.js?v=1.0.0"></script><script src="inventory-accounting.js?v=2.0.0"></script><script src="accounting-capital.js?v=1.0.0"></script><script src="v30-admin.js?v=30.9.0"></script>
 </body>
 </html>
